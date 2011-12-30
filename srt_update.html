@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js"></script>
+<script>
+function addTime(t1,t2) {
+	t1 = t1.split(':').reverse();
+	t2 = t2.split(':').reverse();
+	var c = t2.length;
+	for (var i=0;i<c;i++) {
+		if (!t1[i]) t1[i] = 0;
+		t1[i] = t1[i]*1+t2[i]*1;
+		if (t1[i] >= 60) {
+			t1[i+1] = addTime(t1[i+1]||'0','1');
+			t1[i] = t1[i]%60;
+		}
+		if ((t1[i]+'').length == 1) t1[i] = '0'+t1[i];
+	}
+	return t1.reverse().join(':');
+}
+$(function(){
+	$('#t1,#t2').val('');
+	$('#btn').bind('click',function(){
+		$('#t2').val($('#t1').val().replace(/([0-9]{2}:[0-9]{2}:[0-9]{2})/g,function(s){
+			return addTime(s,'00:00:28');
+		}));
+		return false;
+	});
+});
+</script>
+</head>
+<body>
+
+<textarea id="t1"></textarea>
+<br /><a id="btn" href="#">update</a><br />
+<textarea id="t2"></textarea>
+
+</body>
+</html>
