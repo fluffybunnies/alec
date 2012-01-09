@@ -1,0 +1,10 @@
+function _g($p,$k,$d=null) {
+	if (!is_array($k)) $k = array($k);
+	for ($i=0,$c=count($k);$i<$c;$i++) {
+		if (isset($p[$k[$i]])) {
+			$d = $p[$k[$i]];
+			break;
+		}
+	}
+	return $d;
+}
