@@ -1,6 +1,6 @@
 
 /**
-	ex: print_r($_SERVER,array('HTTP_HOST','SERVER_NAME'));
+	ex: print_r(_g($_SERVER,array('HTTP_HOST','SERVER_NAME')));
 **/
 function _g($p,$k,$d=null) {
 	if (!is_array($k)) $k = array($k);
