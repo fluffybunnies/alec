@@ -8,3 +8,31 @@ function _g($p,$k,$d=null) {
 	}
 	return $d;
 }
+
+
+
+/**
+	ex:
+		$house = array(
+			'bedroom' => array('bed','dresser'=>array('pants')),
+		);
+		put_deep($house,'kitchen>oven','bread');
+		put_deep($house,'bedroom>dresser[]','shirt');
+		put_deep($house,'kitchen>cabinets[]>corner','salt');
+**/
+function put_deep(&$root,$where,$what) {
+	$keys = explode('>',$where);
+	$c = count($keys);
+	for ($i=0;$i<$c;$i++) {
+		$k = $keys[$i];
+		if (($ccat = $k) == ($k = str_replace('[]','',$k))) $ccat = false;
+		if (!isset($root[$k])) $root[$k] = array();
+		$root = &$root[$k];
+		if ($ccat) {
+			$root[] = null;
+			end($root);
+			$root = &$root[key($root)];
+		}
+	}
+	return $root = $what;
+}
