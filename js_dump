@@ -14,3 +14,16 @@ function addTime(t1,t2) {
 	return t1.reverse().join(':');
 }
 addTime('01:30:59','2:12');
+
+
+function postToIframe(cont,url,params) {
+	var name = 'postToIframe-'+Date.now()+Math.round(Math.random()*9999),
+		k,f;
+	cont.append('<iframe name="'+name+'"></iframe>');
+	f = $('<form action="'+url+'" target="'+name+'" method="post" style="display:none;"></form>');
+	for (k in params) f.append('<input name="'+k+'" value="'+params[k]+'" type="hidden" />');
+	$('body').append(f);
+	f.submit();
+}
+
+
