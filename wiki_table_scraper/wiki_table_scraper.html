@@ -1,0 +1,159 @@
+<html>
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js"></script>
+<script src="http://m1-dev.jewelmint.com/k/assets/acqadmin/json2.js"></script>
+<script>
+
+
+function firstN(s) {
+	try {
+		s = s.toString();
+	} catch (e) {
+		s = '';
+	}
+	var abc = /[0-9.]/g,
+		n = '',
+		i,c,ch;
+	for (i=0,c=s.length;i<c;++i) {
+		if ((ch = s.charAt(i)) == ',' || abc.test(ch)) {
+			abc.lastIndex = 0;
+			if (ch != ',') n += ch;
+		} else if (n.length) break;
+	}
+	return n.length ? +n : null;
+}
+
+function extractFirstPatternMatch(mstr,opts) {
+	var o = $.extend({
+		stricticity: 3,
+		separator: "\t",
+		min_columns: 2
+	},opts || {}),
+		lines = mstr.split("\n"),
+		num_s = 0,
+		match = [],
+		lpatt = null,
+		cpatt,skip,
+		l,i,c,m,n;
+	if ((c = lines.length) < o.stricticity) o.stricticity = c;
+	
+	for (i=0;i<c;++i) {
+		skip = true;
+		do {
+			if ((m = (l = lines[i].split(o.separator)).length) < o.min_columns) break;
+			cpatt = '';
+			for (n=0;n<m;n++) {
+				cpatt += firstN(l[n]) ? 'n' : 's';
+			}
+			if (lpatt !== null && (lpatt.length != cpatt.length || lpatt != cpatt)) break;
+			skip = false;
+		} while (false);
+
+		if (skip) {
+			if (num_s >= o.stricticity) break;
+			match = [];
+			num_s = 0;
+			lpatt = null;
+		} else {
+			match[num_s] = l;
+			++num_s;
+			lpatt = cpatt;
+		}
+	}
+	
+	return match.length >= o.stricticity ? match : null;
+}
+
+function doIt() {
+	$.get('dump2',function(dont,care,r){
+		
+		var lines = extractFirstPatternMatch(r.responseText),
+			cities = format = null;
+		if (lines) {
+			
+			var c = lines.length,
+				m = lines[0].length,
+				fn,i,n;
+				
+			//find format
+			switch (m) {
+				case 6:
+					//http://en.wikipedia.org/wiki/List_of_cities_and_towns_in_California
+					format = ['name','type','county','N-pop','N-area','incorporated_date'];
+				break;
+				case 7:
+					//http://en.wikipedia.org/wiki/List_of_United_States_cities_by_population_density
+					format = ['rank','name','metro','state','N-pop','N-area','N-pop_density'];
+				break;
+			}
+			
+			if (format) {
+			
+				var o,k;
+				cities = [];
+				for (i=0;i<c;++i) {
+					o = {};
+					for (n=0,m=lines[i].length;n<m;++n) {
+						if (format[n] != (k = format[n].replace('N-',''))) {
+							o[k] = firstN(lines[i][n]);
+						} else o[k] = lines[i][n];
+						//if ((fn = firstN(o[format[n]])) !== null) o[format[n]] = fn;
+						
+					}
+					cities.push(o);
+				}
+				
+			}
+			
+		}
+		
+		if (cities) {
+			var i,c,
+			cleanName = function(n) {
+				return n.replace('County seat','').replace(/^( )+|( )+$/,'');
+			};
+			for (i=0,c=cities.length;i<c;++i) {
+				cities[i].name = cleanName(cities[i].name);
+			}
+			alert(JSON.stringify(cities,null,3));
+
+
+			//get some stats
+			var stats = {},
+				high;
+			high = 0;
+			for (i=0;i<c;++i) {
+				if (cities[i].pop >= cities[high].pop) high = i;
+			}
+			stats.highest_population = {
+				name: cities[high].name,
+				pop: cities[high].pop
+			};
+			high = [0,null];
+			for (i=0;i<c;++i) {
+				temp = cities[i].pop/cities[i].area;
+				if (high[1] === null || temp < high[1]) high = [i,temp];
+			}
+			stats.lowest_density = {
+				name: cities[high[0]].name,
+				density: high[1].toFixed(2)
+			};
+			alert(JSON.stringify(stats,null,3));
+
+		} else {
+			alert('no data found');
+		}
+		
+	});
+}
+
+$(function(){
+	doIt();
+});
+</script>
+</head>
+<body>
+
+
+</body>
+</html>
