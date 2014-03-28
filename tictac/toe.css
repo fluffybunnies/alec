@@ -1,0 +1,55 @@
+
+.Toe {
+  margin: 60px auto;
+  width: 420px;
+  font-family: arial,sans-serif;
+}
+.Toe-title {
+  font-size: 30px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.Toe-player_turn {
+  font-size: 20px;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+.Toe-board {
+  position: relative;
+  margin: 20px auto;
+  width: 411px;
+  height: 411px;
+  background: url(board.png) no-repeat;
+}
+.Toe-square {
+  position: absolute;
+  width: 135px;
+  height: 135px;
+  background-position: center center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+.Toe-square.is-on {
+  cursor: default;
+}
+.Toe-square.is-on-o {
+  background-image: url(o.png);
+}
+.Toe-square.is-on-x {
+  background-image: url(x.png);
+}
+.Toe-square.index-0 { left: 0px; top: 0px; }
+.Toe-square.index-1 { left: 141px; top: 0px; }
+.Toe-square.index-2 { left: 276px; top: 0px; }
+.Toe-square.index-3 { left: 0px; top: 141px; }
+.Toe-square.index-4 { left: 141px; top: 141px; }
+.Toe-square.index-5 { left: 276px; top: 141px; }
+.Toe-square.index-6 { left: 0px; top: 276px; }
+.Toe-square.index-7 { left: 141px; top: 276px; }
+.Toe-square.index-8 { left: 276px; top: 276px; }
+
+
+.Toe-actions {
+}
