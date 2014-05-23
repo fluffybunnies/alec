@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title></title>
+<!--
+<link rel="stylesheet" type="text/css" href="http://start.jewelmint.com/k/assets/reset.css" />
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+-->
+<script>
+
+(function(){
+	var initializing = false
+	this.Class = function(){}
+	Class.extend = function(o){
+		initializing = true
+		var n = new this
+		initializing = false
+		for (var k in o)
+			n[k] = o[k]
+		n.super = this.prototype;
+		function Class() {
+			if (!initializing && this.init instanceof Function)
+				this.init.apply(this,arguments)
+		}
+		Class.prototype = n
+		Class.prototype.constructor = Class
+		Class.extend = arguments.callee
+		return Class;
+	}
+})();
+
+
+
+Person = Class.extend({
+	name: ''
+	,people: []
+	,init: function(name){
+		this.name = name;
+	}
+	,sayHello: function(){
+		console.log('Hello! My name is '+this.name);
+	}
+});
+var p1 = new Person('bobo');
+var p2 = new Person('smoky');
+p1.sayHello();
+p2.sayHello();
+
+
+TalkativePerson = Person.extend({
+	sayHello: function(){
+		this.super.sayHello.call(this);
+		console.log('I talk a lot...');
+	}
+});
+var tp1 = new TalkativePerson('talkative bobo');
+var tp2 = new TalkativePerson('talkative smoky');
+tp1.sayHello();
+tp2.sayHello();
+
+
+</script>
+
+<style type="text/css">
+
+</style>
+
+</head>
+<body>
+
+
+</body>
+</html>
