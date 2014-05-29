@@ -1,11 +1,11 @@
 # ~/Dropbox/alec_repo/utils/gropen -R 'v=201' ./AB_Resources/
 
 function gropen(){
-  _IFS=IFS
+  _IFS=$IFS
   IFS=$'\n'
   g=`grep -l "$@"`
   for file in $g; do
     open $file
   done
-  IFS=_IFS
+  IFS=$_IFS
 }
