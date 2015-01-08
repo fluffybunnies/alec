@@ -1,0 +1,154 @@
+<html>
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js"></script>
+<style type="text/css">
+div {
+	font-family: monospace;
+	margin-bottom: 1em;
+}
+div span {
+	color: #ccc;
+	margin-left: 1em;
+}
+</style>
+<script>
+
+/*function prog1() {
+	var a = Math.random(),
+		b = 'brfoerf';
+	var c = a+0,
+		d = b+0;
+}
+
+function prog2() {
+	var a = Math.random(),
+		b = 'brfoerf';
+	var c = a*1,
+		d = b*1;
+}
+
+function prog3() {
+	var a = Math.random(),
+		b = 'brfoerf';
+	var c = +a,
+		d = +b;
+}*/
+
+/*
+function prog1(){
+	var a = eval(Array(100).join('3*')+'3')
+}
+function prog2(){
+	var a = 3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3*3
+}
+function prog3(){
+	var a = Math.pow(3,100)
+}
+*/
+
+/*function prog1(){
+	var test = [
+		{1:1, 2:2, 3:'wefwef'}
+		,[1,2,'wefwef']
+	];
+	for (var i=0;i<test.length;++i) {
+		var res = test[i] instanceof Array;
+	}
+}
+function prog2(){
+	var test = [
+		{1:1, 2:2, 3:'wefwef'}
+		,[1,2,'wefwef']
+	];
+	for (var i=0;i<test.length;++i) {
+		var res = Array.isArray(test[i]);
+	}
+}
+function prog3(){
+	var test = [
+		{1:1, 2:2, 3:'wefwef'}
+		,[1,2,'wefwef']
+	];
+	for (var i=0;i<test.length;++i) {
+		var res = test[i].constructor === Array;
+	}
+}*/
+
+function prog1(){
+	var test = [
+		{1:1, 2:2, 3:'wefwef'}
+		,[1,2,'wefwef']
+	];
+	for (var i=0;i<test.length;++i) {
+		var res = test[i] instanceof Object;
+	}
+}
+function prog2(){
+	var test = [
+		{1:1, 2:2, 3:'wefwef'}
+		,[1,2,'wefwef']
+	];
+	for (var i=0;i<test.length;++i) {
+		var res = typeof test[i] == 'object' && test[i] !== null;
+	}
+}
+function prog3(){
+	var test = [
+		{1:1, 2:2, 3:'wefwef'}
+		,[1,2,'wefwef']
+	];
+	for (var i=0;i<test.length;++i) {
+		var res = typeof test[i] === 'object' && test[i] !== null;
+	}
+}
+function prog4(){
+	var test = [
+		{1:1, 2:2, 3:'wefwef'}
+		,[1,2,'wefwef']
+	];
+	for (var i=0;i<test.length;++i) {
+		toString.call(test[i]) != '[object Object]';
+	}
+}
+function prog5(){
+	var test = [
+		{1:1, 2:2, 3:'wefwef'}
+		,[1,2,'wefwef']
+	];
+	for (var i=0;i<test.length;++i) {
+		toString.call(test[i]) !== '[object Object]';
+	}
+}
+
+$(function(){
+	var $b = $('body')
+		,runNum = 100000
+		,wait = 1000
+		,run = []
+	;
+
+	Object.keys(window).forEach(function(k){
+		if (/^prog([0-9]+)$/.test(k) && window[k] instanceof Function)
+			run.push(k);
+	});
+	console.log('run',run);
+	setTimeout(function(){
+		run.forEach(function(k){
+			var d1 = new Date
+				,d2
+			;
+			d1 = new Date();
+			for (i=0;i<runNum;++i)
+				window[k]();
+			d2 = new Date();
+			$b.append('<div>'+(+d2-+d1)+'<span>('+k+')</span></div>');
+		});
+	},wait);
+});
+</script>
+</head>
+<body>
+
+
+</body>
+</html>
