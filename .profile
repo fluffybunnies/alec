@@ -24,7 +24,6 @@ export PATH=/usr/local/mysql/bin:$PATH
 # lein
 export PATH=~/bin:$PATH
 
-
 #alias smile="curl http://smiley.meatcub.es:1337"
 smile(){
 	if [ ! -d /tmp/node_modules/cool-ascii-faces ]; then
