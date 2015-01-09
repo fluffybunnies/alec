@@ -24,7 +24,13 @@ export PATH=/usr/local/mysql/bin:$PATH
 # lein
 export PATH=~/bin:$PATH
 
-alias smile="curl http://smiley.meatcub.es:1337"
+#alias smile="curl http://smiley.meatcub.es:1337"
+smile(){
+	if [ ! -d /tmp/node_modules/cool-ascii-faces ]; then
+		npm install --prefix /tmp cool-ascii-faces
+	fi
+	node /tmp/node_modules/cool-ascii-faces/cli.js
+}
 
 echocute(){
 	echo $1
@@ -33,11 +39,7 @@ echocute(){
 
 poo(){
 	git add --all .
-	happy=`curl http://smiley.meatcub.es:1337`
-	if [ "$happy" == "" ] || [ "$happy" == "Cannot GET /" ]; then
-		happy=":-)"
-	fi
-	git commit -a -m "$happy"
+	git commit -a -m "`smile`"
 	git pull origin master
 	git push origin master
 }
@@ -63,8 +65,7 @@ mastit(){
 }
 
 bitch() {
-	if [[ $1 -eq "please" ]]
-	then
+	if [[ $1 -eq "please" ]]; then
 		eval "sudo $(fc -ln -1)"
 	else
 		sudo "$@"
