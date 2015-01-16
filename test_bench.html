@@ -1,17 +1,40 @@
 <html>
 <head>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
 <style type="text/css">
-div {
+body {
 	font-family: monospace;
-	margin-bottom: 1em;
 }
-div span {
+.test {
+	margin: 0.5em;
+	padding: 0.5em;
+	border: 1px solid #ddd;
+	clear: both;
+	float: left;
+}
+.test div {
+	padding: 0.5em 0;
+	white-space: nowrap;
+}
+.test div span {
 	color: #ccc;
 	margin-left: 1em;
 }
+.test div span:nth-child(1) {
+	margin-left: 0;
+	color: #000;
+}
+.test div.victory span {
+	color: #2c2;
+}
 </style>
 <script>
+
+util = {
+	rand: function(min,max){
+		return min+Math.round(Math.random()*(max-min));
+	}
+}
 
 /*function prog1() {
 	var a = Math.random(),
@@ -74,6 +97,7 @@ function prog3(){
 	}
 }*/
 
+/*
 function prog1(){
 	var test = [
 		{1:1, 2:2, 3:'wefwef'}
@@ -119,31 +143,153 @@ function prog5(){
 		toString.call(test[i]) !== '[object Object]';
 	}
 }
+*/
+
+
+function hasSuffiecentCharacters1(newspaperClipping, ransomLetter) {
+	var i, k, char, ransomChars = {}
+		,clipping = newspaperClipping.toLowerCase().replace(/\s/g,'').split('')
+		,letter = ransomLetter.toLowerCase().replace(/\s/g,'').split('')
+	if (!ransomLetter.length)
+		return true
+	for (i=0;i<letter.length;++i)
+		ransomChars[char = letter[i]] = ransomChars[char] ? ransomChars[char]+1 : 1
+	for (i=0;i<clipping.length;++i) {
+		if (ransomChars[char = clipping[i]] && --ransomChars[char] == 0) {
+			delete ransomChars[char], k = null
+			for (k in ransomChars) break
+			if (!k) return true
+		}
+	}
+	//if (Math.random()<0.1) return true;
+	return false
+}
+function hasSuffiecentCharacters2(newspaperClipping, ransomLetter) {
+	var i, k, char, ransomChars = {}
+		,clipping = newspaperClipping.toLowerCase().split('')
+		,letter = ransomLetter.toLowerCase().split('')
+	if (!ransomLetter.length)
+		return true
+	for (i=0;i<letter.length;++i)
+		if (letter[i] != ' ')
+			ransomChars[char = letter[i]] = ransomChars[char] ? ransomChars[char]+1 : 1
+	for (i=0;i<clipping.length;++i) {
+		if (ransomChars[char = clipping[i]] && --ransomChars[char] == 0) {
+			delete ransomChars[char], k = null
+			for (k in ransomChars) break
+			if (!k) return true
+		}
+	}
+	//if (Math.random()<0.1) return true;
+	return false
+}
+function hasSuffiecentCharacters3(newspaperClipping, ransomLetter) {
+	var index,i;
+	newspaperClipping = newspaperClipping.toLowerCase();
+	ransomLetter = ransomLetter.toLowerCase();
+	for (var i=0;i<ransomLetter.length;++i) {
+		if (ransomLetter[i] == ' ') continue;
+		if ((index = newspaperClipping.indexOf(ransomLetter[i])) == -1)
+			return false
+		newspaperClipping = newspaperClipping.substr(0,index)+newspaperClipping.substr(index+1);
+	}
+	return true
+}
+function hasSuffiecentCharacters4(newspaperClipping, ransomLetter) {
+	var next,i;
+	newspaperClipping = newspaperClipping.toLowerCase();
+	ransomLetter = ransomLetter.toLowerCase();
+	for (var i=0;i<ransomLetter.length;++i)
+		if (ransomLetter[i] != ' ' && newspaperClipping.length == (newspaperClipping = newspaperClipping.replace(ransomLetter[i],'')).length)
+			return false
+	return true
+}
+function preProg(){
+	var abc = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-', i;
+	window.str0 = window.str1 = '';
+	for (i=0;i<util.rand(200,2000);++i)
+		window.str0 += Math.random()<0.15 ? ' ' : abc[util.rand(0,abc.length-1)];
+	for (i=0;i<util.rand(50,500);++i)
+		window.str1 += Math.random()<0.15 ? ' ' : abc[util.rand(0,abc.length-1)];
+	console.log(window.str0);
+	console.log(window.str1);
+}
+function prog1(i){
+	//return hasSuffiecentCharacters('Churchill had a very distant relationship with this father. Often people with depression don’t have a close relationship with their father, predisposing them to anger or anger turned inward – depression. His first major episode with depression was in 1910, aged 35. Some days he described himself as almost unable to get out of bed, a sign of deep clinical depression. He would also fantasize about jumping in front of an oncoming train when on a  platform. “I don’t like standing near the edge of a platform when an express train is passing through,” he told his doctor. “I like to stand right back and if possible get a pillar between me and the train. I don’t like to stand by the side of a ship and look down into the water. A second’s action would end everything. A few drops of desperation.”', 'I have your code, please give me github access to get it back');
+	return hasSuffiecentCharacters1(window.str0, window.str1);
+}
+function prog2(i){
+	//return hasSuffiecentCharacters2('Churchill had a very distant relationship with this father. Often people with depression don’t have a close relationship with their father, predisposing them to anger or anger turned inward – depression. His first major episode with depression was in 1910, aged 35. Some days he described himself as almost unable to get out of bed, a sign of deep clinical depression. He would also fantasize about jumping in front of an oncoming train when on a  platform. “I don’t like standing near the edge of a platform when an express train is passing through,” he told his doctor. “I like to stand right back and if possible get a pillar between me and the train. I don’t like to stand by the side of a ship and look down into the water. A second’s action would end everything. A few drops of desperation.”', 'I have your code, please give me github access to get it back');
+	return hasSuffiecentCharacters2(window.str0, window.str1);
+}
+function prog3(i){
+	//return hasSuffiecentCharacters3('Churchill had a very distant relationship with this father. Often people with depression don’t have a close relationship with their father, predisposing them to anger or anger turned inward – depression. His first major episode with depression was in 1910, aged 35. Some days he described himself as almost unable to get out of bed, a sign of deep clinical depression. He would also fantasize about jumping in front of an oncoming train when on a  platform. “I don’t like standing near the edge of a platform when an express train is passing through,” he told his doctor. “I like to stand right back and if possible get a pillar between me and the train. I don’t like to stand by the side of a ship and look down into the water. A second’s action would end everything. A few drops of desperation.”', 'I have your code, please give me github access to get it back');
+	return hasSuffiecentCharacters3(window.str0, window.str1);
+}
+function prog4(i){
+	//return hasSuffiecentCharacters4('Churchill had a very distant relationship with this father. Often people with depression don’t have a close relationship with their father, predisposing them to anger or anger turned inward – depression. His first major episode with depression was in 1910, aged 35. Some days he described himself as almost unable to get out of bed, a sign of deep clinical depression. He would also fantasize about jumping in front of an oncoming train when on a  platform. “I don’t like standing near the edge of a platform when an express train is passing through,” he told his doctor. “I like to stand right back and if possible get a pillar between me and the train. I don’t like to stand by the side of a ship and look down into the water. A second’s action would end everything. A few drops of desperation.”', 'I have your code, please give me github access to get it back');
+	return hasSuffiecentCharacters4(window.str0, window.str1);
+}
+
+
+
+
+function arrange($test) {
+	$test.children().sort(function(a,b){
+		return a.getElementsByTagName('span')[1].innerHTML > b.getElementsByTagName('span')[1].innerHTML ? 1 : -1;
+	}).appendTo($test);
+}
 
 $(function(){
 	var $b = $('body')
-		,runNum = 100000
+		,runNum = 10000
 		,wait = 1000
 		,run = []
+		,runTestNTimes = 5
 	;
 
-	Object.keys(window).forEach(function(k){
-		if (/^prog([0-9]+)$/.test(k) && window[k] instanceof Function)
-			run.push(k);
-	});
-	console.log('run',run);
-	setTimeout(function(){
-		run.forEach(function(k){
-			var d1 = new Date
-				,d2
+	window.testRun = 0;
+
+	function runTest(cb){
+		Object.keys(window).forEach(function(k){
+			if (/^prog([0-9]+)$/.test(k) && window[k] instanceof Function)
+				run.push(k);
+		});
+		run.sort(function(){return Math.random()-0.5;});
+		console.log('run',run);
+
+		var $test = $('<div class="test"></div>').appendTo($b), best;
+		function runNext(){
+			var k
+				,prog = window[k=run.shift()]
+				,d0 = new Date
+				,ms,i,$score
 			;
 			d1 = new Date();
 			for (i=0;i<runNum;++i)
-				window[k]();
-			d2 = new Date();
-			$b.append('<div>'+(+d2-+d1)+'<span>('+k+')</span></div>');
+				prog(i);
+			ms = +new Date - +d0;
+			$test.append($score=$('<div><span>'+ms+'</span><span>('+k+')</span><span>'+prog()+'</span></div>'));
+			if (!best || ms < best.ms)
+				best = {$:$score, ms:ms};
+			if (run[0])
+				return setTimeout(runNext,wait);
+			best.$.addClass('victory');
+			arrange($test);
+			cb();
+		}
+		if (window.preProg)
+			window.preProg();
+		setTimeout(runNext,wait);
+	}
+
+	(function gamut(){
+		runTest(function(){
+			if (--runTestNTimes)
+				gamut();
 		});
-	},wait);
+	})();
+
 });
 </script>
 </head>
