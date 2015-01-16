@@ -48,32 +48,50 @@ body {
 </style>
 <script>
 
+
 util = {
 	rand: function(min,max){
 		return min+Math.round(Math.random()*(max-min));
 	}
 }
 
-/*function prog1() {
-	var a = Math.random(),
-		b = 'brfoerf';
-	var c = a+0,
-		d = b+0;
-}
 
+function preProg(){
+	var undef;
+	window.vals = [Math.random(), 'brfoerf', (Math.random()*1000)+'', null, undef, {}, []];
+	console.log(window.vals);
+}
+function prog1() {
+	var v = [], i;
+	for (i=0;i<vals.length;++i)
+		v[i] = Number(vals[i]);
+	return v;
+}
 function prog2() {
-	var a = Math.random(),
-		b = 'brfoerf';
-	var c = a*1,
-		d = b*1;
+	var v = [], i;
+	for (i=0;i<vals.length;++i)
+		v[i] = vals[i]*1;
+	return v;
+} 
+function prog3() {
+	var v = [], i;
+	for (i=0;i<vals.length;++i)
+		v[i] = +vals[i];
+	return v;
+}
+function prog4() {
+	var v = [], i;
+	for (i=0;i<vals.length;++i)
+		v[i] = parseFloat(vals[i]);
+	return v;
+}
+function prog5() {
+	var v = [], i;
+	for (i=0;i<vals.length;++i)
+		v[i] = parseInt(vals[i]);
+	return v;
 }
 
-function prog3() {
-	var a = Math.random(),
-		b = 'brfoerf';
-	var c = +a,
-		d = +b;
-}*/
 
 /*
 function prog1(){
@@ -163,7 +181,7 @@ function prog5(){
 }
 */
 
-
+/*
 function hasSuffiecentCharacters1(newspaperClipping, ransomLetter) {
 	var i, k, char, ransomChars = {}
 		,clipping = newspaperClipping.toLowerCase().replace(/\s/g,'').split('')
@@ -248,6 +266,7 @@ function prog4(i){
 	//return hasSuffiecentCharacters4('Churchill had a very distant relationship with this father. Often people with depression don’t have a close relationship with their father, predisposing them to anger or anger turned inward – depression. His first major episode with depression was in 1910, aged 35. Some days he described himself as almost unable to get out of bed, a sign of deep clinical depression. He would also fantasize about jumping in front of an oncoming train when on a  platform. “I don’t like standing near the edge of a platform when an express train is passing through,” he told his doctor. “I like to stand right back and if possible get a pillar between me and the train. I don’t like to stand by the side of a ship and look down into the water. A second’s action would end everything. A few drops of desperation.”', 'I have your code, please give me github access to get it back');
 	return hasSuffiecentCharacters4(window.str0, window.str1);
 }
+*/
 
 
 
@@ -260,7 +279,7 @@ function arrange($test) {
 
 $(function(){
 	var $b = $('body')
-		,runNum = 10000
+		,runNum = 100000
 		,wait = 1000
 		,run = []
 		,runTestNTimes = 5
