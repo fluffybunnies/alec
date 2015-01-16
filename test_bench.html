@@ -4,28 +4,44 @@
 <style type="text/css">
 body {
 	font-family: monospace;
+	counter-reset: test;
 }
-.test {
+.box {
 	margin: 0.5em;
-	padding: 0.5em;
+	padding: 0.5em 0.8em;
 	border: 1px solid #ddd;
 	clear: both;
 	float: left;
+	position: relative;
 }
-.test div {
-	padding: 0.5em 0;
+.box div {
+	padding: 0.5em;
 	white-space: nowrap;
 }
-.test div span {
+.box div span {
 	color: #ccc;
-	margin-left: 1em;
+	margin-left: 1.2em;
 }
-.test div span:nth-child(1) {
+.box div span:nth-child(1) {
 	margin-left: 0;
 	color: #000;
 }
-.test div.victory span {
+.box div.victory span {
 	color: #2c2;
+}
+.test::before {
+	counter-increment: test;
+	content: counter(test);
+	position: absolute;
+	right: 2px;
+	bottom: 1px;
+	display: block;
+	font-size: 1em;
+	line-height: 1;
+	color: rgba(0,0,0,0.1);
+}
+.winner {
+	clear: none;
 }
 </style>
 <script>
@@ -246,9 +262,8 @@ $(function(){
 		,wait = 1000
 		,run = []
 		,runTestNTimes = 5
+		,stats = {}
 	;
-
-	window.testRun = 0;
 
 	function runTest(cb){
 		Object.keys(window).forEach(function(k){
@@ -258,7 +273,7 @@ $(function(){
 		run.sort(function(){return Math.random()-0.5;});
 		console.log('run',run);
 
-		var $test = $('<div class="test"></div>').appendTo($b), best;
+		var $test = $('<div class="test box"></div>').appendTo($b), best;
 		function runNext(){
 			var k
 				,prog = window[k=run.shift()]
@@ -270,10 +285,14 @@ $(function(){
 				prog(i);
 			ms = +new Date - +d0;
 			$test.append($score=$('<div><span>'+ms+'</span><span>('+k+')</span><span>'+prog()+'</span></div>'));
+			if (!stats[k])
+				stats[k] = {k:k, ms:[], wins:0};
+			stats[k].ms.push(ms);
 			if (!best || ms < best.ms)
-				best = {$:$score, ms:ms};
+				best = {k:k, ms:ms, $:$score};
 			if (run[0])
 				return setTimeout(runNext,wait);
+			++stats[best.k].wins;
 			best.$.addClass('victory');
 			arrange($test);
 			cb();
@@ -286,7 +305,13 @@ $(function(){
 	(function gamut(){
 		runTest(function(){
 			if (--runTestNTimes)
-				gamut();
+				return gamut();
+			var best;
+			Object.keys(stats).forEach(function(k){
+				if (!best || stats[k].wins > best.wins)
+					best = stats[k];
+			});
+			$b.prepend('<div class="winner box"><div><span>Winner:</span><span>'+best.k+'</span><span>Wins: '+best.wins+'/'+best.ms.length+'</span><span>Avg ms: '+(best.ms.reduce(function(a,b){return a+b})/best.ms.length).toFixed(2)+'</span></div></div>');
 		});
 	})();
 
