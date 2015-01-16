@@ -10,9 +10,11 @@ body {
 	margin: 0.5em;
 	padding: 0.5em 0.8em;
 	border: 1px solid #ddd;
+	min-height: 1em;
+	min-width: 10em;
 	clear: both;
 	float: left;
-	position: relative;
+	position: relative;	
 }
 .box div {
 	padding: 0.5em;
@@ -200,22 +202,22 @@ function hasSuffiecentCharacters2(newspaperClipping, ransomLetter) {
 	return false
 }
 function hasSuffiecentCharacters3(newspaperClipping, ransomLetter) {
-	var index,i;
-	newspaperClipping = newspaperClipping.toLowerCase();
-	ransomLetter = ransomLetter.toLowerCase();
-	for (var i=0;i<ransomLetter.length;++i) {
+	var index,i
+	newspaperClipping = newspaperClipping.toLowerCase()
+	ransomLetter = ransomLetter.toLowerCase()
+	for (i=0;i<ransomLetter.length;++i) {
 		if (ransomLetter[i] == ' ') continue;
 		if ((index = newspaperClipping.indexOf(ransomLetter[i])) == -1)
 			return false
-		newspaperClipping = newspaperClipping.substr(0,index)+newspaperClipping.substr(index+1);
+		newspaperClipping = newspaperClipping.substr(0,index)+newspaperClipping.substr(index+1)
 	}
 	return true
 }
 function hasSuffiecentCharacters4(newspaperClipping, ransomLetter) {
-	var next,i;
-	newspaperClipping = newspaperClipping.toLowerCase();
-	ransomLetter = ransomLetter.toLowerCase();
-	for (var i=0;i<ransomLetter.length;++i)
+	var i
+	newspaperClipping = newspaperClipping.toLowerCase()
+	ransomLetter = ransomLetter.toLowerCase()
+	for (i=0;i<ransomLetter.length;++i)
 		if (ransomLetter[i] != ' ' && newspaperClipping.length == (newspaperClipping = newspaperClipping.replace(ransomLetter[i],'')).length)
 			return false
 	return true
