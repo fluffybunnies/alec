@@ -27,7 +27,7 @@ export PATH=~/bin:$PATH
 #alias smile="curl http://smiley.meatcub.es:1337"
 smile(){
 	if [ ! -d /tmp/node_modules/cool-ascii-faces ]; then
-		npm install --prefix /tmp cool-ascii-faces
+		npm install --prefix /tmp cool-ascii-faces > /dev/null
 	fi
 	node /tmp/node_modules/cool-ascii-faces/cli.js
 }
