@@ -1,0 +1,139 @@
+https://rewards.verizonwireless.com/scripts/scripts.auctions.js?rldjs=1421531
+
+curl 'https://rewards.verizonwireless.com/gateway?t=bidrequest' -H 'Cookie: GLOBALID=f3d5604109104418bf570ee6852c3d62; MP_LANG=en; amPrompt=qYa65Yk0xfkfxkYchJ4inRVcvspjCPUCdugJMEejemHEgezQ%2FDnTZg%3D%3D; myaccount=true; __gads=ID=917db228a5672450:T=1421471940:S=ALNI_Mb4gpWL8sgoOS0om_IqHtZkxxOaYQ; clearCacheCookie=false; rememberUserName=Y; encryptedUserName=p4YxGHksHM4DpsKxFqyQZA%3D%3D; oneVerizon=; BVBRANDID=ee978f2a-ce26-4504-831a-eacbdfd43c11; ZIP_CONFIRMED=true; REMLOCATION=N; MARKET_ID=N; ZIPCODE=90807; CITY=Long Beach; STATE=CA; invodoVisitor=CkmUiMDeCM0xn00AuALACJ0; esgSearch=address=!city=!state=!zipcode=90807!category=; product_display=Grid; B2CP=46268; pasta=t482; vz_sc=1159574_f67e52e1fee7049ddeecdccd4a53fdf9a54f68ba58b168f6932c55e153b44af1; mbox=PC#1421345772564-425942.17_18#1429308724|check#true#1421532784|session#1421532717004-374654#1421534584; s_vi=[CS]v1|2A5C01F885012983-4000011420005901[CE]; s_pers=%20s_lastvisit%3D1421532717478%7C1516140717478%3B%20s_nr5%3D1421532728778-Repeat%7C1453068728778%3B; s_sess=%20s_ppv%3D%252Fstore%252Faccessory%252520mart%252Fgrid%252520view%252Fbatteries%252520%252526%252520chargers%252C30%252C25%252C998%3B%20s_cc%3Dtrue%3B%20ppv_o%3D%252Fmyvz%252Flogin%2520pswd%2520with%2520sitekey%3B%20s_sq%3Dvzwiglobal%252Cvzwimyverizon%253D%252526pid%25253D%2525252Fmyvz%2525252Flogin%25252520pswd%25252520with%25252520sitekey%252526pidt%25253D1%252526oid%25253Dfunctiononclick(event)%2525257BcontinueClicked()%2525253B%2525257D%252526oidt%25253D2%252526ot%25253DSUBMIT%3B; amst=11; role=accountholder; alltelDevice=false; loggedIn=true; amID=2afe2146-0a64-4878-88aa-2ddc18569b04; greetingName=Alec; dough=AQIC5wM2LY4SfcxxSXohn%2BlwghqlOOwPVvfRBihA73rlhOY%3D%40AAJTSQACMjYAAlMxAAIxMg%3D%3D%23; JSESSIONID=09325993A834048535C604B173FE5C56.vzw-4; fixation=dea3450d79587d1b5a0793a2c2ce1f6b65455bd1; fsr.s=%7B%22v2%22%3A1%2C%22v1%22%3A1%2C%22rid%22%3A%22def5439-92923748-12dd-ecd5-9d806%22%2C%22cp%22%3A%7B%22Channel%22%3A%22my%20verizon%22%2C%22Gadgets_Gears_Site%22%3A%22New%22%2C%22Prepay_Site%22%3A%22N%22%2C%22Simulator_Visitors%22%3A%22N%22%2C%22KB_Articles%22%3A%22N%22%2C%22Plan_Page%22%3A%22Y%22%2C%22Account_Page%22%3A%22Y%22%2C%22Features_Services_Page%22%3A%22N%22%2C%22Device_Page%22%3A%22Y%22%2C%22isAuthenticated%22%3A%22false%22%2C%22Visitor_Id%22%3A%22D%3Dc31%22%2C%22Test_And_Target%22%3A%2257939%3A0%3A0%2C%22%7D%2C%22to%22%3A5%2C%22c%22%3A%22https%3A%2F%2Flogin.verizonwireless.com%2Famserver%2FUI%2FLogin%22%2C%22pv%22%3A156%2C%22lc%22%3A%7B%22d6%22%3A%7B%22v%22%3A32%2C%22s%22%3Atrue%2C%22e%22%3A31%7D%2C%22d3%22%3A%7B%22v%22%3A120%2C%22s%22%3Atrue%2C%22e%22%3A41%7D%2C%22d0%22%3A%7B%22v%22%3A4%2C%22s%22%3Atrue%2C%22e%22%3A1%7D%7D%2C%22cd%22%3A6%2C%22mid%22%3A%22def5439-92924106-1cc2-1b5c-2252a%22%2C%22rt%22%3Afalse%2C%22rc%22%3Afalse%2C%22f%22%3A1421532729947%2C%22sd%22%3A0%2C%22pn%22%3A3%2C%22meta%22%3A%7B%22rtp%22%3A%22a%22%2C%22rta%22%3A13%2C%22rts%22%3A12%7D%2C%22v%22%3A1%7D; services=; OC=false%7C%7C%20%7C%7CW%7C%7Cddc18569b04; _gat=1; _ga=GA1.2.589672468.1421487816' -H 'Origin: https://rewards.verizonwireless.com' -H 'Accept-Encoding: gzip, deflate' -H 'Accept-Language: en-US,en;q=0.8' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.99 Safari/537.36' -H 'Content-Type: application/x-www-form-urlencoded' -H 'Accept: text/javascript, application/javascript, */*' -H 'Referer: https://rewards.verizonwireless.com/gateway?t=auctiondetails&auctionid=88482&auctiontype=main' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --data 'auctionid=88482&bidAmount=7590&bidAmt=NaN&jsonp_callback=jsonp1421533953726' --compressed
+curl 'https://rewards.verizonwireless.com/gateway?t=bidrequest' \
+-H 'encryptedUserName=p4YxGHksHM4DpsKxFqyQZA%3D%3D; ' \
+-H 'Origin: https://rewards.verizonwireless.com' -H 'Accept-Encoding: gzip, deflate' -H 'Accept-Language: en-US,en;q=0.8' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.99 Safari/537.36' -H 'Content-Type: application/x-www-form-urlencoded' -H 'Accept: text/javascript, application/javascript, */*' -H 'Referer: https://rewards.verizonwireless.com/gateway?t=auctiondetails&auctionid=88482&auctiontype=main' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --data 'auctionid=88482&bidAmount=7590&bidAmt=NaN&jsonp_callback=jsonp1421533953726' --compressed
+
+wef=setInterval(function(){ auctionsSync.placeBid(); },100);
+
+$('.bidAmt').eq(1).html('40,000');auctionsSync.placeBid();
+
+
+// win:
+(function(){
+	var z = auctionsSync
+		,orig = auctionsSync.refreshBid
+		,lastBid
+	;
+	z.refreshBid = function(bidDetails, context){
+		if (lastBid != bidDetails.nextBid) {
+			lastBid = bidDetails.nextBid;
+			for (var i=0;i<10;++i) {
+				z.sendRequest(z.settings.bidRequestUrl, {auctionid:bidDetails.auctionId, bidAmount:+bidDetails.nextBid+i*10}, true);
+			}
+		}
+		return orig.apply(z, arguments);
+	}
+}());
+
+
+// monitor:
+
+
+
+
+
+auctionsSync.placeBid = function(){
+	if(!$.data(document.body, 'bidSent')){return;}
+	$.data(document.body, 'bidSent', false);
+	var settings = this.settings;
+	var bidAmt = $('.bidAmt', '.nextBid').text();
+	bidAmt = this.unformatCash(bidAmt);
+	var pageAuctions = settings.pageAuctions[0];
+	var postObj = {
+		auctionid: pageAuctions,
+		bidAmount: bidAmt
+	};
+
+	//clear auction update;
+	this.stopUpdate();
+
+	//reset dr page timeout
+	resetTimeout();
+
+	//console.log(settings.bidRequestUrl, postObj, true);
+	this.sendRequest(settings.bidRequestUrl, postObj, true);
+
+	for (var i=0;i<6;++i) {
+		postObj.bidAmount += 10;
+		this.sendRequest(settings.bidRequestUrl, postObj, true);
+	}
+}
+
+
+
+
+
+auctionsSync.placeBid = function(){
+	if(!$.data(document.body, 'bidSent')){return;}
+	$.data(document.body, 'bidSent', false);
+	var settings = this.settings;
+	var bidAmt = $('.bidAmt', '.nextBid').text();
+	bidAmt = this.unformatCash(bidAmt);
+	var pageAuctions = settings.pageAuctions[0];
+	var postObj = {
+		auctionid: pageAuctions,
+		bidAmount: bidAmt
+	};
+
+	//clear auction update;
+	this.stopUpdate();
+
+	//reset dr page timeout
+	resetTimeout();
+
+	console.log(settings.bidRequestUrl, postObj, true);
+	return this.sendRequest(settings.bidRequestUrl, postObj, true);
+}
+
+
+
+ function placebid(obj){
+	if($("." + auctionsSync.settings.pageAuctions[0]).hasClass("winning") ||  $("." + auctionsSync.settings.pageAuctions[0]).hasClass("winMax")){return;}
+	element = $(obj);
+	
+	if(! $.data(document.body, 'bidProcessing') && ! $("." + auctionsSync.settings.pageAuctions[0]).hasClass("minBidEx")){
+		// Auction spinner
+		if($("#auctionDetail .auction-loading").is(':visible')){
+			$("#auctionDetail .auction-loading").hide();
+			$("#auctionDetail .auction-loading").stop(true,true);
+		}			
+		$("#auctionDetail .auction-loading").show('fast').delay(1000).hide('fast');	
+		
+		if(typeof displayAuctionsLoadText == 'function'){
+			// for Citi
+			if($("#auctionDetail .auctionLoadingText").is(':visible')){
+				$("#auctionDetail .auctionLoadingText").hide();
+				$("#auctionDetail .auctionLoadingText").stop(true,true);
+			}
+			displayAuctionsLoadText();
+		}	
+		$.data(document.body, 'bidProcessing', true);
+	}
+	
+	if(element.hasClass("single")){
+		auctionsSync.placeBid();
+	}else if(element.hasClass("dual")){
+		auctionId = auctionsSync.settings.pageAuctions;
+		auctionId = auctionId[0];
+		memberId =  auctionsSync.settings.memberId;
+		if(GetCookie("hideIAgree_"+auctionId+memberId) == null){
+			$.ocBox({ajax:'/auctions/inc_auctions_agree.jsp?auctionId='+auctionId},{autoDimensions:true});
+			$('.i-agree').live('click',function(){
+				$('.i-agree').die('click');
+				var ajaxLoader = '<div class="ajaxLoader"></div>';
+				$(this).replaceWith(ajaxLoader);
+				var exdate = new Date();
+				var expiredays = 10;
+				exdate.setDate(exdate.getDate()+expiredays);
+				document.cookie="hideIAgree_"+auctionId+memberId+"="+true+";expires="+exdate.toUTCString();
+				$.ocBox.close();
+				auctionsSync.placeBid();
+			});
+		} else {
+			auctionsSync.placeBid();
+		}
+	}
+}
+
