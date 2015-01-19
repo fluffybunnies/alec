@@ -6,22 +6,34 @@
 */
 
 
-Auction = {
+Auctit = {
 	config: {
-		monitorInterval: 1000
+		key: 'Auctit'
+		,monitorInterval: 1000
 		,monitorAlertDistance: 60000
+		,flashTitleSpeed: 1000
 	}
+	,flashTitle_interval: null
 	,init: function(){
 		var z = this;
 		if (z.inited)
 			return;
 		z.inited = true;
 
-		z.alib = window.auctionsSync;
-		z.$listingCont = $('#auctions-listing:first');
-		z.$singleAuctionCont = $('#auctionData:first');
+		$(function(){
+			z.alib = window.auctionsSync;
+			z.$listingCont = $('#auctions-listing:first');
+			z.$singleAuctionCont = $('#auctionData:first');
 
-		z.monitor();
+			z.loadStyles();
+			z.monitor();
+		});
+	}
+	,loadStyles: function(){
+		var z = this
+			,x = z.config.key
+		;
+		$('body').append('<style type="text/css" x-ref="'+x+'">.auctionItem.'+x+'-highlight{background:rgba(255,255,0,0.4)!important;}</style>');
 	}
 	,monitor: function(){
 		var z = this
@@ -46,9 +58,55 @@ Auction = {
 		}
 	}
 	,checkTeaserStatus: function(teasers, alertDistance, cb){
-		var z = this;
-		console.log('checking...');
+		var z = this
+			,x = z.config.key
+			,oneIsReady = false
+			,popAlert = false
+		;
+		$.each(teasers,function(i,teaser){
+			var timeLeft = teaser.$time.attr('timeleft');
+			if (isNaN(timeLeft))
+				return;
+			if (+timeLeft < alertDistance) {
+				if (!teaser.notify)
+					popAlert = true;
+				teaser.notify = true;
+				teaser.$cont.addClass(x+'-highlight');
+				oneIsReady = true;
+			} else {
+				teaser.notify = false;
+				teaser.$cont.removeClass(x+'-highlight');
+			}
+		});
+		if (oneIsReady) {
+			z.flashTitle();
+			if (popAlert)
+				alert('!!!!!!!!!!');
+		} else {
+			z.killFlashTitle();
+		}
 		cb();
+	}
+	,flashTitle: function(){
+		var z = this
+			,msg = '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+			,flag = true
+		;
+		if (z.flashTitle_interval !== null)
+			return;
+		z.flashTitle_origVal = document.title;
+		z.flashTitle_interval = setInterval(function(){
+			if (flag)
+				document.title = flag ? msg : z.flashTitle_origVal;
+			flag = !flag;
+		},z.config.flashTitleSpeed);
+	}
+	,killFlashTitle: function(){
+		var z = this;
+		if (z.flashTitle_interval === null)
+			return;
+		clearInterval(z.flashTitle_interval);
+		document.title = z.flashTitle_origVal;
 	}
 	,bid: function(skeet){
 		var z = this
@@ -82,4 +140,4 @@ Auction = {
 		console.log('current bid', this.$singleAuctionCont.find('.currBid .bidAmt').text());
 	}
 }
-Auction.init();
+Auctit.init();
