@@ -90,15 +90,14 @@ Auctit = {
 	,flashTitle: function(){
 		var z = this
 			,msg = '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-			,flag = true
+			,flag
 		;
 		if (z.flashTitle_interval !== null)
 			return;
 		z.flashTitle_origVal = document.title;
 		z.flashTitle_interval = setInterval(function(){
-			if (flag)
+			if (flag = !flag)
 				document.title = flag ? msg : z.flashTitle_origVal;
-			flag = !flag;
 		},z.config.flashTitleSpeed);
 	}
 	,killFlashTitle: function(){
