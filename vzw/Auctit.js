@@ -73,7 +73,10 @@ Auctit = {
 			var w = window.open('/gateway?t=auctions&_='+ +new Date);
 			setTimeout(function(){
 				console.log(z.config.key, 'closing stay-logged-in window');
-				w.close();
+				if (w)
+					w.close();
+				else
+					console.log(z.config.key, 'unable to close window cuz it was blocked');
 			},z.opts.closeLoggedInWindowSpeed);
 		},z.opts.stayLoggedInInterval);
 	}
