@@ -203,7 +203,6 @@ Auctit = {
 			,opts.domain == undef ? '' : '; domain='+opts.domain
 			,opts.secure ? ';secure' : ''
 		].join(''));
-		console.log(this.config.key, 'set cookie', set);
 		return document.cookie = set;
 	}
 }

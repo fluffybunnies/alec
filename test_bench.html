@@ -268,7 +268,7 @@ function prog4(i){
 }
 */
 
-
+/*
 function preProg(){
 	window.absoluteUrlRe = /^(https?:)?\/\//;
 	window.urlsToTest = [
@@ -293,6 +293,118 @@ function prog2(){
 	});
 	return vals;
 }
+*/
+
+window.runNum = 2;
+function preProg(){
+	window.cookiesToTest = [
+		['key_wfwefwefwe','val_one'],
+		['key_jkldfj040','val_djfjfddfjkf'],
+		['key_ffffffff','{"val":"ewfeworjergjreogijreogj233233232","val2":"[1,2,3,4]"}'],
+		['key_gggggggg','val_'+ +new Date],
+		['key2_wfwefwefwe','val_one',{expires:6000}],
+		['key2_jkldfj040','val_djfjfddfjkf',{expires:6000}],
+		['key2_ffffffff','{"val":"ewfeworjergjreogijreogj233233232","val2":"[1,2,3,4]"}',{expires:6000}],
+		['key2_gggggggg','val_'+ +new Date,{expires:6000}],
+	];
+	window.cookiesToTest.forEach(function(v){
+		setCookie(v[0],v[1],v[2]);
+	});
+}
+function setCookie(key,val,opts){
+	var undef,expires,set;
+	opts = (opts && typeof opts == 'object') ? opts : {};
+	if (val === null)
+		opts.expires = -1;
+	if (typeof opts.expires == 'number') {
+		expires = new Date;
+		expires.setMilliseconds(expires.getMilliseconds()+opts.expires);
+		expires = expires.toUTCString();
+	} else if (typeof opts.expires == 'string') {
+		expires = opts.expires;
+	}
+	set = (document.cookie = [
+		escape(key),'=',val
+		,expires == undef ? '' : '; expires='+expires
+		,opts.path == undef ? '; path=/' : '; path='+opts.path
+		,opts.domain == undef ? '' : '; domain='+opts.domain
+		,opts.secure ? ';secure' : ''
+	].join(''));
+	return document.cookie = set;
+}
+function parseCookies(cookie){
+	cookie = cookie || document.cookie;
+	var cookies = cookie.split(';')
+		,res = {}
+	;
+	$.each(cookies,function(i,v){
+		var split = v.split('=')
+			,key = unescape(split[0][0] == ' ' ? split[0].substr(1) : split[0])
+			,val = unescape(split[1]||'')
+		;
+		if (key != '')
+			res[key] = val;
+	});
+	return res;
+}
+function getCookie1(key,val,opts){
+	return parseCookies()[key];
+}
+function getCookie2(key,value,options){
+	if (arguments.length > 1 && String(value) !== "[object Object]") {
+		options = $.extend({}, options);
+		if (value === null || value === undefined) {
+			options.expires = -1;
+		}
+		if (typeof options.expires === 'number') {
+			var days = options.expires, t = options.expires = new Date();
+			t.setDate(t.getDate() + days);
+		}
+		value = String(value);
+		return (document.cookie = [
+			encodeURIComponent(key), '=',
+			options.raw ? value : escape(value),
+			options.expires ? '; expires=' + options.expires.toUTCString() : '', // use expires attribute, max-age is not supported by IE
+			options.path ? '; path=' + options.path : '; path=/',
+			options.domain ? '; domain=' + options.domain : '',
+			options.secure ? '; secure' : ''
+		].join(''));
+	}
+	options = value || {};
+	var decode = options.raw ? function (s) { return s; } : unescape
+	  , result = new RegExp('(?:^|; )' + encodeURIComponent(key) + '=([^;]*)').exec(document.cookie)
+	;
+	return result && result[1] && result[1] !== "null" ? decode(result[1]) : null;
+}
+function getCookie3(key){
+	var k = escape(key).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&") // adds slashes to regex control chars
+		,m = (document.cookie||'').match(new RegExp('(^|(; ))'+k+'=([^;]+)'))
+		,undef
+	;
+	return m ? m[3] : undef;
+}
+function prog1(){
+	var vals = [];
+	window.cookiesToTest.forEach(function(v){
+		vals.push(getCookie1(v[0]));
+	});
+	return vals;
+}
+function prog2(){
+	var vals = [];
+	window.cookiesToTest.forEach(function(v){
+		vals.push(getCookie2(v[0]));
+	});
+	return vals;
+}
+function prog3(){
+	var vals = [];
+	window.cookiesToTest.forEach(function(v){
+		vals.push(getCookie3(v[0]));
+	});
+	return vals;
+}
+
 
 
 function arrange($test) {
@@ -303,10 +415,10 @@ function arrange($test) {
 
 $(function(){
 	var $b = $('body')
-		,runNum = 100000
+		,runNum = window.runNum || 100000
 		,wait = 1000
 		,run = []
-		,runTestNTimes = 5
+		,runTestNTimes = window.runTestNTimes || 5
 		,stats = {}
 	;
 
@@ -351,12 +463,26 @@ $(function(){
 		runTest(function(){
 			if (--runTestNTimes)
 				return gamut();
-			var best;
+			var best
+				$winnerBox = $('<div class="winner box"></div>')
+			;
 			Object.keys(stats).forEach(function(k){
 				if (!best || stats[k].wins > best.wins)
 					best = stats[k];
 			});
-			$b.prepend('<div class="winner box"><div><span>Winner:</span><span>'+best.k+'</span><span>Wins: '+best.wins+'/'+best.ms.length+'</span><span>Avg ms: '+(best.ms.reduce(function(a,b){return a+b})/best.ms.length).toFixed(2)+'</span></div></div>');
+			$winnerBox.append('<div><span>Winner:</span><span>'+best.k+'</span><span>Wins: '+best.wins+'/'+best.ms.length+'</span><span>Avg ms: '+(best.ms.reduce(function(a,b){return a+b})/best.ms.length).toFixed(2)+'</span></div>');
+			$b.prepend($winnerBox);
+
+			var $winnerBox = $b.find('.winner.box');
+			Object.keys(stats).forEach(function(k){
+				var prog = stats[k];
+				$winnerBox.append('<div>'
+					+ '<span style="color:transparent;">Winner:</span>'
+					+ '<span>'+prog.k+'</span>'
+					+ '<span>Wins: '+prog.wins+'/'+prog.ms.length+'</span>'
+					+ '<span>Avg ms: '+(prog.ms.reduce(function(a,b){return a+b})/prog.ms.length).toFixed(2)+'</span>'
+				+ '</div>');
+			});
 		});
 	})();
 
