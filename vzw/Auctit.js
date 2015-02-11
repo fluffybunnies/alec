@@ -13,7 +13,7 @@ Auctit = {
 			monitorInterval: 1000
 			,monitorAlertDistance: 60000
 			,flashTitleSpeed: 1000
-			,stayLoggedInInterval: 600000 // 10 min
+			,stayLoggedInInterval: 300000 // 5 min
 			,closeLoggedInWindowSpeed: 2000
 		}
 	}
@@ -82,12 +82,12 @@ Auctit = {
 					console.log(z.config.key, 'unable to close window cuz it was blocked, setting cookies manually instead');
 					console.log(z.config.key, 'this feature has not yet been implemented');
 					var cookies = z.parseCookies()
-						,expires = 1000*60*60*30
+						,expires = 1000*60*60*24*30
 						,currentDomain = window.location.host
 						,currentDomainPieces = currentDomain.split('.')
-						,nakedHost = currentDomainPieces[currentDomainPieces.length-2]+'.'+currentDomainPieces[currentDomainPieces.length-1]
-						,wwwHost = 'www.'+nakedDomain
+						,nakedDomain = currentDomainPieces[currentDomainPieces.length-2]+'.'+currentDomainPieces[currentDomainPieces.length-1]
 					;
+					console.log(z.config.key, 'cookies', cookies);
 					$.each(['s_sess','amst','role','lltelDevice','loggedIn','amID','fsr.s','oneVerizon','services','OC','B2CP'],function(i,k){
 						z.setCookie(k, cookies[k], {expires:expires, domain:'.'+nakedDomain});
 					});
@@ -95,7 +95,7 @@ Auctit = {
 						z.setCookie(k, cookies[k], {expires:expires, domain:'.'+nakedDomain, secure:true});
 					});
 					$.each(['JSESSIONIDB2C','NSC_xxx_hwt'],function(i,k){
-						z.setCookie(k, cookies[k], {expires:expires, domain:wwwHost});
+						z.setCookie(k, cookies[k], {expires:expires, domain:'www.'+nakedDomain});
 					});
 					$.each(['JSESSIONID','fixation'],function(i,k){
 						z.setCookie(k, cookies[k], {expires:expires, domain:currentDomain});
@@ -186,17 +186,17 @@ Auctit = {
 		}
 	}
 	,logCurrentBid: function(){
-		console.log('current bid', this.$singleAuctionCont.find('.currBid .bidAmt').text());
+		console.log(this.config.key, 'current bid', this.$singleAuctionCont.find('.currBid .bidAmt').text());
 	}
-	,parseCookie: function(cookie){
+	,parseCookies: function(cookie){
 		cookie = cookie || document.cookie;
 		var cookies = cookie.split(';')
 			,res = {}
 		;
 		$.each(cookies,function(i,v){
 			var split = v.split('=')
-				,key = unescape(v[0][0] == ' ' ? v[0].substr(1) : v[0])
-				,val = unescape(v[1]||'')
+				,key = unescape(split[0][0] == ' ' ? split[0].substr(1) : split[0])
+				,val = unescape(split[1]||'')
 			;
 			if (key != '')
 				res[key] = val;
@@ -206,7 +206,7 @@ Auctit = {
 	,setCookie: function(key,val,opts){
 		var undef,expires,set;
 		opts = (opts && typeof opts == 'object') ? opts : {};
-		if (val == undef)
+		if (val === null)
 			opts.expires = -1;
 		if (typeof opts.expires == 'number') {
 			expires = new Date;
@@ -222,7 +222,6 @@ Auctit = {
 			,opts.domain == undef ? '' : '; domain='+opts.domain
 			,opts.secure ? ';secure' : ''
 		].join(''));
-		console.log(z.config.key, 'setting cookie', set);
 		return document.cookie = set;
 	}
 }
