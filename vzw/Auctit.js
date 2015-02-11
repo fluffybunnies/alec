@@ -198,7 +198,7 @@ Auctit = {
 			expires = opts.expires;
 		}
 		set = (document.cookie = [
-			escape(key),'=',val,
+			escape(key),'=',val
 			,expires == undef ? '' : '; expires='+expires
 			,opts.path == undef ? '; path=/' : '; path='+opts.path
 			,opts.domain == undef ? '' : '; domain='+opts.domain
