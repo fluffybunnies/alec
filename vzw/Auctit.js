@@ -181,5 +181,40 @@ Auctit = {
 	,logCurrentBid: function(){
 		console.log('current bid', this.$singleAuctionCont.find('.currBid .bidAmt').text());
 	}
+	,parseCookie: function(cookie){
+		cookie = cookie || document.cookie;
+		var cookies = cookie.split(';')
+			,res = {}
+		;
+		$.each(cookies,function(i,v){
+			var split = v.split('=')
+				,key = unescape(v[0][0] == ' ' ? v[0].substr(1) : v[0])
+				,val = unescape(v[1]||'')
+			;
+			if (key != '')
+				res[key] = val;
+		});
+		return res;
+	}
+	,setCookie: function(key,val,opts){
+		var undef,expires;
+		opts = (opts && typeof opts == 'object') ? opts : {};
+		if (val == undef)
+			opts.expires = -1;
+		if (typeof opts.expires == 'number') {
+			expires = new Date;
+			expires.setMilliseconds(expires.getMilliseconds()+opts.expires);
+			expires = expires.toUTCString();
+		} else if (typeof opts.expires == 'string') {
+			expires = opts.expires;
+		}
+		return (document.cookie = [
+			escape(key),'='
+			,expires == undef ? '' : '; expires='+expires
+			,opts.path == undef ? '; path=/' : '; path='+opts.path
+			,opts.domain == undef ? '' : '; domain='+opts.domain
+			,opts.secure ? ';secure' : ''
+		].join(''));
+	}
 }
 Auctit.init();
