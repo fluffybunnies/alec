@@ -80,27 +80,8 @@ Auctit = {
 				else {
 					// might just need to update 'fsr.s'.f
 					console.log(z.config.key, 'unable to close window cuz it was blocked, setting cookies manually instead');
-					console.log(z.config.key, 'this feature has not yet been implemented');
-					var cookies = z.parseCookies()
-						,expires = 1000*60*60*24*30
-						,currentDomain = window.location.host
-						,currentDomainPieces = currentDomain.split('.')
-						,nakedDomain = currentDomainPieces[currentDomainPieces.length-2]+'.'+currentDomainPieces[currentDomainPieces.length-1]
-					;
-					$.each(['s_sess','amst','role','lltelDevice','loggedIn','amID','fsr.s','oneVerizon','services','OC','B2CP'],function(i,k){
-						z.setCookie(k, cookies[k], {expires:expires, domain:'.'+nakedDomain});
-					});
-					/*
-					$.each(['pasta','dough'],function(i,k){
-						z.setCookie(k, cookies[k], {expires:expires, domain:'.'+nakedDomain, secure:true});
-					});
-					$.each(['JSESSIONIDB2C','NSC_xxx_hwt'],function(i,k){
-						z.setCookie(k, cookies[k], {expires:expires, domain:'www.'+nakedDomain});
-					});
-					$.each(['JSESSIONID','fixation'],function(i,k){
-						z.setCookie(k, cookies[k], {expires:expires, domain:currentDomain});
-					});
-					*/
+					console.log(z.config.key, 'this feature has not yet been implemented, need to decode "dough"');
+					//var cookies = z.parseCookies();
 				}
 			},z.opts.closeLoggedInWindowSpeed);
 		},z.opts.stayLoggedInInterval);
