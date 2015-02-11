@@ -9,18 +9,22 @@
 Auctit = {
 	config: {
 		key: 'Auctit'
-		,monitorInterval: 1000
-		,monitorAlertDistance: 60000
-		,flashTitleSpeed: 1000
-		,stayLoggedInInterval: 900000 // 15 min
-		,closeLoggedInWindowSpeed: 2000
+		defaults: {
+			monitorInterval: 1000
+			,monitorAlertDistance: 60000
+			,flashTitleSpeed: 1000
+			,stayLoggedInInterval: 900000 // 15 min
+			,closeLoggedInWindowSpeed: 2000
+		}
 	}
 	,flashTitle_interval: null
-	,init: function(){
+	,init: function(opts){
 		var z = this;
 		if (z.inited)
 			return;
 		z.inited = true;
+
+		z.opts = $.extend({},z.config.defaults,opts);
 
 		$(function(){
 			z.alib = window.auctionsSync;
@@ -52,10 +56,10 @@ Auctit = {
 			t.endTime = +t.$time.attr('endtime');
 			teasers.push(t);
 		});
-		if (z.config.monitorInterval) {
+		if (z.opts.monitorInterval) {
 			(function check(){
-				z.checkTeaserStatus(teasers, z.config.monitorAlertDistance, function(){
-					setTimeout(check,z.config.monitorInterval);
+				z.checkTeaserStatus(teasers, z.opts.monitorAlertDistance, function(){
+					setTimeout(check,z.opts.monitorInterval);
 				});
 			})();
 		}
@@ -70,8 +74,8 @@ Auctit = {
 			setTimeout(function(){
 				console.log(z.config.key, 'closing stay-logged-in window');
 				w.close();
-			},z.config.closeLoggedInWindowSpeed);
-		},z.config.stayLoggedInInterval);
+			},z.opts.closeLoggedInWindowSpeed);
+		},z.opts.stayLoggedInInterval);
 	}
 	,checkTeaserStatus: function(teasers, alertDistance, cb){
 		var z = this
@@ -114,7 +118,7 @@ Auctit = {
 		z.flashTitle_interval = setInterval(function(){
 			if (flag = !flag)
 				document.title = flag ? msg : z.flashTitle_origVal;
-		},z.config.flashTitleSpeed);
+		},z.opts.flashTitleSpeed);
 	}
 	,killFlashTitle: function(){
 		var z = this;
