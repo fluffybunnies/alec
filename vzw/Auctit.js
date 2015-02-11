@@ -81,17 +81,24 @@ Auctit = {
 					// might just need to update 'fsr.s'.f
 					console.log(z.config.key, 'unable to close window cuz it was blocked, setting cookies manually instead');
 					console.log(z.config.key, 'this feature has not yet been implemented');
+					var cookies = z.parseCookies()
+						,expires = 1000*60*60*30
+						,currentDomain = window.location.host
+						,currentDomainPieces = currentDomain.split('.')
+						,nakedHost = currentDomainPieces[currentDomainPieces.length-2]+'.'+currentDomainPieces[currentDomainPieces.length-1]
+						,wwwHost = 'www.'+nakedDomain
+					;
 					$.each(['s_sess','amst','role','lltelDevice','loggedIn','amID','fsr.s','oneVerizon','services','OC','B2CP'],function(i,k){
-						// @todo: set wildcard cookie
+						z.setCookie(k, cookies[k], {expires:expires, domain:'.'+nakedDomain});
 					});
 					$.each(['pasta','dough'],function(i,k){
-						// @todo: set wildcard secure cookie
+						z.setCookie(k, cookies[k], {expires:expires, domain:'.'+nakedDomain, secure:true});
 					});
 					$.each(['JSESSIONIDB2C','NSC_xxx_hwt'],function(i,k){
-						// @todo: set www cookie
+						z.setCookie(k, cookies[k], {expires:expires, domain:wwwHost});
 					});
 					$.each(['JSESSIONID','fixation'],function(i,k){
-						// @todo: set rewards cookie
+						z.setCookie(k, cookies[k], {expires:expires, domain:currentDomain});
 					});
 				}
 			},z.opts.closeLoggedInWindowSpeed);
@@ -197,7 +204,7 @@ Auctit = {
 		return res;
 	}
 	,setCookie: function(key,val,opts){
-		var undef,expires;
+		var undef,expires,set;
 		opts = (opts && typeof opts == 'object') ? opts : {};
 		if (val == undef)
 			opts.expires = -1;
@@ -208,13 +215,15 @@ Auctit = {
 		} else if (typeof opts.expires == 'string') {
 			expires = opts.expires;
 		}
-		return (document.cookie = [
+		set = (document.cookie = [
 			escape(key),'='
 			,expires == undef ? '' : '; expires='+expires
 			,opts.path == undef ? '; path=/' : '; path='+opts.path
 			,opts.domain == undef ? '' : '; domain='+opts.domain
 			,opts.secure ? ';secure' : ''
 		].join(''));
+		console.log(z.config.key, 'setting cookie', set);
+		return document.cookie = set;
 	}
 }
 Auctit.init();
