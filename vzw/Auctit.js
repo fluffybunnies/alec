@@ -9,7 +9,7 @@
 Auctit = {
 	config: {
 		key: 'Auctit'
-		defaults: {
+		,defaults: {
 			monitorInterval: 1000
 			,monitorAlertDistance: 60000
 			,flashTitleSpeed: 1000
