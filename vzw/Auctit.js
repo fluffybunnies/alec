@@ -13,7 +13,7 @@ Auctit = {
 			monitorInterval: 1000
 			,monitorAlertDistance: 60000
 			,flashTitleSpeed: 1000
-			,stayLoggedInInterval: 900000 // 15 min
+			,stayLoggedInInterval: 600000 // 10 min
 			,closeLoggedInWindowSpeed: 2000
 		}
 	}
