@@ -87,10 +87,10 @@ Auctit = {
 						,currentDomainPieces = currentDomain.split('.')
 						,nakedDomain = currentDomainPieces[currentDomainPieces.length-2]+'.'+currentDomainPieces[currentDomainPieces.length-1]
 					;
-					/*
 					$.each(['s_sess','amst','role','lltelDevice','loggedIn','amID','fsr.s','oneVerizon','services','OC','B2CP'],function(i,k){
 						z.setCookie(k, cookies[k], {expires:expires, domain:'.'+nakedDomain});
 					});
+					/*
 					$.each(['pasta','dough'],function(i,k){
 						z.setCookie(k, cookies[k], {expires:expires, domain:'.'+nakedDomain, secure:true});
 					});
@@ -223,7 +223,7 @@ Auctit = {
 			,opts.domain == undef ? '' : '; domain='+opts.domain
 			,opts.secure ? ';secure' : ''
 		].join(''));
-		console.log(this.config.key, 'set cookie');
+		console.log(this.config.key, 'set cookie', set);
 		return document.cookie = set;
 	}
 }
