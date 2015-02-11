@@ -67,16 +67,32 @@ Auctit = {
 	,stayLoggedIn: function(){
 		var z = this;
 		if (typeof z.stayLoggedInInterval == 'number')
-			return console.log(z.config.key, 'stayLoggedInInterval already inited');
+			return console.log(z.config.key, 'stayLoggedIn already inited');
 		z.stayLoggedInInterval = setInterval(function(){
 			console.log(z.config.key, 'opening stay-logged-in window');
-			var w = window.open('/gateway?t=auctions&_='+ +new Date);
+			var w = window.open('/gateway?t=auctions&_='+ +new Date)
+				,origCookie = document.cookie
+			;
 			setTimeout(function(){
 				console.log(z.config.key, 'closing stay-logged-in window');
 				if (w)
 					w.close();
-				else
-					console.log(z.config.key, 'unable to close window cuz it was blocked');
+				else {
+					console.log(z.config.key, 'unable to close window cuz it was blocked, setting cookies manually instead');
+					console.log(z.config.key, 'this feature has not yet been implemented');
+					$.each(['s_sess','amst','role','lltelDevice','loggedIn','amID','fsr.s','oneVerizon','services','OC','B2CP'],function(i,k){
+						// @todo: set wildcard cookie
+					});
+					$.each(['pasta','dough'],function(i,k){
+						// @todo: set wildcard secure cookie
+					});
+					$.each(['JSESSIONIDB2C','NSC_xxx_hwt'],function(i,k){
+						// @todo: set www cookie
+					});
+					$.each(['JSESSIONID','fixation'],function(i,k){
+						// @todo: set rewards cookie
+					});
+				}
 			},z.opts.closeLoggedInWindowSpeed);
 		},z.opts.stayLoggedInInterval);
 	}
