@@ -55,7 +55,7 @@ util = {
 	}
 }
 
-
+/*
 function preProg(){
 	var undef;
 	window.vals = [Math.random(), 'brfoerf', (Math.random()*1000)+'', null, undef, {}, []];
@@ -91,7 +91,7 @@ function prog5() {
 		v[i] = parseInt(vals[i]);
 	return v;
 }
-
+*/
 
 /*
 function prog1(){
@@ -269,6 +269,30 @@ function prog4(i){
 */
 
 
+function preProg(){
+	window.absoluteUrlRe = /^(https?:)?\/\//;
+	window.urlsToTest = [
+		'http://wefwefew.com/wefwef/wefew',
+		'https://wefwefew.com/wefwef/wefew',
+		'//wefwefew.com/wefwef/wefew',
+		'/wefwef/wefew',
+		'wefwef/wefew/ewewweew/',
+	];
+}
+function prog1(){
+	var vals = [];
+	window.urlsToTest.forEach(function(v){
+		vals.push( window.absoluteUrlRe.test(v) );
+	});
+	return vals;
+}
+function prog2(){
+	var vals = [];
+	window.urlsToTest.forEach(function(v){
+		vals.push(!!( v.indexOf('http://') == 0 || v.indexOf('https://') == 0 || v.indexOf('//') == 0 ));
+	});
+	return vals;
+}
 
 
 function arrange($test) {

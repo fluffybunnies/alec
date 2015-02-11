@@ -12,6 +12,8 @@ Auctit = {
 		,monitorInterval: 1000
 		,monitorAlertDistance: 60000
 		,flashTitleSpeed: 1000
+		,stayLoggedInInterval: 900000 // 15 min
+		,closeLoggedInWindowSpeed: 2000
 	}
 	,flashTitle_interval: null
 	,init: function(){
@@ -27,6 +29,7 @@ Auctit = {
 
 			z.loadStyles();
 			z.monitor();
+			z.stayLoggedIn();
 		});
 	}
 	,loadStyles: function(){
@@ -56,6 +59,19 @@ Auctit = {
 				});
 			})();
 		}
+	}
+	,stayLoggedIn: function(){
+		var z = this;
+		if (typeof z.stayLoggedInInterval == 'number')
+			return console.log(z.config.key, 'stayLoggedInInterval already inited');
+		z.stayLoggedInInterval = setInterval(function(){
+			console.log(z.config.key, 'opening stay-logged-in window');
+			var w = window.open('/gateway?t=auctions&_='+ +new Date);
+			setTimeout(function(){
+				console.log(z.config.key, 'closing stay-logged-in window');
+				w.close();
+			},z.config.closeLoggedInWindowSpeed);
+		},z.config.stayLoggedInInterval);
 	}
 	,checkTeaserStatus: function(teasers, alertDistance, cb){
 		var z = this
@@ -112,6 +128,9 @@ Auctit = {
 			,orig = z.alib.refreshBid
 			,lastBid,nextBid
 		;
+		if (z.alreadyStartedBidding)
+			return console.log(z.config.key, 'already started bidding', 'start a new instance');
+		z.alreadyStartedBidding = true;
 		z.logCurrentBid();
 		z.alib.refreshBid = function(bidDetails, context){
 			if (lastBid != bidDetails.nextBid) {
