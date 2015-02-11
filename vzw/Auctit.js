@@ -87,7 +87,7 @@ Auctit = {
 						,currentDomainPieces = currentDomain.split('.')
 						,nakedDomain = currentDomainPieces[currentDomainPieces.length-2]+'.'+currentDomainPieces[currentDomainPieces.length-1]
 					;
-					console.log(z.config.key, 'cookies', cookies);
+					/*
 					$.each(['s_sess','amst','role','lltelDevice','loggedIn','amID','fsr.s','oneVerizon','services','OC','B2CP'],function(i,k){
 						z.setCookie(k, cookies[k], {expires:expires, domain:'.'+nakedDomain});
 					});
@@ -100,6 +100,7 @@ Auctit = {
 					$.each(['JSESSIONID','fixation'],function(i,k){
 						z.setCookie(k, cookies[k], {expires:expires, domain:currentDomain});
 					});
+					*/
 				}
 			},z.opts.closeLoggedInWindowSpeed);
 		},z.opts.stayLoggedInInterval);
@@ -216,13 +217,15 @@ Auctit = {
 			expires = opts.expires;
 		}
 		set = (document.cookie = [
-			escape(key),'='
+			escape(key),'=',val,
 			,expires == undef ? '' : '; expires='+expires
 			,opts.path == undef ? '; path=/' : '; path='+opts.path
 			,opts.domain == undef ? '' : '; domain='+opts.domain
 			,opts.secure ? ';secure' : ''
 		].join(''));
+		console.log(this.config.key, 'set cookie');
 		return document.cookie = set;
 	}
 }
 Auctit.init();
+//Auctit.init({stayLoggedInInterval:5000});
