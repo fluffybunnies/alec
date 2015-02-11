@@ -78,6 +78,7 @@ Auctit = {
 				if (w)
 					w.close();
 				else {
+					// might just need to update 'fsr.s'.f
 					console.log(z.config.key, 'unable to close window cuz it was blocked, setting cookies manually instead');
 					console.log(z.config.key, 'this feature has not yet been implemented');
 					$.each(['s_sess','amst','role','lltelDevice','loggedIn','amID','fsr.s','oneVerizon','services','OC','B2CP'],function(i,k){
