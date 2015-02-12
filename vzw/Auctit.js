@@ -4,7 +4,6 @@
 			- The browser will queue up http requests, which we can't have
 			- We should actually be able to simply hit the server only
 		- Only publish alert if can afford bid
-		- Figure out a way to stay logged in
 */
 
 
@@ -15,8 +14,6 @@ Auctit = {
 			monitorInterval: 1000
 			,monitorAlertDistance: 60000
 			,flashTitleSpeed: 1000
-			,stayLoggedInActionInterval: 300000 // 5 min
-			,stayLoggedInActionWaitTime: 10000
 		}
 	}
 	,flashTitle_interval: null
@@ -34,8 +31,11 @@ Auctit = {
 			z.$singleAuctionCont = $('#auctionData:first');
 
 			z.loadStyles();
+			z.getCustomerBalance();
 			z.monitor();
 			z.stayLoggedIn();
+
+			console.log(z.config.key, 'customerBalance', z.getCustomerBalance());
 		});
 	}
 	,loadStyles: function(){
@@ -43,6 +43,12 @@ Auctit = {
 			,x = z.config.key
 		;
 		$('body').append('<style type="text/css" x-ref="'+x+'">.auctionItem.'+x+'-highlight{background:rgba(255,255,0,0.4)!important;}</style>');
+	}
+	,getCustomerBalance: function(){
+		var z = this, undef;
+		if (z.customerBalance == undef)
+			z.customerBalance = +$('#rewardsbalancevalue').text().replace(/[^0-9.\-]/g,'');
+		return z.customerBalance;
 	}
 	,monitor: function(){
 		var z = this
@@ -67,36 +73,13 @@ Auctit = {
 		}
 	}
 	,stayLoggedIn: function(){
-		return console.log(this.config.key, 'stayLoggedIn', 'feature not implemented');
 		var z = this;
-		if (typeof z.stayLoggedInInterval == 'number')
-			return console.log(z.config.key, 'stayLoggedIn already inited');
-		z.stayLoggedInInterval = setInterval(function(){
-			console.log(z.config.key, 'opening stay-logged-in iframe');
-			var $iframe = $('<iframe></iframe').appendTo($('body')).attr('src','/gateway?t=auctions&_='+ +new Date);
-			setTimeout(function(){
-				console.log(z.config.key, 'closing stay-logged-in iframe');
-				$iframe.remove();
-				$iframe = null;
-			},z.opts.stayLoggedInActionWaitTime);
-		},z.opts.stayLoggedInActionInterval);
-		/*z.stayLoggedInInterval = setInterval(function(){
-			console.log(z.config.key, 'opening stay-logged-in window');
-			var w = window.open('/gateway?t=auctions&_='+ +new Date, '', 'width=1,height=1,left=0,top=0,resizable=no,scrollbars=no,menubar=no,toolbar=no,copyhistory=no,location=no,status=no');
-			//doesnt work in modern browsers...
-			//w.blur();
-			//window.focus();
-			setTimeout(function(){
-				console.log(z.config.key, 'closing stay-logged-in window');
-				if (w)
-					w.close();
-				else {
-					console.log(z.config.key, 'unable to close window cuz it was blocked, setting cookies manually instead');
-					console.log(z.config.key, 'this feature has not yet been implemented, need to decode "dough"');
-					//var cookies = z.parseCookies();
-				}
-			},z.opts.stayLoggedInActionWaitTime);
-		},z.opts.stayLoggedInActionInterval);*/
+		if (typeof pageTimeout == 'number') {
+			clearTimeout(pageTimeout);
+			console.log(z.config.key, 'stayLoggedIn', 'pageTimeout cleared');
+		} else {
+			console.log(z.config.key, 'stayLoggedIn', 'failed to stayLoggedIn');
+		}
 	}
 	,checkTeaserStatus: function(teasers, alertDistance, cb){
 		var z = this
@@ -220,4 +203,4 @@ Auctit = {
 	}
 }
 Auctit.init();
-//Auctit.init({stayLoggedInInterval:5000});
+
