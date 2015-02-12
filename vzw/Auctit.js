@@ -4,6 +4,7 @@
 			- The browser will queue up http requests, which we can't have
 			- We should actually be able to simply hit the server only
 		- Only publish alert if can afford bid
+		- Figure out a way to stay logged in
 */
 
 
@@ -79,6 +80,23 @@ Auctit = {
 				$iframe = null;
 			},z.opts.stayLoggedInActionWaitTime);
 		},z.opts.stayLoggedInActionInterval);
+		/*z.stayLoggedInInterval = setInterval(function(){
+			console.log(z.config.key, 'opening stay-logged-in window');
+			var w = window.open('/gateway?t=auctions&_='+ +new Date, '', 'width=1,height=1,left=0,top=0,resizable=no,scrollbars=no,menubar=no,toolbar=no,copyhistory=no,location=no,status=no');
+			//doesnt work in modern browsers...
+			//w.blur();
+			//window.focus();
+			setTimeout(function(){
+				console.log(z.config.key, 'closing stay-logged-in window');
+				if (w)
+					w.close();
+				else {
+					console.log(z.config.key, 'unable to close window cuz it was blocked, setting cookies manually instead');
+					console.log(z.config.key, 'this feature has not yet been implemented, need to decode "dough"');
+					//var cookies = z.parseCookies();
+				}
+			},z.opts.stayLoggedInActionWaitTime);
+		},z.opts.stayLoggedInActionInterval);*/
 	}
 	,checkTeaserStatus: function(teasers, alertDistance, cb){
 		var z = this
