@@ -34,7 +34,7 @@ smile(){
 
 echocute(){
 	echo $1
-	$1
+	eval "$1"
 }
 
 poo(){
@@ -45,17 +45,14 @@ poo(){
 	fi
 	git add --all .
 	git commit -a -m "$msg"
-	git pull origin $currentBranch
-	git push origin $currentBranch
+	git pull origin $currentBranch && git push origin $currentBranch
 }
 
 pop(){
 	git fetch
 	git checkout prod
 	git pull origin prod
-	git merge master
-	git push origin prod
-	git checkout master
+	git merge master && git push origin prod && git checkout master
 }
 
 mastit(){
@@ -65,8 +62,7 @@ mastit(){
 	echocute 'git fetch'
 	echocute 'git pull origin master'
 	echocute "git checkout $currentBranch"
-	echocute 'git merge master'
-	echocute "git push origin $currentBranch"
+	echocute "git merge master && git push origin $currentBranch"
 }
 
 bitch() {
@@ -108,5 +104,3 @@ fsh() {
 
 # zat (app maker for zendesk) doesnt like echoes in .profile
 #echo "yay profile"
-
-
