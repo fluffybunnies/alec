@@ -39,7 +39,7 @@ echocute(){
 
 poo(){
 	currentBranch=`git branch | grep '*' | head -n1 | sed -n 's/^\* //p'`
-	msg=$1
+	msg="$@"
 	if [ "$msg" == "" ]; then
 		msg=`smile`
 	fi
