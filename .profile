@@ -38,10 +38,15 @@ echocute(){
 }
 
 poo(){
+	currentBranch=`git branch | grep '*' | head -n1 | sed -n 's/^\* //p'`
+	msg=$1
+	if [ "$msg" == "" ]; then
+		msg=`smile`
+	fi
 	git add --all .
-	git commit -a -m "`smile`"
-	git pull origin master
-	git push origin master
+	git commit -a -m "$msg"
+	git pull origin $currentBranch
+	git push origin $currentBranch
 }
 
 pop(){
