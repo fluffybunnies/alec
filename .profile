@@ -108,3 +108,5 @@ fsh() {
 
 # zat (app maker for zendesk) doesnt like echoes in .profile
 #echo "yay profile"
+
+
