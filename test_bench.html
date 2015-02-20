@@ -181,6 +181,7 @@ function prog5(){
 }
 */
 
+/*
 window.runNum = 10000;
 function hasSuffiecentCharacters1(newspaperClipping, ransomLetter) {
 	var i, k, char, ransomChars = {}
@@ -266,7 +267,7 @@ function prog4(i){
 	//return hasSuffiecentCharacters4('Churchill had a very distant relationship with this father. Often people with depression don’t have a close relationship with their father, predisposing them to anger or anger turned inward – depression. His first major episode with depression was in 1910, aged 35. Some days he described himself as almost unable to get out of bed, a sign of deep clinical depression. He would also fantasize about jumping in front of an oncoming train when on a  platform. “I don’t like standing near the edge of a platform when an express train is passing through,” he told his doctor. “I like to stand right back and if possible get a pillar between me and the train. I don’t like to stand by the side of a ship and look down into the water. A second’s action would end everything. A few drops of desperation.”', 'I have your code, please give me github access to get it back');
 	return hasSuffiecentCharacters4(window.str0, window.str1);
 }
-
+*/
 
 /*
 function preProg(){
@@ -407,6 +408,82 @@ function prog3(){
 }*/
 
 
+window.runNum = 10000;
+function preProg(){
+	window.numsToTest = [];
+	for (var i=0;i<30;++i) {
+		window.numsToTest.push(i);
+		window.numsToTest.push(-i);
+		window.numsToTest.push(''+i);
+	}
+}
+function formatPlace1(num){
+	var numPos = Math.abs(num)
+		,lastChar = (num+'').split('').pop()
+		,suffix
+	;
+	if (num == 0) return '0th';
+	if (numPos > 10 && numPos < 20) suffix = 'th';
+	else if (lastChar == 1) suffix = 'st';
+	else if (lastChar == 2) suffix = 'nd';
+	else if (lastChar == 3) suffix = 'rd';
+	else suffix = 'th';
+	return num+suffix;
+}
+function formatPlace2(num){
+	var numPos = Math.abs(num)
+		,lastChar = (num+'').split('').pop()
+		,suffix
+	;
+	switch (true) {
+		case num == 0: return '0th';
+		case numPos > 10 && numPos < 20: suffix = 'th'; break;
+		case lastChar == 1: suffix = 'st'; break;
+		case lastChar == 2: suffix = 'nd'; break;
+		case lastChar == 3: suffix = 'rd'; break;
+		default: suffix = 'th';
+	}
+	return num+suffix;
+}
+function formatPlace3(num){
+	var numPos = Math.abs(num)
+		,lastChar = (num+'').substr(-1)
+		,suffix
+	;
+	if (num == 0) return '0th';
+	if (numPos > 10 && numPos < 20) suffix = 'th';
+	else if (lastChar == 1) suffix = 'st';
+	else if (lastChar == 2) suffix = 'nd';
+	else if (lastChar == 3) suffix = 'rd';
+	else suffix = 'th';
+	return num+suffix;
+}
+function prog1(){
+	var vals = [];
+	window.numsToTest.forEach(function(v){
+		vals.push(formatPlace1(v));
+	});
+	return vals;
+}
+function prog2(){
+	var vals = [];
+	window.numsToTest.forEach(function(v){
+		vals.push(formatPlace2(v));
+	});
+	return vals;
+}
+function prog3(){
+	var vals = [];
+	window.numsToTest.forEach(function(v){
+		vals.push(formatPlace3(v));
+	});
+	return vals;
+}
+
+
+
+
+
 
 function arrange($test) {
 	$test.children().sort(function(a,b){
@@ -471,7 +548,7 @@ $(function(){
 				if (!best || stats[k].wins > best.wins)
 					best = stats[k];
 			});
-			$winnerBox.append('<div><span>Winner:</span><span>'+best.k+'</span><span>Wins: '+best.wins+'/'+best.ms.length+'</span><span>Avg ms: '+(best.ms.reduce(function(a,b){return a+b})/best.ms.length).toFixed(2)+'</span></div>');
+			$winnerBox.append('<div class="victory"><span>Winner:</span><span>'+best.k+'</span><span>Wins: '+best.wins+'/'+best.ms.length+'</span><span>Avg ms: '+(best.ms.reduce(function(a,b){return a+b})/best.ms.length).toFixed(2)+'</span></div>');
 			$b.prepend($winnerBox);
 
 			var $winnerBox = $b.find('.winner.box');
