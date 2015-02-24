@@ -45,7 +45,8 @@ poo(){
 	fi
 	git add --all .
 	git commit -a -m "$msg"
-	git pull origin $currentBranch && git push origin $currentBranch
+	git pull origin $currentBranch
+	git push origin $currentBranch
 }
 
 pop(){
