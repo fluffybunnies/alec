@@ -102,5 +102,14 @@ fsh() {
 	fi
 }
 
+myec2() {
+        ip=`cat /etc/hosts | grep myec2 | head -n1 | awk '{print $1}'`
+        if [ "$ip" == "" ]; then
+                echo "requires 'myec2' entry in /etc/hosts"
+        else
+                echocute "ssh -t $@ ubuntu@$ip 'sudo -i'"
+        fi
+}
+
 # zat (app maker for zendesk) doesnt like echoes in .profile
 #echo "yay profile"
