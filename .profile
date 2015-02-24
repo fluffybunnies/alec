@@ -111,5 +111,9 @@ myec2() {
         fi
 }
 
+shudo() {
+        echocute "ssh -t ubuntu@$1 'sudo -i'"
+}
+
 # zat (app maker for zendesk) doesnt like echoes in .profile
 #echo "yay profile"
