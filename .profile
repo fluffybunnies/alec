@@ -104,16 +104,18 @@ fsh() {
 }
 
 myec2() {
-        ip=`cat /etc/hosts | grep myec2 | head -n1 | awk '{print $1}'`
-        if [ "$ip" == "" ]; then
-                echo "requires 'myec2' entry in /etc/hosts"
-        else
-                echocute "ssh -t $@ ubuntu@$ip 'sudo -i'"
-        fi
+	ip=`cat /etc/hosts | grep myec2 | head -n1 | awk '{print $1}'`
+	if [ "$ip" == "" ]; then
+		echo "requires 'myec2' entry in /etc/hosts"
+	else
+		echocute "ssh -t $@ ubuntu@$ip 'sudo -i'"
+	fi
 }
 
 shudo() {
-        echocute "ssh -t ubuntu@$1 'sudo -i'"
+	#echocute "ssh -t ubuntu@$1 'sudo -i'"
+	s='cd /var/www; cd api_internal || cd platform-v2 || cd wordpress; cd current'
+	ssh -t ubuntu@$1 "sudo -i su -c '$s; /bin/bash'"
 }
 
 # zat (app maker for zendesk) doesnt like echoes in .profile
