@@ -113,10 +113,14 @@ myec2() {
 }
 
 shudo() {
-	#echocute "ssh -t ubuntu@$1 'sudo -i'"
+	# shudo ec2-107-20-26-208.compute-1.amazonaws.com
 	s='2>/dev/null'
 	c="cd /var/www && cd api_internal $s || cd platform-v2 $s || cd wordpress $s && cd current"
 	ssh -t ubuntu@$1 "sudo -i su -c '$c; /bin/bash'"
+}
+
+shudi() {
+	echocute "ssh -t ubuntu@$1 'sudo -i'"
 }
 
 # zat (app maker for zendesk) doesnt like echoes in .profile
