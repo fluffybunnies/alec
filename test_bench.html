@@ -408,6 +408,7 @@ function prog3(){
 }*/
 
 
+/*
 window.runNum = 10000;
 function preProg(){
 	window.numsToTest = [];
@@ -476,6 +477,36 @@ function prog3(){
 	var vals = [];
 	window.numsToTest.forEach(function(v){
 		vals.push(formatPlace3(v));
+	});
+	return vals;
+}
+*/
+
+
+window.runNum = 10000;
+function preProg(){
+	window.strings = [];
+	for (var i=0;i<10;++i) {
+		strings[i] = {
+			val: ''
+			,charToCount: String.fromCharCode(util.rand(0,255))
+		};
+		for (var n=0;n<util.rand(10,100000);++n)
+			strings[i].val += String.fromCharCode(util.rand(0,255));
+	}
+	console.log('strings to test',strings);
+}
+function prog1(){
+	var vals = [];
+	strings.forEach(function(s){
+		vals.push(s.val.split('M').length-1);
+	});
+	return vals;
+}
+function prog2(){
+	var vals = [];
+	strings.forEach(function(s){
+		vals.push(s.val.replace(/[^M]/g,'').length);
 	});
 	return vals;
 }
