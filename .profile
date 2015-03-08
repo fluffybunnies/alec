@@ -3,7 +3,10 @@
 export PATH=$PATH:/Users/ahulce/AWS-ElasticBeanstalk-CLI-2.6.3/eb/macosx/python2.7
 
 # MacPorts Installer addition on 2012-02-29_at_15:43:38: adding an appropriate PATH variable for use with MacPorts.
-export PATH=/opt/local/bin:/opt/local/sbin:/usr/local/share/npm/bin:$PATH
+#export PATH=/opt/local/bin:/opt/local/sbin:/usr/local/share/npm/bin:$PATH
+# 20150307 - Uninstalled homebrew's installation of npm and installed it next to node in /usr/local/bin/
+# This means 2 of the dirs above are now empty. @todo: See if I can remove MacPorts altogether
+export PATH=/opt/local/bin:$PATH
 # Finished adapting your PATH environment variable for use with MacPorts.
 
 #pcre
@@ -121,6 +124,14 @@ shudo() {
 
 shudi() {
 	echocute "ssh -t ubuntu@$1 'sudo -i'"
+}
+
+topen() {
+	if [ "$1" != "" ]; then
+		app='/Applications/Sublime Text 2.app'
+		touch $1
+		open -a"$app" $1
+	fi
 }
 
 # zat (app maker for zendesk) doesnt like echoes in .profile
