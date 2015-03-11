@@ -482,7 +482,7 @@ function prog3(){
 }
 */
 
-
+/*
 window.runNum = 10000;
 function preProg(){
 	window.strings = [];
@@ -507,6 +507,68 @@ function prog2(){
 	var vals = [];
 	strings.forEach(function(s){
 		vals.push(s.val.replace(/[^M]/g,'').length);
+	});
+	return vals;
+}
+*/
+
+
+
+window.runNum = 1000;
+function preProg(){
+	window.strings = [];
+	for (var i=0;i<10;++i) {
+		strings[i] = '';
+		for (var n=0;n<util.rand(10,10000);++n)
+			strings[i] += String.fromCharCode(util.rand(0,10175));
+	}
+	console.log('strings to test',strings);
+}
+function getByteLen1(normalVal) {
+	normalVal = String(normalVal);
+	var byteLen = 0, i, c;
+	for (i=0; i<normalVal.length; ++i) {
+		c = normalVal.charCodeAt(i);
+		byteLen += c < (1 <<  7) ? 1 :
+			c < (1 << 11) ? 2 :
+			c < (1 << 16) ? 3 :
+			c < (1 << 21) ? 4 :
+			c < (1 << 26) ? 5 :
+			c < (1 << 31) ? 6 :
+			Number.NaN;
+	}
+	//if (normalVal.length != byteLen) console.log('sup',normalVal.length,byteLen);
+	return byteLen;
+}
+function getByteLen2(normalVal) {
+	normalVal = String(normalVal);
+	var byteLen = 0, i, c;
+	for (i=0; i<normalVal.length; ++i) {
+		c = normalVal.charCodeAt(i);
+		switch (true) {
+			case c < (1 << 7): byteLen += 1; break;
+			case c < (1 << 11): byteLen += 2; break;
+			case c < (1 << 16): byteLen += 3; break;
+			case c < (1 << 21): byteLen += 4; break;
+			case c < (1 << 26): byteLen += 5; break;
+			case c < (1 << 31): byteLen += 6; break;
+			default: byteLen = Number.NaN;
+		}
+	}
+	//if (normalVal.length != byteLen) console.log('sup',normalVal.length,byteLen);
+	return byteLen;
+}
+function prog1(){
+	var vals = [];
+	strings.forEach(function(s){
+		vals.push(getByteLen1(s));
+	});
+	return vals;
+}
+function prog2(){
+	var vals = [];
+	strings.forEach(function(s){
+		vals.push(getByteLen2(s));
 	});
 	return vals;
 }
