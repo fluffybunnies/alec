@@ -529,7 +529,7 @@ function getByteLen1(normalVal) {
 	var byteLen = 0, i, c;
 	for (i=0; i<normalVal.length; ++i) {
 		c = normalVal.charCodeAt(i);
-		byteLen += c < (1 <<  7) ? 1 :
+		byteLen += c < (1 << 7) ? 1 :
 			c < (1 << 11) ? 2 :
 			c < (1 << 16) ? 3 :
 			c < (1 << 21) ? 4 :
