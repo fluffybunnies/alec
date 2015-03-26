@@ -112,6 +112,9 @@ myec2() {
 		echo "requires 'myec2' entry in /etc/hosts"
 	else
 		echocute "ssh -t $@ ubuntu@$ip 'sudo -i'"
+		#c='cd /root/sire'
+		#c="cd /var/www"
+		#ssh -t ubuntu@$ip "sudo -i su -c '$c; /bin/bash'"
 	fi
 }
 
@@ -129,10 +132,27 @@ shudi() {
 topen() {
 	if [ "$1" != "" ]; then
 		app='/Applications/Sublime Text 2.app'
+		mkdir -p `dirname "$1"`
 		touch $1
 		open -a"$app" $1
 	fi
 }
+
+if [ "`which realpath`" == "" ]; then
+	realpath() {
+		if [ ! -f "$1" ] && [ ! -d "$1" ]; then
+			>&2 echo 'path does not exist'
+		else
+			dir=`dirname "$1"`
+			path=`cd "${dir}";pwd`
+			if [ -f "$1" ]; then
+				path=$path/`basename "$1"`
+			fi
+			echo $path
+		fi
+	}
+fi
+
 
 # zat (app maker for zendesk) doesnt like echoes in .profile
 #echo "yay profile"
