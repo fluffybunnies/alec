@@ -1,0 +1,162 @@
+
+/*
+	todo
+		- make better movement pattern
+		- share target info among tanks
+		- dont fire if friendly is in path
+		- fix weird behavior where one fires in wrong direction and doesnt stop
+*/
+
+
+function Robot(robot) {
+	this.init(robot);
+}
+
+Robot.prototype.onIdle = function(ev) {
+	var z = this
+	,robot = ev.robot
+	,id = robot.id
+	if (z.scannedRobot[id]) {
+		robot.fire();
+		if (!z.stoppedToFire[id]) {
+			var uid = z.scannedRobot[id].uid
+			,resume = function(){
+				z.scannedRobot[id] = null;
+				z.stoppedToFire[id] = false;
+			}
+			z.setTimeout(function(){
+				//robot.log('CHECK FOR RESUME',robot.id,'==',id,z.scannedRobot[id].uid,'==',uid);
+				if (z.scannedRobot[id].uid == uid)
+					resume();
+			},200);
+			z.setTimeout(resume,300);
+		}
+		z.stoppedToFire[id] = true;
+	} else {
+		robot.ahead(3);
+		robot.rotateCannon(3*z.rotateCannonDir);
+		++z.moveCount;
+	}
+	if (robot.parentId !== null && !z.cloneRetreated) {
+		robot.stop();
+		robot.back(100);
+		robot.turn(180);
+		z.cloneRetreated = true;
+	}
+	z.checkTimeouts();
+	++z.idleCount;
+}
+
+Robot.prototype.onRobotCollision = function(ev) {
+	if (!this.isAlly(ev.robot,ev.collidedRobot)) {
+		this.foundRobot(ev.robot,ev.collidedRobot);
+		this.aim(ev.robot,ev.collidedRobot.position);
+	} else {
+	 	//ev.robot.turn(this.rand(ev.robot,-45,45)); 
+	}
+}
+
+Robot.prototype.onWallCollision = function(ev) {
+	var robot = ev.robot
+	,dir = Math.round(this.rand(robot,0,1)) ? 1 : -1
+	,deg = this.rand(robot,20,100);
+	robot.turn(dir*deg);
+}
+
+Robot.prototype.onScannedRobot = function(ev) {
+	if (!this.isAlly(ev.robot,ev.scannedRobot))
+		this.foundRobot(ev.robot,ev.scannedRobot);
+}
+
+Robot.prototype.onHitByBullet = function(ev) {
+	var robot = ev.robot
+	,deg = ev.bearing+robot.cannonRelativeAngle
+	// todo: confirm this works
+	//robot.log('SHOT!',ev.bearing,robot.cannonRelativeAngle,deg); 
+	this.rotateCannonDir = deg > 0 ? 1 : -1;
+
+	//robot.log('HIT!',robot.parentId,robot.availableDisappears);
+	if (!robot.parentId && robot.availableDisappears) {
+		robot.disappear();
+		robot.back(25);
+	}
+}
+
+
+Robot.prototype.init = function(robot){
+	//robot.log('INIT',robot.id);
+	var z = this;
+	z.idleCount = z.moveCount = 0;
+	z.rotateCannonDir = 1;
+	z.scannedRobot = {};
+	z.stoppedToFire = {};
+	z.timeouts = {};
+	z.spawnClones(robot);
+}
+
+
+Robot.prototype.spawnClones = function(robot){
+	for (var i=0;i < robot.availableClones;++i)
+		robot.clone();
+}
+
+Robot.prototype.isAlly = function(self,target){ 
+	return self.id == target.parentId || self.parentId == target.id; 
+}
+
+Robot.prototype.aim = function(robot,target){
+	var x = target.x-robot.position.x
+	,y = target.y-robot.position.y
+	if (!x && !y)
+		return;
+	var deg = Math.atan(y/x)*(180/Math.PI)
+	deg -= robot.cannonAbsoluteAngle - (x > 0 ? 180 : 0);
+	while (Math.abs(deg) > 180)
+		deg > 1 ? deg -= 360 : deg += 360;
+	robot.rotateCannon(deg);
+}
+
+Robot.prototype.foundRobot = function(self,target){
+	this.scannedRobot[self.id] = target;
+	this.scannedRobot[self.id].uid = this.idleCount;
+}
+
+Robot.prototype.rand = function(robot,min,max){
+	// source: https://github.com/ianb/whrandom
+	var seed = robot.position.x+robot.position.y+this.idleCount;
+	var x = (seed % 30268) + 1;
+	seed = (seed - (seed % 30268)) / 30268;
+	var y = (seed % 30306) + 1;
+	seed = (seed - (seed % 30306)) / 30306;
+	var z = (seed % 30322) + 1;
+	seed = (seed - (seed % 30322)) / 30322;
+	x = (171 * x) % 30269;
+	y = (172 * y) % 30307;
+	z = (170 * z) % 30323;
+	var r = (x / 30269.0 + y / 30307.0 + z / 30323.0) % 1.0;
+ 	return r*(max-min)+min; 
+}
+
+Robot.prototype.setTimeout = function(cb,t){
+	var z = this
+	for (var id in z.timeouts) break;
+	id = id ? +id+1 : 0;
+	z.timeouts[id] = {
+		end: z.idleCount+t
+		,cb: cb
+	}
+	return id;
+}
+
+Robot.prototype.clearTimeout = function(id){
+	delete this.timeouts[id];
+}
+
+Robot.prototype.checkTimeouts = function(){
+	for (var id in this.timeouts) {
+		if (this.idleCount >= this.timeouts[id].end) {
+			this.timeouts[id].cb();
+			delete this.timeouts[id];
+		}
+	}
+}
