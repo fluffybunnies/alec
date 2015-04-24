@@ -125,8 +125,21 @@ shudo() {
 	ssh -t ubuntu@$1 "sudo -i su -c '$c; /bin/bash'"
 }
 
-shudi() {
-	echocute "ssh -t ubuntu@$1 'sudo -i'"
+shelease() {
+	# shelease v0.3.152_release-fbs-dev ec2-54-82-41-81.compute-1.amazonaws.com ec2-54-147-31-5.compute-1.amazonaws.com
+	commit=$1
+	s='2>/dev/null'
+	c="cd /var/www || exit; cd api_internal $s || cd platform-v2 $s || cd wordpress $s || exit; cd current || exit"
+	r="git fetch && git fetch --tags && git checkout $commit"
+	dir=`pwd`
+	if [ "`basename $dir`" == "platform-v2-lucky" ]; then
+		r="$r && restart platform-v2 && sleep 1 && /etc/init.d/varnish restart"
+	fi
+	for arg in "$@"; do
+		if [ $arg == "$commit" ]; then continue; fi
+		echo $arg
+		ssh -t ubuntu@$arg "sudo -i su -c '$c; $r'"
+	done
 }
 
 topen() {

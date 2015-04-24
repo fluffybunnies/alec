@@ -7,7 +7,17 @@
 		- can get stuck on wall
 */
 
-var jitter = true;
+var settings = {
+	jitter: false
+	,travelEachTick: 2
+	,cannonRotateEachTick: 3
+	,cloneRetreat: 150
+	,standAndFire: 200
+	//,onHitBurst: [-1,75]
+};
+//settings.jitter = { distance: 50 };
+//settings.cloneRetreat = 300;
+
 
 function Robot(robot) {
 	var z = this;
@@ -22,7 +32,6 @@ Robot.prototype.onIdle = function(ev) {
 	var z = this
 	,robot = ev.robot
 	,robotHq = z.registerRobot(robot)
-	,travelThisTick = 2
 	if (robotHq.enemyLocked) {
 		robot.fire();
 		if (!robotHq.stoppedToFire) {
@@ -36,18 +45,24 @@ Robot.prototype.onIdle = function(ev) {
 				if (robotHq.enemyLockedUid != uid)
 					return;
 				resume();
-			},200);
-			z.setTimeout(resume,300);
+			},settings.standAndFire);
+			z.setTimeout(resume,settings.standAndFire*1.5);
 		}
 	} else if (z.enemySpotted && z.enemySpotted.by != robot.id) {
 		z.aim(robot,z.enemySpotted);
 		z.enemySpotted = null;
 	} else {
-		if (jitter) {
-			robotHq.jitterDistance = 
+		if (settings.jitter) {
+			robot.move(settings.travelEachTick, robotHq.jitterDir);
+			robotHq.jitterDistance = (robotHq.jitterDistance || 0) + settings.travelEachTick;
+			if (robotHq.jitterDistance >= settings.jitter.distance) {
+				robotHq.jitterDistance = 0;
+				robotHq.jitterDir = robotHq.jitterDir == 1 ? -1 : 1;
+			}
 		} else {
-		robot.ahead(2);
-		robot.rotateCannon(3*robotHq.rotateCannonDir);
+			robot.ahead(settings.travelEachTick);
+		}
+		robot.rotateCannon(settings.cannonRotateEachTick*robotHq.rotateCannonDir);
 	}
 	if (z.isClone(robot) && !robotHq.cloneRetreated) {
 		robot.stop();
@@ -79,7 +94,7 @@ Robot.prototype.onScannedRobot = function(ev) {
 	if (!this.isAlly(ev.robot,ev.scannedRobot)) {
 		this.foundEnemy(ev.robot,ev.scannedRobot);
 		//ev.robot.stop();
-		this.switchCannonRotation(ev.robot); // not sure this helps
+		//this.switchCannonRotation(ev.robot); // not sure this helps
 	}
 }
 
@@ -93,7 +108,16 @@ Robot.prototype.onHitByBullet = function(ev) {
 
 	if (robot.availableDisappears) {
 		robot.disappear();
+		/*robot.stop();
+		robot.turn(deg/10);*/
 		robot.ahead(50);
+	} else if (settings.onHitBurst) {
+		robot.move(settings.onHitBurst[1], settings.onHitBurst[0]);
+	} else {
+		foundEnemy(robot,{
+			x: 1/Math.sin(deg)
+			,y: 1
+		});
 	}
 }
 
