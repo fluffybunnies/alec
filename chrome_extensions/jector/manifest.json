@@ -2,7 +2,12 @@
 	"manifest_version": 2,
 	"name": "jector",
 	"description": "sup",
-	"version": "0.1",
+	"version": "0.0.1",
+	"icons": {
+		"16": "icon.svg",
+		 "48": "icon.svg",
+		"128": "icon.svg"
+	},
 	"xbrowser_action": {
 		"default_icon": "icon.svg",
 		"default_title": "jector",
