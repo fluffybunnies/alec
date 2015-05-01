@@ -1,2 +1,10 @@
-*.psd
+~*
+*~
 .DS_Store
+node_modules
+npm-debug.log
+*.psd
+*.pem
+*.crt
+out/*
+!.g

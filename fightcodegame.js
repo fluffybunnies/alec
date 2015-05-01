@@ -8,15 +8,16 @@
 */
 
 var settings = {
-	jitter: false
-	,travelEachTick: 2
+	travelEachTick: 3
 	,cannonRotateEachTick: 3
 	,cloneRetreat: 150
-	,standAndFire: 200
+	,standAndFire: 100
 	//,onHitBurst: [-1,75]
-};
-//settings.jitter = { distance: 50 };
-//settings.cloneRetreat = 300;
+	//,switchRotationOnScan: true
+	//,jitter: { distance: 50 } ,cloneRetreat: 300
+	,indecision: 20
+}, undef
+;
 
 
 function Robot(robot) {
@@ -36,6 +37,7 @@ Robot.prototype.onIdle = function(ev) {
 		robot.fire();
 		if (!robotHq.stoppedToFire) {
 			robotHq.stoppedToFire = true;
+			robotHq.ticksSinceEnemyTargeted = 0;
 			var uid = robotHq.enemyLockedUid
 			,resume = function(){
 				robotHq.enemyLocked = null;
@@ -62,6 +64,13 @@ Robot.prototype.onIdle = function(ev) {
 		} else {
 			robot.ahead(settings.travelEachTick);
 		}
+		//if (z.tick%1 == 0) robot.log(settings.indecision,' && ',typeof robotHq.ticksSinceEnemyTargeted == 'number',' && ',robotHq.ticksSinceEnemyTargeted,' >= ',settings.indecision,settings.indecision && typeof robotHq.ticksSinceEnemyTargeted == 'number' && robotHq.ticksSinceEnemyTargeted >= settings.indecision);
+		//if (typeof robotHq.ticksSinceEnemyTargeted == 'number') robot.log(robotHq.ticksSinceEnemyTargeted+' >= '+settings.indecision+(robotHq.ticksSinceEnemyTargeted >= settings.indecision));
+		if (settings.indecision && typeof robotHq.ticksSinceEnemyTargeted == 'number' && robotHq.ticksSinceEnemyTargeted >= settings.indecision) {
+			robotHq.ticksSinceEnemyTargeted = null;
+			z.switchCannonRotation(robot);
+			robot.log('SWITCHED CANNON ROT',z.rand(robot,1,1000));
+		}
 		robot.rotateCannon(settings.cannonRotateEachTick*robotHq.rotateCannonDir);
 	}
 	if (z.isClone(robot) && !robotHq.cloneRetreated) {
@@ -72,6 +81,8 @@ Robot.prototype.onIdle = function(ev) {
 	}
 	z.checkTimeouts(robot);
 	++z.tick;
+	if (typeof robotHq.ticksSinceEnemyTargeted == 'number')
+		++robotHq.ticksSinceEnemyTargeted;
 }
 
 Robot.prototype.onRobotCollision = function(ev) {
@@ -87,14 +98,19 @@ Robot.prototype.onWallCollision = function(ev) {
 	var robot = ev.robot
 	,dir = Math.round(this.rand(robot,0,1)) ? 1 : -1
 	,deg = this.rand(robot,30,100);
+	robot.stop(); // not sure if benefit, but prevent getting stuck on wall
 	robot.turn(dir*deg);
 }
 
 Robot.prototype.onScannedRobot = function(ev) {
+	var robot = ev.robot
+	,robotHq = this.registerRobot(robot)
 	if (!this.isAlly(ev.robot,ev.scannedRobot)) {
-		this.foundEnemy(ev.robot,ev.scannedRobot);
-		//ev.robot.stop();
-		//this.switchCannonRotation(ev.robot); // not sure this helps
+		this.foundEnemy(robot,ev.scannedRobot);
+		robot.stop();
+		robotHq.stoppedToFire = false;
+		if (settings.switchRotationOnScan)
+			this.switchCannonRotation(robot);
 	}
 }
 
