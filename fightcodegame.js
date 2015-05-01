@@ -15,7 +15,11 @@ var settings = {
 	//,onHitBurst: [-1,75]
 	//,switchRotationOnScan: true
 	//,jitter: { distance: 50 } ,cloneRetreat: 300
-	,indecision: 20
+	,indecision: {
+		stubborness: 1
+		,humility: 2
+		//,keepFiring: true
+	}
 }, undef
 ;
 
@@ -34,14 +38,15 @@ Robot.prototype.onIdle = function(ev) {
 	,robot = ev.robot
 	,robotHq = z.registerRobot(robot)
 	if (robotHq.enemyLocked) {
-		robot.fire();
+		robotHq.fire();
 		if (!robotHq.stoppedToFire) {
 			robotHq.stoppedToFire = true;
-			robotHq.ticksSinceEnemyTargeted = 0;
+			robotHq.resetIndecision();
 			var uid = robotHq.enemyLockedUid
 			,resume = function(){
 				robotHq.enemyLocked = null;
 				robotHq.stoppedToFire = false;
+				robotHq.stubbornTicks = 0;
 			}
 			z.setTimeout(function(){
 				if (robotHq.enemyLockedUid != uid)
@@ -53,6 +58,7 @@ Robot.prototype.onIdle = function(ev) {
 	} else if (z.enemySpotted && z.enemySpotted.by != robot.id) {
 		z.aim(robot,z.enemySpotted);
 		z.enemySpotted = null;
+		robotHq.resetIndecision();
 	} else {
 		if (settings.jitter) {
 			robot.move(settings.travelEachTick, robotHq.jitterDir);
@@ -64,12 +70,20 @@ Robot.prototype.onIdle = function(ev) {
 		} else {
 			robot.ahead(settings.travelEachTick);
 		}
-		//if (z.tick%1 == 0) robot.log(settings.indecision,' && ',typeof robotHq.ticksSinceEnemyTargeted == 'number',' && ',robotHq.ticksSinceEnemyTargeted,' >= ',settings.indecision,settings.indecision && typeof robotHq.ticksSinceEnemyTargeted == 'number' && robotHq.ticksSinceEnemyTargeted >= settings.indecision);
-		//if (typeof robotHq.ticksSinceEnemyTargeted == 'number') robot.log(robotHq.ticksSinceEnemyTargeted+' >= '+settings.indecision+(robotHq.ticksSinceEnemyTargeted >= settings.indecision));
-		if (settings.indecision && typeof robotHq.ticksSinceEnemyTargeted == 'number' && robotHq.ticksSinceEnemyTargeted >= settings.indecision) {
-			robotHq.ticksSinceEnemyTargeted = null;
-			z.switchCannonRotation(robot);
-			robot.log('SWITCHED CANNON ROT',z.rand(robot,1,1000));
+		if (settings.indecision && typeof robotHq.stubbornTicks == 'number') {
+			if (robotHq.stubbornTicks > settings.indecision.stubborness) {
+				robotHq.pie = robotHq.pie ? robotHq.pie+1 : 1;
+				if (robotHq.pie <= settings.indecision.humility) {
+					robotHq.stubbornTicks = 0;
+					z.switchCannonRotation(robot);
+					//robot.log('('+robot.id+') indecision switch '+robotHq.pie+' '+z.rand(robot,1,1000));
+				} else {
+					robotHq.resetIndecision();
+					//robot.log('('+robot.id+') indecision done switching'+' '+z.rand(robot,1,1000));
+				}
+			}
+			if (settings.indecision.keepFiring)
+				robotHq.fire();
 		}
 		robot.rotateCannon(settings.cannonRotateEachTick*robotHq.rotateCannonDir);
 	}
@@ -81,8 +95,8 @@ Robot.prototype.onIdle = function(ev) {
 	}
 	z.checkTimeouts(robot);
 	++z.tick;
-	if (typeof robotHq.ticksSinceEnemyTargeted == 'number')
-		++robotHq.ticksSinceEnemyTargeted;
+	if (typeof robotHq.stubbornTicks == 'number')
+		++robotHq.stubbornTicks;
 }
 
 Robot.prototype.onRobotCollision = function(ev) {
@@ -111,6 +125,8 @@ Robot.prototype.onScannedRobot = function(ev) {
 		robotHq.stoppedToFire = false;
 		if (settings.switchRotationOnScan)
 			this.switchCannonRotation(robot);
+	} else {
+		robotHq.dontFire = 1;
 	}
 }
 
@@ -145,8 +161,18 @@ Robot.prototype.registerRobot = function(robot){
 		this.robots[robot.id] = {
 			rotateCannonDir: robot.id.indexOf('1') == -1 ? -1 : 1
 			,jitterDir: robot.id.indexOf('1') == -1 ? -1 : 1
+			,resetIndecision: function(){
+				this.stubbornTicks = null;
+				this.pie = null;
+			}
+			,fire: function(){
+				if (this.dontFire)
+					return --this.dontFire;
+				this.robot.fire();
+			}
 		};
 	}
+	this.robots[robot.id].robot = robot;
 	return this.robots[robot.id];
 }
 
