@@ -17,7 +17,7 @@
 	"web_accessible_resources": ["scripts.js"],
 	"content_scripts": [
 		{
-			"matches": ["*://*.luckyshops.com/*","*://*.watch-tvseries.net/*"],
+			"matches": ["*://*.luckyshops.com/*","*://*.watch-tvseries.net/*","*://*.verizonwireless.com/*"],
 			"css": ["styles.css"],
 			"js": ["inject.js"],
 			"run_at": "document_end"
