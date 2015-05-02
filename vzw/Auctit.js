@@ -12,8 +12,10 @@ Auctit = {
 		key: 'Auctit'
 		,defaults: {
 			monitorInterval: 1000
-			,monitorAlertDistance: 60000
+			,monitorAlertDistance: 60*1000
 			,flashTitleSpeed: 1000
+			,waitForBidDistance: 30*10000000000
+			,waitForBidCheckInterval: 5*1000
 		}
 	}
 	,flashTitle_interval: null
@@ -34,6 +36,7 @@ Auctit = {
 			z.getCustomerBalance();
 			z.monitor();
 			z.stayLoggedIn();
+			z.setUpWaitForBid();
 
 			console.log(z.config.key, 'customerBalance', z.getCustomerBalance());
 		});
@@ -59,9 +62,7 @@ Auctit = {
 		z.$listingCont.find('.auctions .auctionItem').each(function(){
 			var t = {
 				$cont: $(this)
-			}
-			t.$time = t.$cont.find('.timeLeft .time');
-			t.endTime = +t.$time.attr('endtime');
+			};
 			teasers.push(t);
 		});
 		if (z.opts.monitorInterval) {
@@ -74,6 +75,7 @@ Auctit = {
 	}
 	,stayLoggedIn: function(){
 		var z = this;
+		return console.log(z.config.key, 'stayLoggedIn', 'this stops the redirect, but you still get logged out');
 		if (typeof pageTimeout == 'number') {
 			clearTimeout(pageTimeout);
 			console.log(z.config.key, 'stayLoggedIn', 'pageTimeout cleared');
@@ -88,10 +90,10 @@ Auctit = {
 			,popAlert = false
 		;
 		$.each(teasers,function(i,teaser){
-			var timeLeft = teaser.$time.attr('timeleft');
-			if (isNaN(timeLeft))
+			var time = z.getAuctionItemTime(teaser.$cont);
+			if (isNaN(time.left))
 				return;
-			if (+timeLeft < alertDistance) {
+			if (time.left < alertDistance) {
 				if (!teaser.notify)
 					popAlert = true;
 				teaser.notify = true;
@@ -130,6 +132,88 @@ Auctit = {
 			return;
 		clearInterval(z.flashTitle_interval);
 		document.title = z.flashTitle_origVal;
+	}
+	,getAuctionItemTime: function($item){
+		var z = this
+			,$time = $item.find('.timeLeft .time')
+			,timeLeft = +$time.attr('timeleft')
+			,endTime = +$time.attr('endtime')
+		;
+		return {left:timeLeft, end:endTime};
+	}
+	,getAuctionItemUrl: function($item){
+		var z = this
+			,urls = {}
+			,url = $item.attr('x-url')
+		;
+		if (url)
+			return url;
+		$item.find('a').each(function(){
+			var href = $(this).attr('href');
+			if (href)
+				urls[href] = urls[href] ? urls[href]+1 : 1;
+		});
+		if (url = z.getMaxKey(urls))
+			$item.attr('x-url',url);
+		return url;
+	}
+	,getMaxKey: function(o){
+		var z = this, max;
+		$.each(o,function(k,v){
+			if (!max || v < max[1])
+				max = [k,v];
+		});
+		return max ? max[0] : null;
+	}
+	,setUpWaitForBid: function(){
+		var z = this
+			,x = z.config.key
+			,markedClass = x+'-waiting'
+			,checkInterval
+		;
+		$('body').append('<style type="text/css">\
+			.auctions .auctionItem .btn.details {\
+				text-indent: 100%;\
+			}\
+			.auctions .auctionItem .btn.details:before {\
+				content: "AutoBid";\
+				width: 100%;\
+				text-align: center;\
+				display: block;\
+				position: absolute;\
+				left: 0;\
+				text-indent: 0;\
+			}\
+			.auctions .auctionItem.'+markedClass+' {\
+				background: rgba(0,20,150,0.2) !important;\
+			}\
+		</style>');
+		z.$listingCont.find('.auctionItem .btn.details').live('click',function(e){
+			e.preventDefault();
+			var $el = $(this).blur()
+				,$item = $el.parents('.auctionItem:first')
+			;
+			if ($item.hasClass(markedClass)) {
+				$item.removeClass(markedClass);
+			} else {
+				$item.addClass(markedClass);
+			}
+		});
+		checkInterval = setInterval(function(){
+			z.$listingCont.find('.auctionItem').each(function(){
+				var $el = $(this), time, itemUrl;
+				if (!$el.hasClass(markedClass))
+					return;
+				time = z.getAuctionItemTime($el);
+				if (time.left > z.waitForBidDistance)
+					return;
+				if (!(itemUrl = z.getAuctionItemUrl($el)))
+					return console.log(z.config.key, 'waitForBidDistance', 'failed to getAuctionItemUrl()');
+				clearInterval(checkInterval);
+				console.log(z.config.key, 'waitForBidDistance', 'lets go!', itemUrl);
+				window.location = itemUrl;
+			});
+		},z.waitForBidCheckInterval);
 	}
 	,bid: function(skeet){
 		var z = this
