@@ -35,6 +35,8 @@ jector = {
 					$('#shareico').remove();
 				}
 			});
+		} else if (/rewards\.verizonwireless\.com/.test(window.location.hostname||'')) {
+			console.log('jector', 'rewards.verizonwireless.com');
 		}
 	}
 	,onJquery: function(cb){
@@ -54,6 +56,15 @@ jector = {
 				}
 			},z.config.checkSpeed);
 		}
+	}
+	,loadScript: function(url){
+		var s = document.createElement('script');
+		s.async = true;
+		s.onload = function(){
+			this.parentNode.removeChild(this);
+		}
+		s.src = url;
+		(document.head||document.documentElement).appendChild(s);
 	}
 }
 jector.init();
