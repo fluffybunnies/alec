@@ -23,7 +23,7 @@
 			"run_at": "document_end"
 		},
 		{
-			"matches": ["*://*.verizonwireless.com/*"],
+			"matches": ["*://rewards.verizonwireless.com/*"],
 			"js": ["inject.vzw.js"],
 			"run_at": "document_end"
 		}
