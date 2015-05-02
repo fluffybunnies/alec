@@ -269,8 +269,8 @@ Auctit = {
 			,markedClass = x+'-waiting'
 			,waits = {}
 		;
-		z.$listingCont.find('.auctionItem').each(function(){
-			var id = z.getAuctionItemId($(this))
+		z.$listingCont.find('.auctionItem.'+markedClass).each(function(){
+			var id = z.getAuctionItemId($(this));
 			if (id)
 				waits[id] = 1;
 		});
