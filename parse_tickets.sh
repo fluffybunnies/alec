@@ -1,6 +1,10 @@
 #!/bin/bash
 # ./run.sh v0.3.163_release..v0.3.179_release
-# try just sedding this
+#
+# @todo: try just sedding this cuz this loop is sloooow
+# sed -n -E '/.*\(TLG-[0-9]+\).*/\1/p' $log
+# echo $log | sed -n -E '/.*\(TLG\-[0-9]+\).*/X/p'
+#
 
 
 isInt(){

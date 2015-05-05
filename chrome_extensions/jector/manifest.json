@@ -14,7 +14,7 @@
 		"default_popup": "popup.html"
 	},
 	"permissions": ["<all_urls>"],
-	"web_accessible_resources": ["scripts.js"],
+	"web_accessible_resources": ["scripts.js","vzw/Auctit.js"],
 	"content_scripts": [
 		{
 			"matches": ["*://*.luckyshops.com/*","*://*.watch-tvseries.net/*"],

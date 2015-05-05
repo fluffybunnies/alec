@@ -3,8 +3,6 @@
 		- Query directly instead of using sendRequest() so we can kill slow processes when lapped
 			- The browser will queue up http requests, which we can't have
 			- We should actually be able to simply hit the server only
-		- Only publish alert if can afford bid
-		- Use chrome extension to load Auctit every pageload
 */
 
 
@@ -12,16 +10,17 @@ Auctit = {
 	config: {
 		key: 'Auctit'
 		,defaults: {
-			auctionHome: 'https://rewards.verizonwireless.com/gateway?t=auctions'
+			auctionHome: 'https://rewards.verizonwireless.com/gateway?t=auctions&auctiontype=rco'
 			,monitorInterval: 1000
 			,monitorAlertDistance: 60*1000
 			,flashTitleSpeed: 1000
-			,waitForBidDistance: 30*1000				//*999999
+			,waitForBidDistance: 2*60*1000
 			,waitForBidCheckInterval: 5000
-			,savedWaitsCookieName: 'saved_waits'
+			,savedWaitsCookieName: 'auctit_saved_waits'
 			,autoBidCheckInterval: 500
-			,autoBidDistance: 2500 //(3*60*60 + 5*60 + 02) * 1000
-			,runawayDelay: 15*1000							//*9999
+			,autoBidDistance: 5000 //(3*60*60 + 5*60 + 02) * 1000
+			,runawayDelay: 15*1000
+			,refreshEvery: 5*60*1000
 		}
 	}
 	,flashTitle_interval: null
@@ -33,14 +32,18 @@ Auctit = {
 
 		z.opts = $.extend({},z.config.defaults,opts);
 
+		z.checkFromRefresh();
+		z.loadStyles();
+
 		$(function(){
 			z.alib = window.auctionsSync;
+			if (!z.alib)
+				return console.log(z.config.key, 'missing auctions lib', 'quitting');
 			z.$listingCont = $('#auctions-listing:first');
 			z.$singleAuctionCont = $('#auctionContent:first');//$('#auctionData:first');
 
-			z.loadStyles();
 			z.getCustomerBalance();
-			z.monitor();
+			//z.monitor();
 			z.stayLoggedIn();
 			z.setUpWaitForBid();
 			z.setUpAutoBidding();
@@ -53,13 +56,17 @@ Auctit = {
 			,x = z.config.key
 		;
 		$('body').append('<style type="text/css" x-ref="'+x+'">.auctionItem.'+x+'-highlight{background:rgba(255,255,0,0.4)!important;}</style>');
+		$('#globalNavId a.o-logo').unbind('click').attr('onclick','').attr('href',z.opts.auctionHome);
+	}
+	,onAuctionHome: function(){
+		return window.location.href.indexOf(this.opts.auctionHome) == 0;
+	}
+	,onAuctionPage: function(){
+		return window.location.hostname+window.location.pathname == 'rewards.verizonwireless.com/gateway'
+			&& /(\?|&)t=auctions(&|$)/.test(window.location.search||'')
 	}
 	,getCustomerBalance: function(){
-		return +$('#rewardsbalancevalue').text().replace(/[^0-9.\-]/g,'');
-		/*var z = this, undef;
-		if (z.customerBalance == undef)
-			z.customerBalance = +$('#rewardsbalancevalue').text().replace(/[^0-9.\-]/g,'');
-		return z.customerBalance;*/
+		return this.alib.getUserCash ? this.alib.getUserCash() : +$('#rewardsbalancevalue').text().replace(/[^0-9.\-]/g,'');
 	}
 	,monitor: function(){
 		var z = this
@@ -81,14 +88,43 @@ Auctit = {
 		}
 	}
 	,stayLoggedIn: function(){
-		return console.log(this.config.key, 'stayLoggedIn', 'this stops the redirect, but you still get logged out');
-		var z = this;
-		if (typeof pageTimeout == 'number') {
-			clearTimeout(pageTimeout);
-			console.log(z.config.key, 'stayLoggedIn', 'pageTimeout cleared');
-		} else {
-			console.log(z.config.key, 'stayLoggedIn', 'failed to stayLoggedIn');
+		var z = this
+			,warning = 5000
+			,wait = z.opts.refreshEvery-warning
+		;
+		if (wait < 0) {
+			wait = 0;
+			warning = z.opts.refreshEvery;
 		}
+		setTimeout(function(){
+			console.log(z.config.key, 'refreshing to stay logged in...', warning);
+			setTimeout(function(){
+				var time = z.$singleAuctionCont.length ? z.getAuctionItemTime(z.$singleAuctionCont) : null;
+				if (time && time.left && time.left < 6)
+					return z.stayLoggedIn();
+				z.refreshPage();
+			},warning);
+		},wait);
+		// this stops the redirect, but you still get logged out...
+		if (typeof pageTimeout == 'number')
+			clearTimeout(pageTimeout);
+	}
+	,refreshPage: function(){
+		var z = this
+			,scrollY = z.getViewportScrollY()
+		;
+		z.setCookie('auctit_scrolly',scrollY,{expires:2500});
+		//window.location.reload(true);
+		window.location = window.location.href;
+	}
+	,checkFromRefresh: function(){
+		var z = this
+			,cookieName = 'auctit_scrolly'
+			,scrollY = z.readCookie(cookieName)
+		;
+		if (!isNaN(scrollY))
+			$('html,body').scrollTop(scrollY);
+		z.setCookie(cookieName,null);
 	}
 	,checkTeaserStatus: function(teasers, alertDistance, cb){
 		var z = this
@@ -177,10 +213,15 @@ Auctit = {
 		$.each(($item.attr('class')||'').split(' '), function(i,v){
 			if (re.test(v)) {
 				id = +v;
-				$item.attr('x-id',id)
 				return false;
 			}
 		});
+		if (!id)
+			id = ($item.find('a.bidHistory').attr('href')||'').split('auctionId=').pop();
+		if (!id)
+			id = $item.closest('.panel').siblings('form[name="auctiondetailsform"]').find('[name="auctionid"]').val();
+		if (id)
+			$item.attr('x-id',id);
 		return id;
 	}
 	,getMaxKey: function(o){
@@ -197,6 +238,8 @@ Auctit = {
 			,markedClass = x+'-waiting'
 			,checkInterval
 		;
+		if (!z.$listingCont)
+			return;
 		$('body').append('<style type="text/css">\
 			.auctions .auctionItem .btn.details {\
 				text-indent: 100%;\
@@ -225,7 +268,7 @@ Auctit = {
 				$item.addClass(markedClass);
 			z.saveWaits();
 		});
-		if (window.location.href == z.opts.auctionHome)
+		if (z.onAuctionPage())
 			z.loadSavedWaits();
 		checkInterval = setInterval(function(){
 			var customerBalance = z.getCustomerBalance();
@@ -234,7 +277,7 @@ Auctit = {
 				if (!$el.hasClass(markedClass))
 					return;
 				time = z.getAuctionItemTime($el);
-				if (time.left > z.waitForBidDistance)
+				if (time.left > z.opts.waitForBidDistance)
 					return;
 				if (isNaN(itemCurrentBid = z.getAuctionItemCurrentBid($el)))
 					return console.log(z.config.key, 'waitForBidDistance', 'failed to getAuctionItemCurrentBid()', z.getAuctionItemId($el));
@@ -245,6 +288,7 @@ Auctit = {
 				clearInterval(checkInterval);
 				console.log(z.config.key, 'waitForBidDistance', 'lets go!', itemUrl);
 				window.location = itemUrl;
+				return false;
 			});
 		},z.opts.waitForBidCheckInterval);
 	}
@@ -276,12 +320,52 @@ Auctit = {
 		});
 		z.setCookie(z.opts.savedWaitsCookieName, JSON.stringify(waits), {expires:30*24*60*60*1000});
 	}
+	,setWait: function(id,v){
+		var z = this, waits;
+		try {
+			waits = JSON.parse(z.parseCookies()[z.opts.savedWaitsCookieName]);
+		} catch (e) {}
+		if (!(waits && typeof waits == 'object'))
+			waits = {};
+		waits[id] = v;
+		z.setCookie(z.opts.savedWaitsCookieName, JSON.stringify(waits), {expires:30*24*60*60*1000});
+	}
 	,setUpAutoBidding: function(){
-		var z = this, checkInterval, delayTimeout, undef;
+		var z = this
+			,autoBiddingEnabled = false
+			,auctionId,savedWaits,checkInterval
+			,delayTimeout,undef
+		;
 		if (!z.$singleAuctionCont.length)
 			return;
+
+		z.$singleAuctionCont.$placeBigBtn = z.$singleAuctionCont.find('a.place-bid').html('Autobidding Disabled').unbind('click').attr('onclick','').bind('click',function(e){
+			e.preventDefault();
+			switchStatus();
+		});
+
+		auctionId = z.getAuctionItemId(z.$singleAuctionCont);
+		try {
+			savedWaits = JSON.parse(z.parseCookies()[z.opts.savedWaitsCookieName]);
+		} catch (e) {}
+		if (savedWaits && savedWaits[auctionId])
+			switchStatus();
+
+		function switchStatus() {
+			if (autoBiddingEnabled) {
+				z.$singleAuctionCont.$placeBigBtn.html('Autobidding Disabled');
+				z.setWait(auctionId);
+			} else {
+				z.$singleAuctionCont.$placeBigBtn.html('Autobidding in...');
+				z.setWait(auctionId,1);
+			}
+			autoBiddingEnabled = !autoBiddingEnabled;
+		}
+
 		checkInterval = setInterval(function(){
 			var time = z.getAuctionItemTime(z.$singleAuctionCont);
+			if (!autoBiddingEnabled)
+				return;
 			if (isNaN(time.left)) {
 				console.log(z.config.key, 'setUpAutoBidding', 'failed to getAuctionItemTime()', 'going back to auctionHome shortly...');
 				if (delayTimeout === undef)
@@ -292,12 +376,29 @@ Auctit = {
 			}
 			clearTimeout(delayTimeout);
 			delayTimeout = undef;
+			if (time.left <= z.opts.autoBidDistance*10 || time.left < 100000) {
+				z.$singleAuctionCont.$placeBigBtn.html('Autobidding in '+(time.left/1000).toFixed(2));
+			}
 			if (time.left <= z.opts.autoBidDistance) {
 				console.log(z.config.key, 'setUpAutoBidding', 'lets go!');
 				z.bid(true);
 				clearInterval(checkInterval);
+				checkInterval = setInterval(checkForFinish,5000);
 			}
 		},z.opts.autoBidCheckInterval);
+		function checkForFinish(){
+			var time = z.getAuctionItemTime(z.$singleAuctionCont)
+				,customerBalance = z.getCustomerBalance()
+				,currentBid = z.getAuctionItemCurrentBid(z.$singleAuctionCont)
+			;
+			if (isNaN(time.left) || time.left < -1000 || customerBalance < currentBid) {
+				console.log(z.config.key, 'bid over', 'redirecting back to auctionHome...');
+				clearInterval(checkInterval);
+				setTimeout(function(){
+					window.location = z.opts.auctionHome;
+				},5000);
+			}
+		}
 	}
 	,bid: function(skeet){
 		var z = this
@@ -330,6 +431,9 @@ Auctit = {
 	}
 	,logCurrentBid: function(){
 		console.log(this.config.key, 'current bid', this.getAuctionItemCurrentBid(this.$singleAuctionCont));
+	}
+	,readCookie: function(name){
+		return this.parseCookies()[name];
 	}
 	,parseCookies: function(cookie){
 		cookie = cookie || document.cookie;
@@ -366,6 +470,9 @@ Auctit = {
 			,opts.secure ? ';secure' : ''
 		].join(''));
 		return document.cookie = set;
+	}
+	,getViewportScrollY: function(){
+		return (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
 	}
 }
 Auctit.init();
