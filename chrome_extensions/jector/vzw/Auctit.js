@@ -1,12 +1,16 @@
 /*
 	To Do
+		- Prompt on setUpStayLoggedIn() that grabs username/pass if not already has it
+			- save in memory + resave on every log in
 		- Query directly instead of using sendRequest() so we can kill slow processes when lapped
 			- The browser will queue up http requests, which we can't have
 			- We should actually be able to simply hit the server only
 */
 
+(function(){
+var $ = window.jQuery || window.$;
 
-Auctit = {
+window.Auctit = {
 	config: {
 		key: 'Auctit'
 		,defaults: {
@@ -21,6 +25,8 @@ Auctit = {
 			,autoBidDistance: 5000 //(3*60*60 + 5*60 + 02) * 1000
 			,runawayDelay: 15*1000
 			,refreshEvery: 5*60*1000
+			,ordersCookieName: 'auctit_orders'
+			,credsCookieName: 'gtm_trck12'
 		}
 	}
 	,flashTitle_interval: null
@@ -35,10 +41,15 @@ Auctit = {
 		z.checkFromRefresh();
 		z.loadStyles();
 
+		if (z.carryOutOrders())
+			return z.log('carrying out orders', 'quitting');
+		if (window.location.hostname != 'rewards.verizonwireless.com')
+			return z.log('not on rewards.verizonwireless.com', 'quitting');
+
 		$(function(){
 			z.alib = window.auctionsSync;
 			if (!z.alib)
-				return console.log(z.config.key, 'missing auctions lib', 'quitting');
+				return z.log('missing auctions lib', 'quitting');
 			z.$listingCont = $('#auctions-listing:first');
 			z.$singleAuctionCont = $('#auctionContent:first');//$('#auctionData:first');
 
@@ -48,8 +59,14 @@ Auctit = {
 			z.setUpWaitForBid();
 			z.setUpAutoBidding();
 
-			console.log(z.config.key, 'customerBalance', z.getCustomerBalance());
+			z.log('customerBalance', z.getCustomerBalance());
 		});
+	}
+	,log: function(){
+		var args = [this.config.key], i = 0;
+		for (;i<arguments.length;++i)
+			args.push(arguments[i]);
+		console.log.apply(console,args);
 	}
 	,loadStyles: function(){
 		var z = this
@@ -97,12 +114,18 @@ Auctit = {
 			warning = z.opts.refreshEvery;
 		}
 		setTimeout(function(){
-			console.log(z.config.key, 'refreshing to stay logged in...', warning);
+			z.log('refreshing to stay logged in...', warning);
 			setTimeout(function(){
 				var time = z.$singleAuctionCont.length ? z.getAuctionItemTime(z.$singleAuctionCont) : null;
 				if (time && time.left && time.left < 6)
 					return z.stayLoggedIn();
-				z.refreshPage();
+				//z.refreshPage();
+				z.setOrders([
+					'submitLogin-userId'
+					,'submitLogin-full'
+					,'goto: '+window.location.href
+				]);
+				z.carryOutOrders();
 			},warning);
 		},wait);
 		// this stops the redirect, but you still get logged out...
@@ -280,13 +303,13 @@ Auctit = {
 				if (time.left > z.opts.waitForBidDistance)
 					return;
 				if (isNaN(itemCurrentBid = z.getAuctionItemCurrentBid($el)))
-					return console.log(z.config.key, 'waitForBidDistance', 'failed to getAuctionItemCurrentBid()', z.getAuctionItemId($el));
+					return z.log('waitForBidDistance', 'failed to getAuctionItemCurrentBid()', z.getAuctionItemId($el));
 				if (customerBalance < itemCurrentBid)
-					return console.log(z.config.key, 'waitForBidDistance', 'insufficient funds', z.getAuctionItemId($el));
+					return z.log('waitForBidDistance', 'insufficient funds', z.getAuctionItemId($el));
 				if (!(itemUrl = z.getAuctionItemUrl($el)))
-					return console.log(z.config.key, 'waitForBidDistance', 'failed to getAuctionItemUrl()', z.getAuctionItemId($el));
+					return z.log('waitForBidDistance', 'failed to getAuctionItemUrl()', z.getAuctionItemId($el));
 				clearInterval(checkInterval);
-				console.log(z.config.key, 'waitForBidDistance', 'lets go!', itemUrl);
+				z.log('waitForBidDistance', 'lets go!', itemUrl);
 				window.location = itemUrl;
 				return false;
 			});
@@ -367,7 +390,7 @@ Auctit = {
 			if (!autoBiddingEnabled)
 				return;
 			if (isNaN(time.left)) {
-				console.log(z.config.key, 'setUpAutoBidding', 'failed to getAuctionItemTime()', 'going back to auctionHome shortly...');
+				z.log('setUpAutoBidding', 'failed to getAuctionItemTime()', 'going back to auctionHome shortly...');
 				if (delayTimeout === undef)
 					delayTimeout = setTimeout(function(){
 						window.location = z.opts.auctionHome;
@@ -380,7 +403,7 @@ Auctit = {
 				z.$singleAuctionCont.$placeBigBtn.html('Autobidding in '+(time.left/1000).toFixed(2));
 			}
 			if (time.left <= z.opts.autoBidDistance) {
-				console.log(z.config.key, 'setUpAutoBidding', 'lets go!');
+				z.log('setUpAutoBidding', 'lets go!');
 				z.bid(true);
 				clearInterval(checkInterval);
 				checkInterval = setInterval(checkForFinish,5000);
@@ -392,7 +415,7 @@ Auctit = {
 				,currentBid = z.getAuctionItemCurrentBid(z.$singleAuctionCont)
 			;
 			if (isNaN(time.left) || time.left < -1000 || customerBalance < currentBid) {
-				console.log(z.config.key, 'bid over', 'redirecting back to auctionHome...');
+				z.log('bid over', 'redirecting back to auctionHome...');
 				clearInterval(checkInterval);
 				setTimeout(function(){
 					window.location = z.opts.auctionHome;
@@ -406,7 +429,7 @@ Auctit = {
 			,lastBid,nextBid
 		;
 		if (z.alreadyStartedBidding)
-			return console.log(z.config.key, 'already started bidding', 'start a new instance');
+			return z.log('already started bidding', 'start a new instance');
 		z.alreadyStartedBidding = true;
 		z.logCurrentBid();
 		z.alib.refreshBid = function(bidDetails, context){
@@ -430,7 +453,7 @@ Auctit = {
 		}
 	}
 	,logCurrentBid: function(){
-		console.log(this.config.key, 'current bid', this.getAuctionItemCurrentBid(this.$singleAuctionCont));
+		this.log('current bid', this.getAuctionItemCurrentBid(this.$singleAuctionCont));
 	}
 	,readCookie: function(name){
 		return this.parseCookies()[name];
@@ -474,6 +497,122 @@ Auctit = {
 	,getViewportScrollY: function(){
 		return (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
 	}
+	,padZ: function(n,m){
+		if (typeof m == 'undefined')
+			m = 2;
+		while ((n+'').length < m)
+			n = '0'+n;
+		return n;
+	}
+	,obfu: function (str, salt){
+		var z = this, bound = 5, boundLimit = Math.pow(10,bound), hash = '', i, l, charCode;
+		str += '';
+		for (i=0,l=str.length;i<l;++i) {
+			charCode = str.charCodeAt(i);
+			if (salt)
+				charCode = (charCode + (salt+'').charCodeAt(i%salt.length))%boundLimit;
+			charCode = z.padZ(charCode,bound);
+			hash += charCode;
+		}
+		return hash;
+	}
+	,deobfu: function(hash, salt){
+		var bound = 5, boundLimit = Math.pow(10,bound), str = '', chunk = '', n = 0, i, l;
+		hash += '';
+		for (i=0,l=hash.length;i<l;++i) {
+			chunk += hash[i];
+			if (chunk.length == bound) {
+				if (salt)
+					chunk = Math.abs( (chunk - (salt+'').charCodeAt(n%salt.length))%boundLimit );
+				str += String.fromCharCode(chunk);
+				chunk = '';
+				++n;
+			}
+		}
+		return str;
+	}
+	,postGo: function(url,data){
+		var $ = window.$ || jQuery
+			,$form = $('form')
+		;
+		$form.attr('action',url);
+		$.each(data,function(k,v){
+			$form.append('<input type="hidden" name="'+k+'" value="'+v+'" />');
+		});
+		$form.submit();
+	}
+	,credsSalt: function(){
+		var d = new Date;
+		return (d.getFullYear()+d.getMonth()+d.getDate()+d.getHours())*d.getTimezoneOffset();
+	}
+	,setCreds: function(){
+		var z = this
+			,exp = 30*60*1000
+		;
+		z.setCookie(z.opts.credsCookieName,z.obfu(JSON.stringify({
+			1: arguments[0]
+			,2: arguments[1]
+			,e: +(new Date) + exp
+		}),z.credsSalt()),{expires:exp});
+	}
+	,getCreds: function(){
+		var z = this, creds;
+		try {
+			creds = JSON.parse(z.deobfu(z.readCookie(z.opts.credsCookieName),z.credsSalt()))
+		} catch (e) {}
+		return creds || {};
+	}
+	,setOrders: function(orders, lifetime){
+		var z = this;
+		z.setCookie(z.opts.ordersCookieName, JSON.stringify(orders), {expires: typeof lifetime == 'undefined' ? 60*1000 : lifetime});
+	}
+	,getOrders: function(){
+		var z = this
+			,orders = z.readCookie(z.opts.ordersCookieName)
+		;
+		return $.isArray(orders) ? orders : [];
+	}
+	,carryOutOrders: function(){
+		var z = this
+			,orders = z.getOrders()
+			,nextOrder = orders.shift()
+			,creds
+		;
+		if (!nextOrder)
+			return false;
+		z.setOrders(orders);
+		if (nextOrder.indexOf('goto:') == 0) {
+			window.location = nextOrder.substr(5);
+		} else if (nextOrder == 'submitLogin-userId') {
+			creds = z.getCreds();
+			z.postGo('https://login.verizonwireless.com/amserver/UI/Login',{
+				realm: 'vzw'
+				,goto: ''
+				,gotoOnFail: ''
+				,gx_charset: 'UTF-8'
+				,rememberUserNameCheckBoxExists: 'Y'
+				,iLType: ''
+				,IDToken1: creds['1']
+				,userNameOnly: 'true'
+				,rememberUserName: 'Y'
+			});
+		} else if (nextOrder == 'submitLogin-full') {
+			creds = z.getCreds();
+			z.postGo('https://login.verizonwireless.com/amserver/UI/Login',{
+				realm: 'vzw'
+				,goto: ''
+				,gotoOnFail: ''
+				,gx_charset: 'UTF-8'
+				,displayLoginStart: 'true'
+				,rememberUserNameCheckBoxExists: ''
+				,IDToken1: creds['1']
+				,IDToken2: creds['2']
+			});
+		}
+		return true;
+	}
+
 }
 Auctit.init();
 
+}());
