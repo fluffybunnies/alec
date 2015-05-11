@@ -1,8 +1,5 @@
 /*
 	To Do
-		- Handle case where I am logged out automatically, but don't immediately receive a page redirect
-			- Periodically check for the modal that pops up notifying me of this case
-			- Don't have the modal specs yet, will need to monitor
 		- Query directly instead of using sendRequest() so we can kill slow processes when lapped
 			- The browser will queue up http requests, which we can't have
 			- We should actually be able to simply hit the server only
@@ -208,7 +205,16 @@ window.Auctit = {
 		});
 
 		//#deprecated01 - inverse
-		if (!z.amLoggedIn()) {
+		if (!z.amLoggedIn())
+			refreshLogin();
+		else
+			z.setCookie('authAttempt',null);
+		// handle logout but no redirect (vzw shows us a modal)
+		setInterval(function(){
+			if ($('.o-popup-session .o-session-expired:visible').length)
+				refreshLogin();
+		},10000);
+		function refreshLogin(){
 			if (z.readCookie('authAttempt'))
 				return z.log('not logged in, but not attempting again so we dont get locked');
 			z.setCookie('authAttempt',1,{expires:60*1000});
@@ -219,8 +225,6 @@ window.Auctit = {
 				,'goto: '+z.opts.auctionHome
 			]);
 			z.carryOutOrders();
-		} else {
-			z.setCookie('authAttempt',null);
 		}
 	}
 	,askForCreds: function(){
@@ -613,7 +617,6 @@ window.Auctit = {
 		} else if (typeof opts.expires == 'string') {
 			expires = opts.expires;
 		}
-		z.log('SET COOKIE DOMAIN',opts.domain == undef ? '; domain=.'+z.getRootDomain() : '; domain='+opts.domain);
 		set = (document.cookie = [
 			escape(key),'=',escape(val)
 			,expires == undef ? '' : '; expires='+expires
