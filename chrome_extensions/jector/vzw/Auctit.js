@@ -23,7 +23,7 @@ window.Auctit = {
 			,waitForBidCheckInterval: 5000
 			,savedWaitsCookieName: 'auctit_saved_waits'
 
-			,autoBidCheckInterval: 500
+			,autoBidCheckInterval: 200
 			,autoBidDistance: 5000 //(3*60*60 + 5*60 + 02) * 1000
 			,runawayDelay: 15*1000
 
@@ -521,9 +521,9 @@ window.Auctit = {
 			}
 			clearTimeout(delayTimeout);
 			delayTimeout = undef;
-			if (time.left <= z.opts.autoBidDistance*10 || time.left < 100000) {
-				z.$singleAuctionCont.$placeBigBtn.html('Autobidding in '+(time.left/1000).toFixed(2));
-			}
+			//if (time.left <= z.opts.autoBidDistance*10 || time.left < 100000) {
+				z.$singleAuctionCont.$placeBigBtn.html('Autobidding in '+z.formatTimeLeft(time.left));
+			//}
 			if (time.left <= z.opts.autoBidDistance) {
 				z.log('setUpAutoBidding', 'lets go!');
 				z.bid(true);
@@ -781,6 +781,22 @@ window.Auctit = {
 	,getRootDomain: function(){
 		// wont work for stuff like domain.co.uk
 		return (window.location.hostname||'').split('.').slice(-2).join('.');
+	}
+	,formatTimeLeft: function(timeLeft, pad){
+		var z = this
+			,hours,minutes,seconds
+		;
+		hours = Math.floor(timeLeft/3600000);
+		timeLeft -= hours * 3600000;
+		minutes = Math.floor(timeLeft/60000);
+		timeLeft -= minutes * 60000;
+		seconds = Math.floor(timeLeft/1000);
+		timeLeft -= seconds*1000;
+		return (hours || pad && z.padZ(hours))
+			+':'+
+			(minutes || pad && z.padZ(minutes))
+			+':'+
+			z.padZ(seconds);//+'.'+z.padZ(Math.round(timeLeft/10));
 	}
 
 }
