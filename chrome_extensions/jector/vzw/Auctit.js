@@ -228,10 +228,8 @@ window.Auctit = {
 		}
 	}
 	,askForCreds: function(){
-		var z = this, $ = z.$
-			creds = z.getCreds()
-		;
-		if (!(creds['1'] && creds['2'] && typeof(creds.e) == 'number'))
+		var z = this;
+		if (!z.haveSavedCreds())
 			setTimeout(function(){
 				z.promptForCreds();
 			},1000);
@@ -706,6 +704,10 @@ window.Auctit = {
 			creds = JSON.parse(z.deobfu(z.readCookie(z.opts.credsCookieName),z.credsSalt()))
 		} catch (e) {}
 		return creds || {};
+	}
+	,haveSavedCreds: function(){
+		var creds = this.getCreds();
+		return creds['1'] && creds['2'] && typeof(creds.e) == 'number';
 	}
 	,setOrders: function(orders, lifetime){
 		var z = this, $ = z.$;
