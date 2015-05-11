@@ -1,7 +1,8 @@
 /*
 	To Do
-		- Prompt on setUpStayLoggedIn() that grabs username/pass if not already has it
-			- save in memory + resave on every log in
+		- Handle case where I am logged out automatically, but don't immediately receive a page redirect
+			- Periodically check for the modal that pops up notifying me of this case
+			- Don't have the modal specs yet, will need to monitor
 		- Query directly instead of using sendRequest() so we can kill slow processes when lapped
 			- The browser will queue up http requests, which we can't have
 			- We should actually be able to simply hit the server only
@@ -13,20 +14,28 @@ var $ = window.jQuery || window.$;
 window.Auctit = {
 	config: {
 		key: 'Auctit'
+		,requireJqueryVersion: '1.8'
 		,defaults: {
 			auctionHome: 'https://rewards.verizonwireless.com/gateway?t=auctions&auctiontype=rco'
+
 			,monitorInterval: 1000
 			,monitorAlertDistance: 60*1000
 			,flashTitleSpeed: 1000
+
 			,waitForBidDistance: 2*60*1000
 			,waitForBidCheckInterval: 5000
 			,savedWaitsCookieName: 'auctit_saved_waits'
+
 			,autoBidCheckInterval: 500
 			,autoBidDistance: 5000 //(3*60*60 + 5*60 + 02) * 1000
 			,runawayDelay: 15*1000
-			,refreshEvery: 5*60*1000
+
+			//#deprecated01
+			//,stayLoggedInRefreshEvery: 5*60*1000
+			//,stayLoggedInDeference: 20*1000
 			,ordersCookieName: 'auctit_orders'
 			,credsCookieName: 'gtm_trck12'
+			,credsLifetime: 60*60*1000
 		}
 	}
 	,flashTitle_interval: null
@@ -36,30 +45,33 @@ window.Auctit = {
 			return;
 		z.inited = true;
 
-		z.opts = $.extend({},z.config.defaults,opts);
+		z.requireJquery(function($){
+			z.opts = $.extend({},z.config.defaults,opts);
 
-		z.checkFromRefresh();
-		z.loadStyles();
+			z.loadStyles();
 
-		if (z.carryOutOrders())
-			return z.log('carrying out orders', 'quitting');
-		if (window.location.hostname != 'rewards.verizonwireless.com')
-			return z.log('not on rewards.verizonwireless.com', 'quitting');
+			if (z.carryOutOrders())
+				return z.log('carrying out orders', 'quitting main thread');
+			z.stayLoggedInUniversal();
+			if (window.location.hostname != 'rewards.verizonwireless.com')
+				return z.log('not on rewards.verizonwireless.com', 'quitting main thread');
 
-		$(function(){
-			z.alib = window.auctionsSync;
-			if (!z.alib)
-				return z.log('missing auctions lib', 'quitting');
-			z.$listingCont = $('#auctions-listing:first');
-			z.$singleAuctionCont = $('#auctionContent:first');//$('#auctionData:first');
+			z.checkFromRefresh();
 
-			z.getCustomerBalance();
-			//z.monitor();
-			z.stayLoggedIn();
-			z.setUpWaitForBid();
-			z.setUpAutoBidding();
+			$(function(){
+				z.alib = window.auctionsSync;
+				if (!z.alib)
+					return z.log('missing auctions lib', 'quitting main thread');
+				z.$listingCont = $('#auctions-listing:first');
+				z.$singleAuctionCont = $('#auctionContent:first');//$('#auctionData:first');
 
-			z.log('customerBalance', z.getCustomerBalance());
+				z.getCustomerBalance();
+				//z.monitor();
+				//z.stayLoggedIn(); //#deprecated01
+				z.askForCreds();
+				z.setUpWaitForBid();
+				z.setUpAutoBidding();
+			});
 		});
 	}
 	,log: function(){
@@ -68,11 +80,45 @@ window.Auctit = {
 			args.push(arguments[i]);
 		console.log.apply(console,args);
 	}
+	,requireJquery: function(cb){
+		var z = this;
+		function gotIt(o){
+			setTimeout(function(){
+				z.$ = o;
+				cb(o);
+			},0);
+		}
+		if (z.isJquery(window.jQuery))
+			return gotIt(jQuery);
+		if (z.isJquery(window.$))
+			return gotIt($);
+		z.log('cant find jQuery, loading v'+z.config.requireJqueryVersion+' from google');
+		var s = document.createElement('script');
+		s.async = true;
+		s.onload = function(){
+			this.parentNode.removeChild(this);
+			gotIt(window.jQuery);
+		}
+		s.src = '//ajax.googleapis.com/ajax/libs/jquery/'+z.config.requireJqueryVersion+'/jquery.min.js';
+		(document.head||document.documentElement).appendChild(s);
+	}
+	,isJquery: function(o){
+		return !!(o && o.ajax instanceof Function);
+	}
+	,amLoggedIn: function(){
+		return !!this.readCookie('loggedIn');
+	}
 	,loadStyles: function(){
-		var z = this
+		var z = this, $ = z.$
 			,x = z.config.key
 		;
-		$('body').append('<style type="text/css" x-ref="'+x+'">.auctionItem.'+x+'-highlight{background:rgba(255,255,0,0.4)!important;}</style>');
+		$('body').append('<style type="text/css" x-ref="'+x+'">\
+			.auctionItem.'+x+'-highlight{background:rgba(255,255,0,0.4)!important;}\
+			/* ace copy and paste stuff - if single quotes need escaping, update in ace instead of here */\
+			.ace-pop-bg {/* #hack */ z-index: 11; position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: #000; -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)"; filter: alpha(opacity=30); -moz-opacity: 0.3; -khtml-opacity: 0.3; opacity: 0.3; } .ace-pop {/* #hack */ z-index: 12; background: #fff; -moz-box-shadow: 0px 1px 5px rgba(0,0,0,0.3); -webkit-box-shadow: 0px 1px 5px rgba(0,0,0,0.3); box-shadow: 0px 1px 5px rgba(0,0,0,0.3); font-family: arial,sans-serif; font-size: 13px; color: #7f7f7f; max-width: 600px; text-align: left; } .ace-pop-head {position: relative; height: 23px; padding: 10px 15px 0 15px; background: #c97766; color: #fff; text-transform: uppercase; letter-spacing: 0.2em; font-size: 11px; font-weight: bold; } .ace-pop-head-content {} .ace-pop-btn-exit ,.ace-pop-btn-exit:active {position: absolute; right: 8px; top: 7px; display: block; width: 13px; height: 13px; text-align: center; padding: 2px 1px 0px 1px; font-size: 10px; -moz-border-radius: 2px; -webkit-border-radius: 2px; border-radius: 2px; color: #fff; } .ace-pop-body {min-width: 300px; padding: 20px 20px 18px 20px; } .ace-pop-body-content {padding: 0 0 20px 0; font-size: 12px; } .ace-pop-btns {padding: 10px 0 0 0; text-align: center; } .ace-pop-btns .ace-pop-btn ,.ace-pop-btns .ace-pop-btn:visited {-moz-box-shadow: inset 0px 1px 0px 0px #fff; -webkit-box-shadow: inset 0px 1px 0px 0px #fff; box-shadow: inset 0px 1px 0px 0px #fff; background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) ); background: -moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% ); filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#ededed", endColorstr="#dfdfdf"); background-color: #ededed; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid #dcdcdc; display: inline-block; color: #777777; font-size: 12px; font-weight: bold; padding: 4px 8px; text-decoration: none; text-shadow: 1px 1px 0px #fff; margin:  0 8px; } .ace-pop-btns .ace-pop-btn:hover {background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) ); background: -moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% ); filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#dfdfdf", endColorstr="#ededed"); background-color: #dfdfdf; } .ace-pop-btns .ace-pop-btn:active {position: relative; top: 1px; left: auto; right: auto; bottom: auto; }\
+			/* ace additions */\
+			.ace-pop-bg { z-index:600; } .ace-pop { z-index:601; }\
+		</style>');
 		$('#globalNavId a.o-logo').unbind('click').attr('onclick','').attr('href',z.opts.auctionHome);
 	}
 	,onAuctionHome: function(){
@@ -86,7 +132,7 @@ window.Auctit = {
 		return this.alib.getUserCash ? this.alib.getUserCash() : +$('#rewardsbalancevalue').text().replace(/[^0-9.\-]/g,'');
 	}
 	,monitor: function(){
-		var z = this
+		var z = this, $ = z.$
 			,teasers = []
 		;
 		if (!z.$listingCont.length)
@@ -104,24 +150,31 @@ window.Auctit = {
 			})();
 		}
 	}
+	/* #deprecated01
 	,stayLoggedIn: function(){
-		var z = this
+		var z = this, $ = z.$
 			,warning = 5000
-			,wait = z.opts.refreshEvery-warning
+			,wait = z.opts.stayLoggedInRefreshEvery-warning
+			,creds = z.getCreds()
 		;
 		if (wait < 0) {
 			wait = 0;
-			warning = z.opts.refreshEvery;
+			warning = z.opts.stayLoggedInRefreshEvery;
 		}
 		setTimeout(function(){
 			z.log('refreshing to stay logged in...', warning);
 			setTimeout(function(){
 				var time = z.$singleAuctionCont.length ? z.getAuctionItemTime(z.$singleAuctionCont) : null;
-				if (time && time.left && time.left < 6)
+				if (time && time.left && time.left < z.opts.stayLoggedInDeference) {
+					z.log('was going to redirect away to refresh login state, but looks like youre close to bidding!');
 					return z.stayLoggedIn();
+				}
 				//z.refreshPage();
-				z.setOrders([
-					'submitLogin-userId'
+				z.setOrders('refreshAuth',[
+					//'logout'
+					//,'goto: https://login.vzw.com/cdsso/public/c/logout'
+					'goto: https://login.verizonwireless.com/amserver/UI/Logout'
+					,'submitLogin-userId'
 					,'submitLogin-full'
 					,'goto: '+window.location.href
 				]);
@@ -132,8 +185,79 @@ window.Auctit = {
 		if (typeof pageTimeout == 'number')
 			clearTimeout(pageTimeout);
 	}
+	*/
+	,stayLoggedInUniversal: function(){
+		var z = this, $ = z.$;
+		// auto creds...
+		$('#loginForm #signIn').bind('click',function(){
+			var $form = $(this).parents('#loginForm:first')
+				,id1 = $form.find('#IDToken1').val()
+				,id2 = $form.find('#IDToken2').val()
+				,temp
+			;
+			//#remove
+			console.log('stayLoggedInUniversal','setting creds',id1,id2);
+			if (id1 || id2)
+				z.setCreds(id1,id2);
+		});
+		// save creds in case we passed the hour mark...
+		if (!z._creds)
+			z._creds = z.getCreds();
+		$(window).bind('beforeunload unload',function(){
+			z.setCreds(z.getCreds()['1'],z.getCreds()['2']);
+		});
+
+		//#deprecated01 - inverse
+		if (!z.amLoggedIn()) {
+			if (z.readCookie('authAttempt'))
+				return z.log('not logged in, but not attempting again so we dont get locked');
+			z.setCookie('authAttempt',1,{expires:60*1000});
+			z.setOrders([
+				'goto: https://login.verizonwireless.com/amserver/UI/Login'
+				,'submitLogin-userId'
+				,'submitLogin-full'
+				,'goto: '+z.opts.auctionHome
+			]);
+			z.carryOutOrders();
+		} else {
+			z.setCookie('authAttempt',null);
+		}
+	}
+	,askForCreds: function(){
+		var z = this, $ = z.$
+			creds = z.getCreds()
+		;
+		if (!(creds['1'] && creds['2'] && typeof(creds.e) == 'number'))
+			setTimeout(function(){
+				z.promptForCreds();
+			},1000);
+	}
+	,promptForCreds: function(){
+		var z = this, $ = z.$, pop, $inputs;
+		pop = ace.pop({
+			header: 'Credentials'
+			,body: 'Enter your creds if you want to take a nap and stay logged in.\
+				<div style="padding-top:12px;">\
+					<style type="text/css" scoped>input{margin-right:6px;}</style>\
+					<input type="text" placeholder="username/phone..." />\
+					<input type="password" placeholder="pass..." />\
+				</div>'
+			,btns: [
+				['cancel','Cancel']
+				,['save','Save']
+			]
+		}).on('save',function(){
+			z.setCreds($inputs.eq(0).val(), $inputs.eq(1).val());
+		});
+		$inputs = pop.$.cont.find('input').bind('keyup',function(e){
+			if (e.which == 13) {
+				pop.trigger('save');
+				pop.close();
+			}
+		});
+	}
 	,refreshPage: function(){
-		var z = this
+		var z = this, $ = z.$
 			,scrollY = z.getViewportScrollY()
 		;
 		z.setCookie('auctit_scrolly',scrollY,{expires:2500});
@@ -141,7 +265,7 @@ window.Auctit = {
 		window.location = window.location.href;
 	}
 	,checkFromRefresh: function(){
-		var z = this
+		var z = this, $ = z.$
 			,cookieName = 'auctit_scrolly'
 			,scrollY = z.readCookie(cookieName)
 		;
@@ -150,7 +274,7 @@ window.Auctit = {
 		z.setCookie(cookieName,null);
 	}
 	,checkTeaserStatus: function(teasers, alertDistance, cb){
-		var z = this
+		var z = this, $ = z.$
 			,x = z.config.key
 			,oneIsReady = false
 			,popAlert = false
@@ -180,7 +304,7 @@ window.Auctit = {
 		cb();
 	}
 	,flashTitle: function(){
-		var z = this
+		var z = this, $ = z.$
 			,msg = '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 			,flag
 		;
@@ -193,14 +317,14 @@ window.Auctit = {
 		},z.opts.flashTitleSpeed);
 	}
 	,killFlashTitle: function(){
-		var z = this;
+		var z = this, $ = z.$;
 		if (z.flashTitle_interval === null)
 			return;
 		clearInterval(z.flashTitle_interval);
 		document.title = z.flashTitle_origVal;
 	}
 	,getAuctionItemTime: function($item){
-		var z = this
+		var z = this, $ = z.$
 			,$time = $item.find('.timeLeft .time')
 			,timeLeft = +$time.attr('timeleft')
 			,endTime = +$time.attr('endtime')
@@ -208,7 +332,7 @@ window.Auctit = {
 		return {left:timeLeft, end:endTime};
 	}
 	,getAuctionItemUrl: function($item){
-		var z = this
+		var z = this, $ = z.$
 			,urls = {}
 			,url = $item.attr('x-url')
 		;
@@ -227,7 +351,7 @@ window.Auctit = {
 		return +($item.find('.currBid .bidAmt').text()||'').replace(/,/g,'');
 	}
 	,getAuctionItemId: function($item){
-		var z = this
+		var z = this, $ = z.$
 			,re = /^[0-9]+$/
 			,id = $item.attr('x-id')
 		;
@@ -248,7 +372,7 @@ window.Auctit = {
 		return id;
 	}
 	,getMaxKey: function(o){
-		var z = this, max;
+		var z = this, $ = z.$, max;
 		$.each(o,function(k,v){
 			if (!max || v < max[1])
 				max = [k,v];
@@ -256,7 +380,7 @@ window.Auctit = {
 		return max ? max[0] : null;
 	}
 	,setUpWaitForBid: function(){
-		var z = this
+		var z = this, $ = z.$
 			,x = z.config.key
 			,markedClass = x+'-waiting'
 			,checkInterval
@@ -316,13 +440,10 @@ window.Auctit = {
 		},z.opts.waitForBidCheckInterval);
 	}
 	,loadSavedWaits: function(){
-		var z = this
-			,savedWaits = z.parseCookies()[z.opts.savedWaitsCookieName]
+		var z = this, $ = z.$
+			,savedWaits = z.readJsonCookie(z.opts.savedWaitsCookieName)
 			,$items
 		;
-		try {
-			savedWaits = JSON.parse(savedWaits);
-		} catch (e) {}
 		if (!(savedWaits && typeof savedWaits == 'object'))
 			return;
 		$items = z.$listingCont.find('.auctionItem');
@@ -331,7 +452,7 @@ window.Auctit = {
 		});
 	}
 	,saveWaits: function(){
-		var z = this
+		var z = this, $ = z.$
 			,x = z.config.key
 			,markedClass = x+'-waiting'
 			,waits = {}
@@ -344,17 +465,16 @@ window.Auctit = {
 		z.setCookie(z.opts.savedWaitsCookieName, JSON.stringify(waits), {expires:30*24*60*60*1000});
 	}
 	,setWait: function(id,v){
-		var z = this, waits;
-		try {
-			waits = JSON.parse(z.parseCookies()[z.opts.savedWaitsCookieName]);
-		} catch (e) {}
+		var z = this, $ = z.$
+			,waits = z.readJsonCookie(z.opts.savedWaitsCookieName)
+		;
 		if (!(waits && typeof waits == 'object'))
 			waits = {};
 		waits[id] = v;
 		z.setCookie(z.opts.savedWaitsCookieName, JSON.stringify(waits), {expires:30*24*60*60*1000});
 	}
 	,setUpAutoBidding: function(){
-		var z = this
+		var z = this, $ = z.$
 			,autoBiddingEnabled = false
 			,auctionId,savedWaits,checkInterval
 			,delayTimeout,undef
@@ -424,7 +544,7 @@ window.Auctit = {
 		}
 	}
 	,bid: function(skeet){
-		var z = this
+		var z = this, $ = z.$
 			,orig = z.alib.refreshBid
 			,lastBid,nextBid
 		;
@@ -446,7 +566,7 @@ window.Auctit = {
 		}
 	}
 	,batchBidRequest: function(auctionId, baseBidAmount){
-		var z = this, i;
+		var z = this, $ = z.$, i;
 		// @todo: kill prev batchBidRequest if active. we can fall behind due to own lag
 		for (i=0;i<10;++i) {
 			z.alib.sendRequest(z.alib.settings.bidRequestUrl, {auctionid:auctionId, bidAmount:+baseBidAmount+i*10}, true);
@@ -455,12 +575,20 @@ window.Auctit = {
 	,logCurrentBid: function(){
 		this.log('current bid', this.getAuctionItemCurrentBid(this.$singleAuctionCont));
 	}
+	,readJsonCookie: function(name){
+		var undef;
+		try {
+			return JSON.parse(this.readCookie(name));
+		} catch (e) {}
+		return undef;
+	}
 	,readCookie: function(name){
 		return this.parseCookies()[name];
 	}
 	,parseCookies: function(cookie){
 		cookie = cookie || document.cookie;
-		var cookies = cookie.split(';')
+		var z = this, $ = z.$
+			,cookies = cookie.split(';')
 			,res = {}
 		;
 		$.each(cookies,function(i,v){
@@ -474,7 +602,7 @@ window.Auctit = {
 		return res;
 	}
 	,setCookie: function(key,val,opts){
-		var undef,expires,set;
+		var z = this,undef,expires,set;
 		opts = (opts && typeof opts == 'object') ? opts : {};
 		if (val === null)
 			opts.expires = -1;
@@ -485,11 +613,13 @@ window.Auctit = {
 		} else if (typeof opts.expires == 'string') {
 			expires = opts.expires;
 		}
+		z.log('SET COOKIE DOMAIN',opts.domain == undef ? '; domain=.'+z.getRootDomain() : '; domain='+opts.domain);
 		set = (document.cookie = [
-			escape(key),'=',val
+			escape(key),'=',escape(val)
 			,expires == undef ? '' : '; expires='+expires
 			,opts.path == undef ? '; path=/' : '; path='+opts.path
-			,opts.domain == undef ? '' : '; domain='+opts.domain
+			//,opts.domain == undef ? '' : '; domain='+opts.domain
+			,opts.domain == undef ? '; domain=.'+z.getRootDomain() : '; domain='+opts.domain
 			,opts.secure ? ';secure' : ''
 		].join(''));
 		return document.cookie = set;
@@ -505,7 +635,7 @@ window.Auctit = {
 		return n;
 	}
 	,obfu: function (str, salt){
-		var z = this, bound = 5, boundLimit = Math.pow(10,bound), hash = '', i, l, charCode;
+		var z = this, $ = z.$, bound = 5, boundLimit = Math.pow(10,bound), hash = '', i, l, charCode;
 		str += '';
 		for (i=0,l=str.length;i<l;++i) {
 			charCode = str.charCodeAt(i);
@@ -532,7 +662,7 @@ window.Auctit = {
 		return str;
 	}
 	,postGo: function(url,data){
-		var $ = window.$ || jQuery
+		var z = this, $ = z.$
 			,$form = $('form')
 		;
 		$form.attr('action',url);
@@ -543,46 +673,68 @@ window.Auctit = {
 	}
 	,credsSalt: function(){
 		var d = new Date;
-		return (d.getFullYear()+d.getMonth()+d.getDate()+d.getHours())*d.getTimezoneOffset();
+		return (d.getFullYear()+d.getMonth()+d.getDate()+d.getHours())*d.getTimezoneOffset() + (''+d.getFullYear()+d.getMonth()+d.getDate()+d.getHours()+d.getTimezoneOffset());
 	}
 	,setCreds: function(){
-		var z = this
-			,exp = 30*60*1000
+		var z = this, $ = z.$
+			,exp = z.opts.credsLifetime
+			,undef
 		;
-		z.setCookie(z.opts.credsCookieName,z.obfu(JSON.stringify({
-			1: arguments[0]
-			,2: arguments[1]
-			,e: +(new Date) + exp
-		}),z.credsSalt()),{expires:exp});
+		if (arguments[0] == undef && arguments[1] == undef)
+			return;
+		z._creds = z.getCreds();
+		if (arguments[0] != undef)
+			z._creds['1'] = arguments[0];
+		if (arguments[1] != undef)
+			z._creds['2'] = arguments[1];
+		z._creds.e = +(new Date) + exp;
+		z.setCookie(z.opts.credsCookieName,z.obfu(JSON.stringify(z._creds),z.credsSalt()),{expires:exp});
+	}
+	,clearCreds: function(){
+		var z = this;
+		z.setCookie(z.opts.credsCookieName,null);
+		delete z._creds;
 	}
 	,getCreds: function(){
-		var z = this, creds;
+		var z = this, $ = z.$, creds;
+		if (z._creds)
+			return z._creds;
 		try {
 			creds = JSON.parse(z.deobfu(z.readCookie(z.opts.credsCookieName),z.credsSalt()))
 		} catch (e) {}
 		return creds || {};
 	}
 	,setOrders: function(orders, lifetime){
-		var z = this;
+		var z = this, $ = z.$;
+		//#remove
+		z.log('setOrders',JSON.stringify(orders));
 		z.setCookie(z.opts.ordersCookieName, JSON.stringify(orders), {expires: typeof lifetime == 'undefined' ? 60*1000 : lifetime});
 	}
+	,clearOrders: function(){
+		this.setCookie(this.opts.ordersCookieName, null);
+	}
 	,getOrders: function(){
-		var z = this
-			,orders = z.readCookie(z.opts.ordersCookieName)
+		var z = this, $ = z.$
+			,orders = z.readJsonCookie(z.opts.ordersCookieName)
 		;
+		z.log('getOrders',orders);
 		return $.isArray(orders) ? orders : [];
 	}
 	,carryOutOrders: function(){
-		var z = this
+		var z = this, $ = z.$
 			,orders = z.getOrders()
 			,nextOrder = orders.shift()
 			,creds
 		;
+		//#remove
+		z.log('carryOutOrders','nextOrder',nextOrder);
 		if (!nextOrder)
 			return false;
 		z.setOrders(orders);
 		if (nextOrder.indexOf('goto:') == 0) {
 			window.location = nextOrder.substr(5);
+		} else if (nextOrder == 'logout') {
+			z.logOut();
 		} else if (nextOrder == 'submitLogin-userId') {
 			creds = z.getCreds();
 			z.postGo('https://login.verizonwireless.com/amserver/UI/Login',{
@@ -611,8 +763,324 @@ window.Auctit = {
 		}
 		return true;
 	}
+	,logOut: function(){
+		// havent figured out how to log out yet
+		return z.log('logOut', 'not yet implemented');
+		var z = this, $ = z.$
+			$logOut = $('#vzwsignout')
+		;
+		$logOut.trigger('click');
+		vgn_hbLink('desktop:global:sign+out');
+		window.location = 'https://login.vzw.com/cdsso/public/c/logout';
+	}
+	,getRootDomain: function(){
+		// wont work for stuff like domain.co.uk
+		return (window.location.hostname||'').split('.').slice(-2).join('.');
+	}
 
 }
 Auctit.init();
 
 }());
+
+
+
+
+
+
+// BEGIN assets
+
+ace = {
+	config: {
+		key: 'ace'
+	}
+	,cssKey: function(module){
+		return this.config.key+'-'+(module.config.key||module.prototype.config.key);
+	}
+	,util: {
+		getViewportScrollY: function(){
+			return (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+		}
+		,arrayFilter: function(arr,cb,start){
+			var i,c;
+			start = typeof start == 'number' ? start : 0;
+			for (i=start,c=arr.length;i<c;++i) {
+				if (!cb(arr[i])) {
+					arr.splice(i,1);
+					this.arrayFilter(arr,cb,i);
+					break;
+				}
+			}
+			return arr;
+		}
+	}
+};
+
+(function(){
+	var initializing = false;
+	this.AceBase = function(){};
+	AceBase.extend = function(o){
+		initializing = true;
+		var n = new this;
+		initializing = false;
+		for (var k in o)
+			n[k] = o[k];
+		n.super = this.prototype;
+		function AceBase() {
+			if (!initializing && this.init instanceof Function)
+				this.init.apply(this,arguments);
+		}
+		AceBase.prototype = n;
+		AceBase.prototype.constructor = AceBase;
+		AceBase.extend = arguments.callee;
+		return AceBase;
+	}
+}());
+AceBase.prototype.on = function(key,cb){
+	var keys = key.split(/ +/), i = 0;
+	for (;i<keys.length;++i)
+		this._getEvt(keys[i]).subs.push({
+			cb: cb
+		});
+	return this;
+};
+AceBase.prototype.ready = function(key,cb){
+	var keys = key.split(/ +/), i = 0, evt;
+	for (;i<keys.length;++i) {
+		evt = this._getEvt(keys[i]);
+		if (evt.firedOnce) {
+			cb(evt.error,evt.data);
+		} else {
+			evt.subs.push({
+				cb: cb,
+				typeReady: true
+			});
+		}
+	}
+	return this;
+};
+AceBase.prototype.off = function(key,cb){
+	var keys = key.split(/ +/)
+		,i = 0, n = 0
+		,evt, undef
+	;
+	for (;i<keys.length;++i) {
+		if (!this._evts || !this._evts[keys[i]])
+			continue;
+		evt = this._getEvt(keys[i]);
+		if (cb === undef) {
+			evt.subs = [];
+		} else {
+			for (n=0;n<evt.subs.length;++n) {
+				// checking !sub in case this is called in callback inside fireSubs
+				if (!evt.subs[n] || evt.subs[n].cb == cb)
+					evt.subs[n] = null;
+			}
+			ace.util.arrayFilter(evt.subs, function(sub){
+				return sub !== null;
+			});
+		}
+	}
+	return this;
+};
+AceBase.prototype.trigger = function(key,error,data){
+	var keys = key.split(/ +/), i = 0, evt;
+	for (;i<keys.length;++i) {
+		evt = this._getEvt(keys[i]);
+		evt.firedOnce = true;
+		evt.error = error;
+		evt.data = data;
+		this._fireSubs(keys[i]);
+	}
+	return this;
+};
+AceBase.prototype._getEvt = function(key){
+	var undef;
+	if (this._evts == undef)
+		this._evts = {};
+	if (this._evts[key] == undef) {
+		this._evts[key] = {
+			subs: []
+		};
+	}
+	return this._evts[key];
+};
+AceBase.prototype._fireSubs = function(key){
+	var evt = this._getEvt(key), subs = evt.subs.slice(0), i = 0;
+	for (;i<subs.length;++i) {
+		subs[i].cb(evt.error,evt.data);
+	}
+	for (i=0;i<subs.length;++i) {
+		if (subs[i].typeReady)
+			subs[i] = null;
+	}
+	ace.util.arrayFilter(evt.subs,function(sub){
+		return sub !== null;
+	});
+};
+
+(function(){
+	var Pop = AceBase.extend({
+		init: function(opts){
+			var z = this;
+			if (typeof opts == 'string')
+				opts = {body:opts};
+			z.opts = $.extend({},z.config.defaults,opts);
+			z.$ = {};
+			z.build();
+			z.functionalize();
+			z.positionAndInsert();
+		}
+	});
+	Pop.prototype.config = {
+		key: 'pop'
+		,defaults: {
+			classes: ''
+			,position: 'fixed'
+			,true_center: false
+			,exit_btn: true
+			,btns: [
+				['ok','Ok']
+			]
+			,header: ''
+			,body: ''
+		}
+	}
+	Pop.prototype.build = function(){
+		var z = this
+			,x = ace.cssKey(z)
+			,exitBtn = false
+		;
+
+		if (z.opts.exit_btn)
+			exitBtn = typeof(z.opts.exit_btn) == 'string' ? z.opts.exit_btn : 'X';
+
+		z.$.cont = $('<div class="'+x+' '+z.opts.classes+'">'
+			+ '<div class="'+x+'-head">'
+				+ '<div class="'+x+'-head-content"></div>'
+			+ '</div>'
+			+ '<div class="'+x+'-body">'
+				+ '<div class="'+x+'-body-content"></div>'
+				+ '<div class="'+x+'-btns"></div>'
+			+ '</div>'
+			+ (exitBtn ? '<a class="'+x+'-btn '+x+'-btn-exit" xdata-key="exit" href="#">'+exitBtn+'</a>' : '')
+		+ '</div>');
+		z.$.head = z.$.cont.find('div.'+x+'-head-content');
+		z.$.body = z.$.cont.find('div.'+x+'-body-content');
+		z.$.btns = z.$.cont.find('div.'+x+'-btns');
+
+		z.$.body.append(z.opts.body);
+		z.$.head.append(z.opts.header);
+
+		$.each(z.opts.btns,function(i,btn){
+			var label,key;
+			if (btn instanceof Array) {
+				label = typeof(btn[1]) == 'string' ? btn[1] : btn[0];
+				key = btn[0];
+			} else {
+				label = key = btn;
+			}
+			z.$.btns.append('<a class="'+x+'-btn '+x+'-btn-'+key+'" xdata-key="'+key+'" href="#">'+label+'</a>');
+		});
+	}
+	Pop.prototype.functionalize = function(){
+		var z = this
+			,x = ace.cssKey(z)
+		;
+		z.$.cont.find('a.'+x+'-btn').bind('click',function(e){
+			e.preventDefault();
+			z.close($(this).attr('xdata-key'));
+		});
+	}
+	Pop.prototype.positionAndInsert = function(){
+		var z = this
+			,$w = $(window)
+			,$b = $(document.body)
+			,scrollY = ace.util.getViewportScrollY()
+			,x,y
+		;
+
+		z.$.cont.css({
+			visibility: 'hidden'
+			,position: z.opts.position == 'absolute' ? 'absolute' : 'fixed'
+		});
+		$b.append(z.$.cont);
+
+		x = ($w.width()-z.$.cont.width()) / 2;
+		y = ($w.height()-z.$.cont.height()) / 2;
+		if (!z.opts.true_center) {
+			if (y < 0)
+				y = 0;
+			if (x < 0)
+				x = 0;
+		}
+		if (z.opts.position == 'absolute')
+			y += scrollY;
+
+		z.$.cont.css({
+			left: x+'px',
+			top: y+'px'
+		});
+		z.$.cont.css('visibility','');
+	}
+	Pop.prototype.close = function(key){
+		var z = this;
+		if (typeof key == 'string')
+			z.trigger(key);
+		z.trigger('close');
+		z.$.cont.remove();
+		z.trigger('removed');
+	}
+
+	ace.pop = function(opts){
+		var id = ace.pop.getNextId()
+			,pop = new Pop(opts)
+		;
+		pop.id = id;
+		ace.pop.pops[id] = pop;
+		++ace.pop.numOpen;
+		pop.on('removed',function(){
+			delete ace.pop.pops[id];
+			if (--ace.pop.numOpen == 0)
+				ace.pop.hideBg();
+		});
+		ace.pop.showBg();
+		return pop;
+	}
+	ace.pop.config = {
+		key: 'pop'
+	};
+	ace.pop.$ = {};
+	ace.pop.pops = {};
+	ace.pop.count = 0;
+	ace.pop.numOpen = 0;
+	ace.pop.getNextId = function(){
+		return ace.pop.count++;
+	}
+	ace.pop.get = function(id){
+		var z = this;
+		return z.pops[id] ? z.pops[id] : null;
+	}
+	ace.pop.showBg = function(){
+		var z = this
+			,x = ace.cssKey(z)
+		;
+		if (z.$.bg)
+			return;
+		z.$.bg = $('<div class="'+x+'-bg"></div>');
+		$('body').append(z.$.bg);
+	}
+	ace.pop.hideBg = function(){
+		var z = this;
+		if (!z.$.bg)
+			return;
+		z.$.bg.remove();
+		delete z.$.bg;
+	}
+
+}());
+
+// END assets
+
+
+
