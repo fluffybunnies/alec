@@ -151,6 +151,18 @@ topen() {
 	fi
 }
 
+authme() {
+	# authme ec2-54-159-48-203.compute-1.amazonaws.com
+	serverName=$1
+	if [ "`ssh -oStrictHostKeyChecking=no root@$serverName 'echo "ok"'`" != "ok" ]; then
+		echo "pushing pubKey..."
+		pubKey=`cat ~/.ssh/id_rsa.pub | sed -n 's/\(.*\) .*$/\1/p'`
+		ssh ubuntu@$serverName "echo '$pubKey' | sudo tee -a /root/.ssh/authorized_keys > /dev/null"
+	else
+		echo "already authed"
+	fi
+}
+
 if [ "`which realpath`" == "" ]; then
 	realpath() {
 		if [ ! -f "$1" ] && [ ! -d "$1" ]; then
