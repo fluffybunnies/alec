@@ -2,7 +2,7 @@
 	"manifest_version": 2,
 	"name": "jector",
 	"description": "sup",
-	"version": "0.0.3",
+	"version": "0.0.5",
 	"icons": {
 		"16": "icon.svg",
 		 "48": "icon.svg",

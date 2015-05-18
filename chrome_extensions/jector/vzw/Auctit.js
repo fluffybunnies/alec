@@ -3,6 +3,9 @@
 		- Query directly instead of using sendRequest() so we can kill slow processes when lapped
 			- The browser will queue up http requests, which we can't have
 			- We should actually be able to simply hit the server only
+		- Increase carousel slide duration, or stop on click/hover
+			$('#featuredAuctions .drCarousel').drCarousel({scrollType:'horizontal',autoScroll:true,singleScroll:true,infinite:true,autoScrollDuration:3e3});
+			$('#featuredAuctions .drCarousel').drCarousel({scrollType:'horizontal',autoScroll:true,singleScroll:true,infinite:true,autoScrollDuration:10e3});
 */
 
 (function(){
@@ -15,6 +18,8 @@ window.Auctit = {
 		,defaults: {
 			auctionHome: 'https://rewards.verizonwireless.com/gateway?t=auctions&auctiontype=rco'
 
+			,bidIncrement: 50
+
 			,monitorInterval: 1000
 			,monitorAlertDistance: 60*1000
 			,flashTitleSpeed: 1000
@@ -24,7 +29,7 @@ window.Auctit = {
 			,savedWaitsCookieName: 'auctit_saved_waits'
 
 			,autoBidCheckInterval: 200
-			,autoBidDistance: 5000 //(3*60*60 + 5*60 + 02) * 1000
+			,autoBidDistance: 4000 //(3*60*60 + 5*60 + 02) * 1000
 			,runawayDelay: 15*1000
 
 			//#deprecated01
@@ -352,6 +357,14 @@ window.Auctit = {
 	,getAuctionItemCurrentBid: function($item){
 		return +($item.find('.currBid .bidAmt').text()||'').replace(/,/g,'');
 	}
+	,getAuctionItemNextBid: function($item){
+		var z = this
+			,nextBid = $item.find('.nextBid .bidAmt').text().replace(/[^0-9.]/g,'')
+		;
+		if (!nextBid)
+			nextBid = z.getAuctionItemCurrentBid($item) + z.opts.bidIncrement;
+		return +nextBid;
+	}
 	,getAuctionItemId: function($item){
 		var z = this, $ = z.$
 			,re = /^[0-9]+$/
@@ -517,16 +530,16 @@ window.Auctit = {
 					delayTimeout = setTimeout(function(){
 						window.location = z.opts.auctionHome;
 					},z.opts.runawayDelay);
-				return;
+				return clearInterval(checkInterval);
 			}
 			clearTimeout(delayTimeout);
 			delayTimeout = undef;
 			//if (time.left <= z.opts.autoBidDistance*10 || time.left < 100000) {
-				z.$singleAuctionCont.$placeBigBtn.html('Autobidding in '+z.formatTimeLeft(time.left));
+				z.$singleAuctionCont.$placeBigBtn.html('Autobidding in '+z.formatTimeLeft(time.left-z.opts.autoBidDistance));
 			//}
 			if (time.left <= z.opts.autoBidDistance) {
 				z.log('setUpAutoBidding', 'lets go!');
-				z.bid(true);
+				z.bid();
 				clearInterval(checkInterval);
 				checkInterval = setInterval(checkForFinish,5000);
 			}
@@ -545,7 +558,7 @@ window.Auctit = {
 			}
 		}
 	}
-	,bid: function(skeet){
+	,bid: function(){
 		var z = this, $ = z.$
 			,orig = z.alib.refreshBid
 			,lastBid,nextBid
@@ -557,21 +570,31 @@ window.Auctit = {
 		z.alib.refreshBid = function(bidDetails, context){
 			if (lastBid != bidDetails.nextBid) {
 				lastBid = bidDetails.nextBid;
-				z.batchBidRequest(bidDetails.auctionId, bidDetails.nextBid);
+				z.batchBidRequest(bidDetails.auctionId, bidDetails.nextBid, 6);
 			}
 			return orig.apply(z.alib, arguments);
 		}
-		if (skeet) {
-			nextBid = z.$singleAuctionCont.find('.nextBid .bidAmt').text().replace(/[^0-9.]/g,'');
-			if (nextBid)
-				z.batchBidRequest(z.alib.settings.pageAuctions[0], nextBid);
+		batchBid(10);
+		batchBid(1, 1000);
+		function batchBid(size, repeatEvery){
+			if (nextBid = z.getAuctionItemNextBid(z.$singleAuctionCont))
+				z.batchBidRequest(z.alib.settings.pageAuctions[0], nextBid, 1);
+			else
+				z.log('bid>batchBid', 'unable to determine nextBid');
+			if (repeatEvery)
+				setTimeout(function(){
+					batchBid(size, repeatEvery);
+				},repeatEvery);
 		}
 	}
-	,batchBidRequest: function(auctionId, baseBidAmount){
+	,batchBidRequest: function(auctionId, baseBidAmount, batchSize){
 		var z = this, $ = z.$, i;
+		if (!batchSize)
+			batchSize = 10;
 		// @todo: kill prev batchBidRequest if active. we can fall behind due to own lag
-		for (i=0;i<10;++i) {
-			z.alib.sendRequest(z.alib.settings.bidRequestUrl, {auctionid:auctionId, bidAmount:+baseBidAmount+i*10}, true);
+		for (i=0;i<batchSize;++i) {
+			z.log('batchBidRequest',+baseBidAmount+i*z.opts.bidIncrement);
+			z.alib.sendRequest(z.alib.settings.bidRequestUrl, {auctionid:auctionId, bidAmount:+baseBidAmount+i*z.opts.bidIncrement}, true);
 		}
 	}
 	,logCurrentBid: function(){
@@ -792,11 +815,11 @@ window.Auctit = {
 		timeLeft -= minutes * 60000;
 		seconds = Math.floor(timeLeft/1000);
 		timeLeft -= seconds*1000;
-		return (hours || pad && z.padZ(hours))
+		return (hours && z.padZ(hours,pad&&2||0) +':') +
+			z.padZ(minutes,pad&&2||0)
 			+':'+
-			(minutes || pad && z.padZ(minutes))
-			+':'+
-			z.padZ(seconds);//+'.'+z.padZ(Math.round(timeLeft/10));
+			z.padZ(seconds)//+'.'+z.padZ(Math.round(timeLeft/10))
+		;
 	}
 
 }

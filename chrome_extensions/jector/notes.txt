@@ -1,0 +1,6 @@
+-- How to publish --
+https://developer.chrome.com/webstore/publish
+(1) Zip files
+(2) Update version in manifest.json
+(3) Visit Developer Dashboard https://chrome.google.com/webstore/developer/dashboard
+(4) Click Edit > Upload Updated Package
