@@ -180,17 +180,28 @@ shep() {
 		while [ "$path" != "" ] && [ "$path" != "/" ]; do
 			echo "path: $path ; dir: $dir"
 			if [ "$dir" == "lucky_wordpress" ]; then
-				remotePath=$remotePrefix`echo "$path" | sed -n 's/.*\(lucky_wordpress\/\)\(.*$\)/\1current\/\2/p'`
-				echo $remotePath
-				echo "scp \"$sourceFile\" \"root@$addr:$remotePath\""
-				#scp "$sourceFile" "root@$addr:$remotePath"
+				remotePath=$remotePrefix`echo "$path" | sed -n 's/.*\(wordpress\/\)\(.*$\)/\1current\/\2/p'`
 				stop=1
 			elif [ "$dir" == "magento19_api" ]; then
-				echo "2"
+				remotePath=$remotePrefix`echo "$path" | sed -n 's/.*\(api-internal\/\)\(.*$\)/\1current\/\2/p'`
+				stop=1
 			elif [ "$dir" == "magento19" ]; then
-				echo "3"
+				remotePath=$remotePrefix`echo "$path" | sed -n 's/.*\(magento\/\)\(.*$\)/\1current\/\2/p'`
+				stop=1
 			fi
 			if [ $stop == 1 ]; then
+				echo $remotePath
+				echo "scp \"$sourceFile\" \"root@$addr:$remotePath\""
+				r=`scp "$sourceFile" "root@$addr:$remotePath" 2>&1`
+				echo "$r"
+				r=`echo "$r" | grep 'Permission denied (publickey)'`
+				if [ "$r" != "" ]; then
+					echo "$r"
+					echo "authorizing..."
+					authme $addr
+					echo "retrying..."
+					shep $@
+				fi
 				break;
 			fi
 			path=`dirname "$path"`
