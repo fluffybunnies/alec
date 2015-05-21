@@ -163,6 +163,42 @@ authme() {
 	fi
 }
 
+shep() {
+	remotePrefix=/var/www/
+	sourceFile=`realpath "$1" 2>/dev/null`
+	path=$sourceFile
+	mem=/tmp/shep_addr
+	stop=0
+	addr=`cat "$mem" 2>/dev/null`
+	if [ "$1" == "set" ]; then
+		echo "$2" > "$mem"
+	elif [ "$1" == "get" ] || [ "$1" == "" ]; then
+		echo "$addr"
+	elif [ "$addr" == "" ]; then
+		echo "use shep set <addr> to set a remote address"
+	else
+		while [ "$path" != "" ] && [ "$path" != "/" ]; do
+			echo "path: $path ; dir: $dir"
+			if [ "$dir" == "lucky_wordpress" ]; then
+				remotePath=$remotePrefix`echo "$path" | sed -n 's/.*\(lucky_wordpress\/\)\(.*$\)/\1current\/\2/p'`
+				echo $remotePath
+				echo "scp \"$sourceFile\" \"root@$addr:$remotePath\""
+				#scp "$sourceFile" "root@$addr:$remotePath"
+				stop=1
+			elif [ "$dir" == "magento19_api" ]; then
+				echo "2"
+			elif [ "$dir" == "magento19" ]; then
+				echo "3"
+			fi
+			if [ $stop == 1 ]; then
+				break;
+			fi
+			path=`dirname "$path"`
+			dir=`basename "$path"`
+		done
+	fi
+}
+
 if [ "`which realpath`" == "" ]; then
 	realpath() {
 		if [ ! -f "$1" ] && [ ! -d "$1" ]; then
