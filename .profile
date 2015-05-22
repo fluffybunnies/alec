@@ -41,6 +41,8 @@ echocute(){
 }
 
 poo(){
+	# Push changes to current branch
+	#
 	currentBranch=`git branch | grep '*' | head -n1 | sed -n 's/^\* //p'`
 	msg="$@"
 	if [ "$msg" == "" ]; then
@@ -53,6 +55,8 @@ poo(){
 }
 
 pop(){
+	# Merge master into prod and push prod up
+	#
 	git fetch
 	git checkout prod
 	git pull origin prod
@@ -60,6 +64,8 @@ pop(){
 }
 
 mastit(){
+	# Sync current branch with origin master
+	#
 	currentBranch=`git branch | grep '*' | head -n1 | sed -n 's/^\* //p'`
 	echo "current branch: $currentBranch"
 	echocute 'git checkout master'
@@ -77,8 +83,17 @@ bitch() {
 	fi
 }
 
+gropen() {
+	# Stream open files matched with grep
+	# gropen -R 'interesting text' ./
+	#
+	app='/Applications/Sublime Text 2.app'
+	grep -l --line-buffered "$@" | xargs -n1 open -a"$app"
+}
+
 gropen2() {
-	# old way, waits till the end
+	# old way, waits till the end before opening
+	#
 	_IFS=$IFS
 	IFS=$'\n'
 	g=`grep -l "$@"`
@@ -88,12 +103,9 @@ gropen2() {
 	IFS=$_IFS
 }
 
-gropen() {
-	app='/Applications/Sublime Text 2.app'
-	grep -l --line-buffered "$@" | xargs -n1 open -a"$app"
-}
-
 fsh() {
+	# Ssh with pem file without
+	#
 	ip=$1
 	user=$2
 	if [ "$user" == "" ]; then
@@ -107,6 +119,8 @@ fsh() {
 }
 
 myec2() {
+	# Ssh to primary instance. Instance set in hosts file: myec2 123.123.123.123
+	#
 	ip=`cat /etc/hosts | grep myec2 | head -n1 | awk '{print $1}'`
 	if [ "$ip" == "" ]; then
 		echo "requires 'myec2' entry in /etc/hosts"
@@ -119,14 +133,18 @@ myec2() {
 }
 
 shudo() {
+	# Same as: ssh ubuntu@instance, sudo -i, cd to web directory
 	# shudo ec2-107-20-26-208.compute-1.amazonaws.com
+	#
 	s='2>/dev/null'
 	c="cd /var/www && cd api_internal $s || cd platform-v2 $s || cd wordpress $s && cd current"
 	ssh -t ubuntu@$1 "sudo -i su -c '$c; /bin/bash'"
 }
 
 shelease() {
+	# Deploy a tag to multiple instances
 	# shelease v0.3.152_release-fbs-dev ec2-54-82-41-81.compute-1.amazonaws.com ec2-54-147-31-5.compute-1.amazonaws.com
+	#
 	commit=$1
 	s='2>/dev/null'
 	c="cd /var/www || exit; cd api_internal $s || cd platform-v2 $s || cd wordpress $s || exit; cd current || exit"
@@ -143,6 +161,9 @@ shelease() {
 }
 
 topen() {
+	# Open a file for editing, creating it if not exists
+	# topen newfile.txt
+	#
 	if [ "$1" != "" ]; then
 		app='/Applications/Sublime Text 2.app'
 		mkdir -p `dirname "$1"`
@@ -152,7 +173,9 @@ topen() {
 }
 
 authme() {
+	# Give yourself root access
 	# authme ec2-54-159-48-203.compute-1.amazonaws.com
+	#
 	serverName=$1
 	if [ "`ssh -oStrictHostKeyChecking=no root@$serverName 'echo "ok"'`" != "ok" ]; then
 		echo "pushing pubKey..."
@@ -164,11 +187,15 @@ authme() {
 }
 
 shep() {
+	# Copy local file to remote
+	# Set remote: shep set ec2-54-159-58-209.compute-1.amazonaws.com
+	# Copy file: shep docroot/lucky/wp-content/test.txt
+	#
 	remotePrefix=/var/www/
 	sourceFile=`realpath "$1" 2>/dev/null`
 	path=$sourceFile
 	mem=/tmp/shep_addr
-	stop=0
+	remotePath=
 	addr=`cat "$mem" 2>/dev/null`
 	if [ "$1" == "set" ]; then
 		echo "$2" > "$mem"
@@ -178,22 +205,18 @@ shep() {
 		echo "use shep set <addr> to set a remote address"
 	else
 		while [ "$path" != "" ] && [ "$path" != "/" ]; do
-			echo "path: $path ; dir: $dir"
+			dir=`basename "$path"`
 			if [ "$dir" == "lucky_wordpress" ]; then
-				remotePath=$remotePrefix`echo "$path" | sed -n 's/.*\(wordpress\/\)\(.*$\)/\1current\/\2/p'`
-				stop=1
+				remotePath=`echo "$sourceFile" | sed -n 's/.*\/lucky_wordpress\(.*\)$/wordpress\/current\1/p'`
 			elif [ "$dir" == "magento19_api" ]; then
-				remotePath=$remotePrefix`echo "$path" | sed -n 's/.*\(api-internal\/\)\(.*$\)/\1current\/\2/p'`
-				stop=1
+				remotePath=`echo "$sourceFile" | sed -n 's/.*\/magento19_api\(.*\)$/api_internal\/current\1/p'`
 			elif [ "$dir" == "magento19" ]; then
-				remotePath=$remotePrefix`echo "$path" | sed -n 's/.*\(magento\/\)\(.*$\)/\1current\/\2/p'`
-				stop=1
+				remotePath=`echo "$sourceFile" | sed -n 's/.*\/magento19\(.*\)$/magento\/current\1/p'`
 			fi
-			if [ $stop == 1 ]; then
-				echo $remotePath
-				echo "scp \"$sourceFile\" \"root@$addr:$remotePath\""
-				r=`scp "$sourceFile" "root@$addr:$remotePath" 2>&1`
-				echo "$r"
+			if [ "$remotePath" != "" ]; then
+				#echo "scp \"$sourceFile\" \"root@$addr:$remotePrefix$remotePath\""
+				r=`scp "$sourceFile" "root@$addr:$remotePrefix$remotePath" 2>&1`
+				#echo "$r"
 				r=`echo "$r" | grep 'Permission denied (publickey)'`
 				if [ "$r" != "" ]; then
 					echo "$r"
@@ -205,7 +228,6 @@ shep() {
 				break;
 			fi
 			path=`dirname "$path"`
-			dir=`basename "$path"`
 		done
 	fi
 }
