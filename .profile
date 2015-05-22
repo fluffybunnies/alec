@@ -225,6 +225,7 @@ shep() {
 					echo "authorizing..."
 					authme $addr
 					echo "retrying..."
+					sleep 1
 					shep $@
 				fi
 				break
