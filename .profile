@@ -195,6 +195,7 @@ shep() {
 	sourceFile=`realpath "$1" 2>/dev/null`
 	path=$sourceFile
 	mem=/tmp/shep_addr
+	remoteAppName=
 	remotePath=
 	addr=`cat "$mem" 2>/dev/null`
 	if [ "$1" == "set" ]; then
@@ -207,13 +208,14 @@ shep() {
 		while [ "$path" != "" ] && [ "$path" != "/" ]; do
 			dir=`basename "$path"`
 			if [ "$dir" == "lucky_wordpress" ]; then
-				remotePath=`echo "$sourceFile" | sed -n 's/.*\/lucky_wordpress\(.*\)$/wordpress\/current\1/p'`
+				remoteAppName='wordpress'
 			elif [ "$dir" == "magento19_api" ]; then
-				remotePath=`echo "$sourceFile" | sed -n 's/.*\/magento19_api\(.*\)$/api_internal\/current\1/p'`
+				remoteAppName='api_internal'
 			elif [ "$dir" == "magento19" ]; then
-				remotePath=`echo "$sourceFile" | sed -n 's/.*\/magento19\(.*\)$/magento\/current\1/p'`
+				remoteAppName='magento'
 			fi
-			if [ "$remotePath" != "" ]; then
+			if [ "$remoteAppName" != "" ]; then
+				remotePath=`echo "$sourceFile" | sed -n "s/.*\/$dir\(.*\)\$/$remoteAppName\/current\1/p"`
 				#echo "scp \"$sourceFile\" \"root@$addr:$remotePrefix$remotePath\""
 				r=`scp "$sourceFile" "root@$addr:$remotePrefix$remotePath" 2>&1`
 				#echo "$r"
@@ -225,7 +227,7 @@ shep() {
 					echo "retrying..."
 					shep $@
 				fi
-				break;
+				break
 			fi
 			path=`dirname "$path"`
 		done
