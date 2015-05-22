@@ -235,6 +235,32 @@ shep() {
 	fi
 }
 
+shrestart() {
+	# Restart Pv3 instance from local
+	# shrestart ec2-54-145-59-103.compute-1.amazonaws.com
+	# shrestart ec2-54-145-59-103.compute-1.amazonaws.com -c v0.3.232_release-1
+	#
+	args=
+	skipFirst=1
+	for arg in "$@"; do
+		if [ $skipFirst == 0 ]; then
+			if [ "$args" == "" ]; then args=$arg; else args=$args" $arg"; fi
+		else
+			((skipFirst--))
+		fi
+	done
+	exec 5>&1
+	r=`ssh root@$1 "cd /var/www/platform-v2/current && /bin/bash ./restart.sh $args" 2>&1 | tee /dev/fd/5`
+	r=`echo "$r" | grep 'Permission denied (publickey)'`
+	if [ "$r" != "" ]; then
+		echo "authorizing..."
+		authme $1
+		echo "retrying..."
+		sleep 1
+		shrestart $@
+	fi
+}
+
 if [ "`which realpath`" == "" ]; then
 	realpath() {
 		if [ ! -f "$1" ] && [ ! -d "$1" ]; then
