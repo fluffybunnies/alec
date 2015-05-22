@@ -42,6 +42,7 @@ echocute(){
 
 poo(){
 	# Push changes to current branch
+	# poo optional message
 	#
 	currentBranch=`git branch | grep '*' | head -n1 | sed -n 's/^\* //p'`
 	msg="$@"
@@ -104,7 +105,7 @@ gropen2() {
 }
 
 fsh() {
-	# Ssh with pem file without
+	# Ssh with pem file
 	#
 	ip=$1
 	user=$2
