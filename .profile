@@ -240,8 +240,10 @@ shrestart() {
 	# shrestart ec2-54-145-59-103.compute-1.amazonaws.com
 	# shrestart ec2-54-145-59-103.compute-1.amazonaws.com -c v0.3.232_release-1
 	#
+	instance=$1
 	args=
 	skipFirst=1
+	mem=/tmp/shrestart_addr
 	for arg in "$@"; do
 		if [ $skipFirst == 0 ]; then
 			if [ "$args" == "" ]; then args=$arg; else args=$args" $arg"; fi
@@ -249,15 +251,26 @@ shrestart() {
 			((skipFirst--))
 		fi
 	done
-	exec 5>&1
-	r=`ssh root@$1 "cd /var/www/platform-v2/current && /bin/bash ./restart.sh $args" 2>&1 | tee /dev/fd/5`
-	r=`echo "$r" | grep 'Permission denied (publickey)'`
-	if [ "$r" != "" ]; then
-		echo "authorizing..."
-		authme $1
-		echo "retrying..."
-		sleep 1
-		shrestart $@
+	if [ "$instance" == "" ]; then
+		args=`cat "$mem" 2>/dev/null`
+		if [ "$args" != "" ]; then
+			echo "no addr supplied, using previous: shrestart $args"
+			shrestart $args
+		else
+			echo "no addr supplied"
+		fi
+	else
+		exec 5>&1
+		r=`ssh root@$instance "cd /var/www/platform-v2/current && /bin/bash ./restart.sh $args" 2>&1 | tee /dev/fd/5`
+		r=`echo "$r" | grep 'Permission denied (publickey)'`
+		if [ "$r" != "" ]; then
+			echo "authorizing..."
+			authme $instance
+			echo "retrying..."
+			sleep 1
+			shrestart $@
+		fi
+		echo "$@" > "$mem"
 	fi
 }
 
