@@ -2,9 +2,9 @@
 # ./parse_tickets.sh v0.3.163_release..v0.3.179_release
 #
 
-# @todo: make match case insensitive
+# @todo: match alternate patterns like will's patch-1234
 out=
-tins=`git log --pretty=format:%s $1 | sed -En 's/.*TLG-?([0-9]+).*/\1/gp'`
+tins=`git log --pretty=format:%s $1 | sed -En 's/.*[tT][lL][gG]-?([0-9]+).*/\1/gp'`
 for tin in $tins; do
 	if [ "${saved[$tin]}" == "" ]; then
 		tid="TLG-$tin"
