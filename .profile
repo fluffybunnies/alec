@@ -205,6 +205,15 @@ shep() {
 		echo "$addr"
 	elif [ "$addr" == "" ]; then
 		echo "use shep set <addr> to set a remote address"
+	elif [ "$1" == "-a" ]; then
+		echo "shepping all modified files..."
+		files=`git ls-files -m`
+		for file in $files; do
+			if [ "$file" != "-a" ]; then # avoid recursion
+				echo "$file..."
+				shep "$file"
+			fi
+		done
 	else
 		while [ "$path" != "" ] && [ "$path" != "/" ]; do
 			dir=`basename "$path"`
