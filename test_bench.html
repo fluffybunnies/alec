@@ -513,7 +513,7 @@ function prog2(){
 */
 
 
-
+/*
 window.runNum = 1000;
 function preProg(){
 	window.strings = [];
@@ -572,6 +572,79 @@ function prog2(){
 	});
 	return vals;
 }
+*/
+
+
+// winner: prog2
+window.runNum = 1000;
+function preProg(){
+	var r = function(numChars){
+		var abc = 'rstlneaiou',tiles = '';
+		for (var i=0;i<numChars;++i)
+			tiles += abc[ util.rand(0,abc.length-1) ];
+		return tiles;
+	}
+	window.dict = ['aah','abate','abbey','abbreviate','aberrance','ably','abnegate','abnegated','abnegates','abnegating','abnegation','abnegations','abnegator','abnegators','abnormalities','abnormality','abnormally','abnormals','aboded','abodes','aboding','aboil','abolishable','abolished','abolisher','abolishers','abolishes','abolishing','abolishment','abolitionary','abolitionism','abolitionist','abolitionists','indulges','indulging','indurate','indurated','indurates','indurating','induration','indurations','indurative','industrialist','industrialists','industrialization','industrialize','industrialized','industrializes','industrializing','industrially','industrials','industries','industriously','industriousness','industrys','indwelling','indwells','indwelt','inearthed','inebriant','inebriate','inebriated','inebriates','inebriating','inebriation','inebriety','inebrious','inedible','inedited','ineducability','ineffably','ineffaceable','ineffectively','ineffectiveness','ineffectually','ineffectualness','inefficacious','inefficaciously','inefficiencies','inefficiency','inefficiently','inelasticity','inelegance','inelegantly','ineligibility','ineligibles','ineligibly','ineloquent','ineloquently','ineluctably','ineptitude','ineptly','ineptness','inequable','inequalities','inequitableness','inequitably','inequities','inerrant','inertias','inertly','inertness','inerts','inescapably','inessential','inestimably','inevitabilities','inevitability','inevitableness','inevitably','inexactitude','inexactly','inexactness','inexcusability','inexcusableness','inexcusably','inexecutable','inexecution','inexhaustibly','inexorably','inexpensively','inexpensiveness','inexperienced','inexpertly','inexplicably','inexpressibilities','inexpressibility','inexpressibly','inexpressive','inexpressiveness','inextinguishables','inextinguishably','inextricability','inextricably','infallibility','infallibleness','infallibly','infamies','infamously','infancies','infanticidal','infanticide','infanticides','infantilism','infantility','infantries','infants','infarcted','infarction','infarctions','infarcts','infatuated','infatuates','infatuating','infatuation','infatuations','infected','infecter','infecters','infecting','infection','infections','infectiously','infectiousness','infective','infector','infectors','infects','infecund','infeoffed','inferable','inferences','inferentially','inferiorities','inferiority','inferiors','infernally','infernos','inferrer','inferrers','inferrible','infers','infertilely','infertility','infestations','infested','infester','infesters','infesting','infests','infidelities','infidelity','infidels','infielder','infielders','infields','infighter','infighters','infiltrated','infiltrates','infiltrating','infiltration','infiltrations','infiltrator','infiltrators','infinitely','infiniteness','infinites','infinitesimally','infinitesimals','infinities','infinitives','infirmable','infirmaries','infirmed','infirming','infirmities','infirmity','infirmly','infirmness','infirms','infixed','infixes','inflamed','inflamer','inflamers','inflames','inflaming','inflammabilities','inflammability','inflammations','inflammative','inflammatorily','inflatable','inflated','inflaters','inflates','inflating','inflation','inflationism','inflationist','inflationists','inflations','inflator','inflators','inflected','inflecting','inflection','inflectional','inflections','inflects','inflexed','inflexibility','inflexibleness','inflexibly','inflictable','inflicted','inflicting','infliction','inflictions','inflictive','inflictor','inflicts','inflight','inflorescence','inflows','influenceabilities','influenceability','influenceable','influenced','influencer','influences','influencing','influents','influenzas','influxes','infold','infolded','infolder','infolders','infolding','infolds','informalities','informality','informally','informants','informational','informatively','informativeness','informed','informer','informers','informing','informs','infos','infracted','infraction','infractions','infractor','infrangible','infrareds','infrasonic','infrastructures','infrequence','infrequency','infrequently','infringed','infringement','infringements','infringer','infringers','infringes','infringing','infundibula','infundibular','infundibuliform','infundibulum','infuriated','infuriates','infuriating','infuriatingly','infuriation','infused','infuser','infusers','infuses','infusibility','infusing','infusions','infusive','infusoria','ingate','ingathered','ingathers','ingeniously','ingeniousness','ingenue','ingenues','ingenuously','ingenuousness','ingestant','ingested','ingesting','ingestive','ingests','ingle','ingles','ingloriously','ingloriousness','ingoing','ingots','ingraft','ingrafted','ingrafting','ingrain','ingrained','ingraining','ingrains','ingrates','ingratiated','ingratiates','ingratiating','ingratiation','ingredients','ingress','ingresses','ingression','ingressive','ingroup','ingroups','ingrowing','ingrowths','inguinal','ingulf','ingulfing','ingulfs','inhabitability','inhabitable','inhabitance','inhabitancies','inhabitancy','inhabitants','inhabited','inhabiter','inhabiting','inhabitress','inhabits','inhalant','inhalants','inhalations','inhalator','inhalators','inhaled','inhaler','inhalers','inhales','inhaling','inharmonic','inhaul','inhaulers','inhered','inherence','inherently','inheres','inhering','inheritabilities','inheritability','inheritable','inheritably','inheritances','inherited','inheriting','inheritors','inheritress','inherits','inhesions','inhibited','inhibiter','inhibiting','inhibitions','inhibitive','inhibitors','inhibits','inhomogeneities','inhospitably','inhospitality','inhumanely','inhumanities','inhumanity','inhumanly','inhume','inhumed','inhumer','inhumes','inimicability','inimically','inimitably','iniquities','iniquitously','initialed','initialing','initialization','initialize','initialized','initializing','initialled','initialling','initially','initials','initiated','initiates','initiating','initiation','initiations','initiative','initiatives','initiator','initiators','initiatory','injectant','injected','injecting','injection','injections','injector','injectors','injects','injudiciously','injudiciousness','injunctions','injured','injurer','injurers','injures','injuries','injuring','injuriously','injuriousness','injustices','inkblot','inkblots','inked','inker','inkers','inkhorn','inkhorns','inkier'];
+	window.tileSets = ['atheyab','xoexzfw','eaebsangt'];
+	for (var i=0;i<10;++i)
+		window.tileSets.push(r(util.rand(5,15)));
+	console.log('tileSets to test', window.tileSets);
+}
+copy = function(o){var c={}; for (var k in o) c[k] = o[k]; return c;}
+function getMax1(myLetters, dictionary){
+	var max = null
+		,myTiles = {}
+		,tiles,word,i,n
+	;
+	for (i=0;i<myLetters.length;++i)
+		myTiles[myLetters[i]] = (myTiles[myLetters[i]] || 0) + 1;
+	for (i in dictionary) {
+		word = dictionary[i];
+		if (word.length > myLetters.length) continue; // dont bother
+		if (max && word.length <= max.length) continue; // dont bother
+		tiles = copy(myTiles);
+		for (n=0;n<word.length;++n) {
+			if (!tiles[word[n]]--) break; // out of tiles for this letter
+			if (n == word.length-1)
+				max = word;
+		}
+	}
+	return max;
+}
+function getMax2(myLetters, dictionary){
+	var max = null
+		,tiles,word,i,n
+	;
+	for (i in dictionary) {
+		word = dictionary[i];
+		if (word.length > myLetters.length) continue; // dont bother
+		if (max && word.length <= max.length) continue; // dont bother
+		tiles = myLetters;
+		for (n=0;n<word.length;++n) {
+			if (tiles.length == (tiles = tiles.replace(word[n],'')).length) // letter not found in word
+				break;
+			if (n == word.length-1)
+				max = word;
+		}
+	}
+	return max;
+}
+function prog1(){
+	var vals = [];
+	tileSets.forEach(function(tileSet){
+		vals.push( getMax1(tileSet, dict) );
+	});
+	return vals;
+}
+function prog2(){
+	var vals = [];
+	tileSets.forEach(function(tileSet){
+		vals.push( getMax2(tileSet, dict) );
+	});
+	return vals;
+}
+
+
 
 
 

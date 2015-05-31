@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title></title>
+<link rel="stylesheet" type="text/css" href="http://static-start.jewelmint.com/k/assets/reset.css" />
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+<script>
+
+// hired.com
+
+// given: this method with no code
+function check_braces(expressions) {
+	// To print results to the standard output please use console.log()
+	// Example: console.log("Hello world!");
+	for (var i=0;i<expressions.length;++i)
+		console.log( bracesMatch(expressions[i]) ? 1 : 0 );
+}
+
+function bracesMatch(str){
+	var braces = {},open = [],i,char,charId;
+	if (str.length%2) // odd #, cant match
+		return false;
+	if (!str) // 0 braces? lets call it a match
+		return true;
+	braces['{'] = braces['}'] = '{';
+	braces['['] = braces[']'] = '[';
+	braces['('] = braces[')'] = '(';
+	for (i=0;i<str.length;++i) {
+		char = str[i];
+		charId = braces[char];
+		if (!charId) // invalid character
+			return false;
+		if (char == charId) // opening brace
+			open.push(charId);
+		else if (!open.length // closing before open
+			|| open.pop() != charId // closing out of turn
+		) return false;
+	}
+	return open.length == 0; // make sure we closed em all
+}
+
+console.log('check braces...');
+check_braces([ ")(){}", "[]({})", "([])", "{()[]}", "([)]", "(())[[]]{{}}", "(([[]])){}" ]);
+console.log('\n');
+
+
+// given: this method with no code
+function check_anagrams(first_words, second_words) {
+	// To print results to the standard output please use console.log()
+	// Example: console.log("Hello world!");
+	for (var i=0;i<first_words.length;++i)
+		console.log( isAnagram(first_words[i],second_words[i]) ? 1 : 0 );
+}
+
+function isAnagram(firstWord, secondWord) {
+	var i, char;
+	if (firstWord.length != secondWord.length)
+		return false;
+	for (i=0;i<firstWord.length;++i) {
+		char = firstWord[i];
+		secondWord = secondWord.replace(char,'');
+		if (secondWord.length != firstWord.length-i-1)
+			return false;
+	}
+	return true;
+}
+
+console.log('check anagrams...');
+//check_anagrams(["aba"],["bab"]);
+check_anagrams(["cinema", "host", "aba", "train"],[ "iceman", "shot", "bab", "rain"]);
+console.log('\n');
+
+
+
+// blacktux
+/*
+Scrabble
+Given a set of letters and a dictionary, find the highest-scoring (in this case, simply longest) word you can make.
+*/
+// given...
+dictionary = ['aah','abate','abbey','abbreviate','aberrance'/*,...*/];
+myLetters = 'atheyab';
+
+// solution 1...
+max = null;
+for (i in dictionary) {
+	word = dictionary[i];
+	if (word.length > myLetters.length) continue; // dont bother
+	if (max && word.length <= max.length) continue; // dont bother
+	tiles = myLetters;
+	for (n=0;n<word.length;++n) {
+		if (tiles.length == (tiles = tiles.replace(word[n],'')).length) // letter not found in word
+			break;
+		if (n == word.length-1)
+			max = word;
+	}
+}
+console.log('RESULT: ',max);
+
+// solution 2...
+myTiles = {}
+copy = function(o){var c={}; for (var k in o) c[k] = o[k]; return c;}
+for (i=0;i<myLetters.length;++i)
+	myTiles[myLetters[i]] = (myTiles[myLetters[i]] || 0) + 1;
+max = null;
+for (i in dictionary) {
+	word = dictionary[i];
+	if (word.length > myLetters.length) continue; // dont bother
+	if (max && word.length <= max.length) continue; // dont bother
+	tiles = copy(myTiles);
+	for (n=0;n<word.length;++n) {
+		if (!tiles[word[n]]--) break; // out of tiles for this letter
+		if (n == word.length-1)
+			max = word;
+	}
+}
+console.log('RESULT: ',max);
+
+
+// see google doc for more, from google and zip
+// https://docs.google.com/document/d/1ACK7FafchapBWWH04WkwESAfB9jTcDtFEPsCra7wmCc/edit
+
+/*
+Write a method that will return the nth value in the Fibonacci Sequence
+*/
+// solution 1...
+function fib(n){
+	var z = this.fib,undef,i;
+	if (!z.vals)
+		z.vals = [0,1];
+	if (z.vals[n] !== undef)
+		return z.vals[n];
+	for (i=z.vals.length;i<=n;++i) {
+		z.vals[i] = z.vals[i-2] + z.vals[i-1];
+	}
+	return z.vals[n];
+}
+
+t = [1,2,3,4,5,6,1000];
+for (i in t) console.log(t[i]+': '+fib(t[i]));
+
+// solution 2...
+;(function(){
+	var vals = [0,1];
+	this.fib = function(n){
+		var undef,i;
+		if (vals[n] !== undef)
+			return vals[n];
+		for (i=vals.length;i<=n;++i) {
+			vals[i] = vals[i-2] + vals[i-1];
+		}
+		return vals[n];
+	}
+}());
+
+t = [1,2,3,4,5,6,1000];
+for (i in t) console.log(t[i]+': '+fib(t[i]));
+
+// solution 3...
+Fib = {
+	vals: [0,1]
+	,get: function(n){
+		var undef,i;
+		if (this.vals[n] !== undef)
+			return this.vals[n];
+		for (i=this.vals.length;i<=n;++i) {
+			this.vals[i] = this.vals[i-2] + this.vals[i-1];
+		}
+		return this.vals[n];
+	}
+};
+
+t = [1,2,3,4,5,6,1000];
+for (i in t) console.log(t[i]+': '+Fib.get(t[i]));
+
+
+</script>
+
+<style type="text/css">
+
+</style>
+
+</head>
+<body>
+
+</body>
+</html>
