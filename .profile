@@ -76,6 +76,14 @@ mastit(){
 	echocute "git merge master && git push origin $currentBranch"
 }
 
+mastif(){
+	branch=$1
+	if [ "$branch" == "" ]; then
+		branch='master'
+	fi
+	echocute "git fetch && git checkout $branch && git pull origin $branch && git fetch --tags"
+}
+
 bitch() {
 	if [[ $1 -eq "please" ]]; then
 		eval "sudo $(fc -ln -1)"
