@@ -1,3 +1,4 @@
+/* BEGIN wordpress */
 #post-lock-dialog {
 	-webkit-animation: goaway 4s;
 	animation: goaway 4s;
@@ -40,3 +41,10 @@
 		visibility: hidden;
 	}
 }
+/* END wordpress */
+
+/* BEGIN watch-tvseries.net */
+#toptvshow {
+	margin-top: 0 !important;
+}
+/* END watch-tvseries.net */

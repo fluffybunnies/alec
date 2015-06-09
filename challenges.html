@@ -131,9 +131,8 @@ function fib(n){
 		z.vals = [0,1];
 	if (z.vals[n] !== undef)
 		return z.vals[n];
-	for (i=z.vals.length;i<=n;++i) {
+	for (i=z.vals.length;i<=n;++i)
 		z.vals[i] = z.vals[i-2] + z.vals[i-1];
-	}
 	return z.vals[n];
 }
 
@@ -147,9 +146,8 @@ for (i in t) console.log(t[i]+': '+fib(t[i]));
 		var undef,i;
 		if (vals[n] !== undef)
 			return vals[n];
-		for (i=vals.length;i<=n;++i) {
+		for (i=vals.length;i<=n;++i)
 			vals[i] = vals[i-2] + vals[i-1];
-		}
 		return vals[n];
 	}
 }());
@@ -164,9 +162,8 @@ Fib = {
 		var undef,i;
 		if (this.vals[n] !== undef)
 			return this.vals[n];
-		for (i=this.vals.length;i<=n;++i) {
+		for (i=this.vals.length;i<=n;++i)
 			this.vals[i] = this.vals[i-2] + this.vals[i-1];
-		}
 		return this.vals[n];
 	}
 };

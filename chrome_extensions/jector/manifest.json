@@ -1,8 +1,8 @@
 {
 	"manifest_version": 2,
 	"name": "jector",
-	"description": "sup",
-	"version": "0.0.6",
+	"description": "rewards.verizonwireless.com + watch-tvseries.net + wordpress",
+	"version": "0.0.7",
 	"xicons": {
 		"16": "icon.svg",
 		 "48": "icon.svg",
@@ -13,7 +13,8 @@
 		"default_title": "jector",
 		"default_popup": "popup.html"
 	},
-	"permissions": ["<all_urls>"],
+	"xpermissions": ["<all_urls>"],
+	"permissions": [ "contentSettings", "tabs", "cookies", "<all_urls>" ],
 	"web_accessible_resources": ["scripts.js","vzw/Auctit.js"],
 	"content_scripts": [
 		{
@@ -27,5 +28,11 @@
 			"js": ["inject.vzw.js"],
 			"run_at": "document_end"
 		}
-	]
+	],
+	"externally_connectable": {
+		"matches": ["*://*.watch-tvseries.net/*"]
+	},
+	"background": {
+		"scripts": ["background.js"]
+	}
 }
