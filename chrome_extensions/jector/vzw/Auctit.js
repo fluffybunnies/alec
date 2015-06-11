@@ -197,8 +197,7 @@ window.Auctit = {
 				,id2 = $form.find('#IDToken2').val()
 				,temp
 			;
-			//#remove
-			console.log('stayLoggedInUniversal','setting creds',id1,id2);
+			//console.log('stayLoggedInUniversal','setting creds',id1,id2);
 			if (id1 || id2)
 				z.setCreds(id1,id2);
 		});
@@ -734,8 +733,7 @@ window.Auctit = {
 	}
 	,setOrders: function(orders, lifetime){
 		var z = this, $ = z.$;
-		//#remove
-		z.log('setOrders',JSON.stringify(orders));
+		//z.log('setOrders',JSON.stringify(orders));
 		z.setCookie(z.opts.ordersCookieName, JSON.stringify(orders), {expires: typeof lifetime == 'undefined' ? 60*1000 : lifetime});
 	}
 	,clearOrders: function(){
@@ -754,8 +752,7 @@ window.Auctit = {
 			,nextOrder = orders.shift()
 			,creds
 		;
-		//#remove
-		z.log('carryOutOrders','nextOrder',nextOrder);
+		//z.log('carryOutOrders','nextOrder',nextOrder);
 		if (!nextOrder)
 			return false;
 		z.setOrders(orders);
