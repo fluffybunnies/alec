@@ -134,6 +134,7 @@ function prog3(){
 }*/
 
 
+/*
 // typeof == object
 // winner: prog2 == prog3
 window.runNum = 500000;
@@ -177,6 +178,7 @@ function prog4(){
 	}
 	return vals
 }
+*/
 
 
 /*
@@ -415,7 +417,7 @@ function prog3(){
 */
 
 
-/*
+
 // 1st, 2nd, 3rd, etc
 // winner: prog3 by 1:2
 window.runNum = 10000;
@@ -489,7 +491,7 @@ function prog3(){
 	});
 	return vals;
 }
-*/
+
 
 
 /*
@@ -847,7 +849,7 @@ $(function(){
 			if (--runTestNTimes)
 				return gamut();
 			var best
-				$winnerBox = $('<div class="winner box"></div>')
+				,$winnerBox = $('<div class="winner box"></div>')
 			;
 			Object.keys(stats).forEach(function(k){
 				if (!best || stats[k].wins > best.wins)

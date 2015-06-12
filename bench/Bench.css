@@ -1,0 +1,50 @@
+/*body {
+	margin: 0;
+	padding: 0;
+}*/
+.Bench {
+	font-family: monospace;
+	counter-reset: test;
+}
+.Bench .box {
+	margin: 0.5em;
+	padding: 0.5em 0.8em;
+	border: 1px solid #ddd;
+	min-height: 1em;
+	min-width: 10em;
+	clear: both;
+	float: left;
+	position: relative;	
+}
+.Bench .box div {
+	padding: 0.5em;
+	white-space: nowrap;
+}
+.Bench .box div span {
+	color: #ccc;
+	margin-left: 1.2em;
+}
+.Bench .box div span:nth-child(1) {
+	margin-left: 0;
+	color: #000;
+}
+.Bench .box div.victory span {
+	color: #2c2;
+}
+.Bench .test::before {
+	counter-increment: test;
+	content: counter(test);
+	position: absolute;
+	right: 2px;
+	bottom: 1px;
+	display: block;
+	font-size: 1em;
+	line-height: 1;
+	color: rgba(0,0,0,0.1);
+}
+.Bench .winner {
+	clear: none;
+}
+.Bench .winner div:nth-child(n+2) >span:nth-child(1) {
+	color: transparent;
+}
