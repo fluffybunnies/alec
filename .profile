@@ -97,7 +97,13 @@ gropen() {
 	# gropen -R 'interesting text' ./
 	#
 	app='/Applications/Sublime Text 2.app'
-	grep -l --line-buffered "$@" | xargs -n1 open -a"$app"
+	if [ "$1" == "" ]; then
+		# we just grepped but really wish we had gropened instead...
+		cmd=`echo $(fc -ln -1) | sed -n 's/grep/gropen/p'`
+		eval "$cmd"
+	else
+		grep -l --line-buffered "$@" | xargs -n1 open -a"$app"
+	fi
 }
 
 gropen2() {
