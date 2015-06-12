@@ -23,7 +23,7 @@ Bench = {
 			z.init();
 			z.loadTest(test,function(err,test){
 				if (err)
-					return z.handleBreakingError();
+					return z.handleBreakingError(err);
 				test.stats = [];
 				test.stats.progs = {};
 				z.start(test);
@@ -40,7 +40,9 @@ Bench = {
 		var s = document.createElement('script');
 		s.async = true;
 		s.type = 'text/javascript';
-		s.onload = function(){ cb(false, window[test]); }
+		s.onload = function(){
+			cb(window[test] ? false : 'test script loaded but unable to find runner', window[test]);
+		}
 		s.onerror = function(){ cb('error loading test'); }
 		s.src = './'+test+'.test.js';
 		document.getElementsByTagName('head')[0].appendChild(s);
@@ -187,6 +189,12 @@ Bench = {
 	,handleBreakingError: function(err){
 		var z = this;
 		z.$.b.html('Error: '+err);
+	}
+
+	,util: {
+		rand: function(min,max){
+			return min+Math.round(Math.random()*(max-min));
+		}
 	}
 
 }
