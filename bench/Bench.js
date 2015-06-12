@@ -56,7 +56,7 @@ Bench = {
 		z.resetDisplay();
 		(function gamut(){
 			z.randomize(progs);
-			console.log('progs',progs);
+			console.log('Prog Order',progs);
 			z.runSet(test, progs, function(){
 				if (--testNum)
 					return gamut();
@@ -75,6 +75,7 @@ Bench = {
 
 		if (test.preTest)
 			preTestData = test.preTest();
+		console.log('Pre-test Data', preTestData);
 
 		setTimeout(nextProg, test.delay);
 

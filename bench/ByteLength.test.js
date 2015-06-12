@@ -1,3 +1,7 @@
+/*
+get byte length of string (untested against node's Buffer('').length)
+winner: prog1 by 11:34
+*/
 
 ByteLength = Test.extend({
 	runProgNTimes: 10000
