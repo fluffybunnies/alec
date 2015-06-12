@@ -134,8 +134,8 @@ function prog3(){
 }*/
 
 
-// these do different things, normalize b4 testing. however as it stands, prog2 == prog3 are the fastest
-// winner:
+// typeof == object
+// winner: prog2 == prog3
 window.runNum = 500000;
 function preProg(){
 	var undef
@@ -172,14 +172,8 @@ function prog3(){
 function prog4(){
 	var vals = []
 	for (var i=0;i<stuffToTest.length;++i) {
-		vals.push( toString.call(stuffToTest[i]) == '[object Object]' && stuffToTest[i] !== null )
-	}
-	return vals
-}
-function prog5(){
-	var vals = []
-	for (var i=0;i<stuffToTest.length;++i) {
-		vals.push( toString.call(stuffToTest[i]) === '[object Object]' && stuffToTest[i] !== null )
+		vals.push( toString.call(stuffToTest[i]).indexOf('[object ') == 0 && stuffToTest[i] !== null )
+		//vals.push( toString.call(stuffToTest[i]) == '[object Object]' && stuffToTest[i] !== null )
 	}
 	return vals
 }
