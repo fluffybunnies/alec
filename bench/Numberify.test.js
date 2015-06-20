@@ -16,9 +16,12 @@ Numberify = Test.extend({
 		return +v;
 	}
 	,prog4: function(v){
-		return parseFloat(v);
+		return ~~v;
 	}
 	,prog5: function(v){
+		return parseFloat(v);
+	}
+	,prog6: function(v){
 		return parseInt(v);
 	}
 });
