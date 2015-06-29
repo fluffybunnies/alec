@@ -67,7 +67,10 @@ pop(){
 mastit(){
 	# Sync current branch with origin master
 	#
-	currentBranch=`git branch | grep '*' | head -n1 | sed -n 's/^\* //p'`
+	currentBranch=$1
+	if [ "$currentBranch" == "" ]; then
+		currentBranch=`git branch | grep '*' | head -n1 | sed -n 's/^\* //p'`
+	fi
 	echo "current branch: $currentBranch"
 	echocute 'git checkout master'
 	echocute 'git fetch'
@@ -303,7 +306,10 @@ if [ "`which realpath`" == "" ]; then
 		if [ ! -f "$1" ] && [ ! -d "$1" ]; then
 			>&2 echo 'path does not exist'
 		else
-			dir=`dirname "$1"`
+			dir=$1
+			if [ -f "$1" ]; then
+				dir=`dirname "$1"`
+			fi
 			path=`cd "${dir}";pwd`
 			if [ -f "$1" ]; then
 				path=$path/`basename "$1"`
