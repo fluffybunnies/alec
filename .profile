@@ -27,6 +27,9 @@ export PATH=/usr/local/mysql/bin:$PATH
 # lein
 export PATH=~/bin:$PATH
 
+# for: grep, topen, etc
+export DEFAULT_TEXT_APP='/Applications/Sublime Text 2.app'
+
 #alias smile="curl http://smiley.meatcub.es:1337"
 smile(){
 	if [ ! -d /tmp/node_modules/cool-ascii-faces ]; then
@@ -46,9 +49,7 @@ poo(){
 	#
 	currentBranch=`git branch | grep '*' | head -n1 | sed -n 's/^\* //p'`
 	msg="$@"
-	if [ "$msg" == "" ]; then
-		msg=`smile`
-	fi
+	if [ "$msg" == "" ]; then msg=`smile`; fi
 	git add --all .
 	git commit -a -m "$msg"
 	git pull origin $currentBranch
@@ -99,14 +100,25 @@ gropen() {
 	# Stream open files matched with grep
 	# gropen -R 'interesting text' ./
 	#
-	app='/Applications/Sublime Text 2.app'
 	if [ "$1" == "" ]; then
 		# we just grepped but really wish we had gropened instead...
-		cmd=`echo $(fc -ln -1) | sed -n 's/grep/gropen/p'`
+		prevCmd="$(fc -ln -1)"
+		if [ "`echo \"$prevCmd\" | grep '|'`" ]; then
+			cmd=`echo "$prevCmd" | sed -n 's/grep/gropenList/p'`
+		else
+			cmd=`echo "$prevCmd" | sed -n 's/grep/gropen/p'`
+		fi
 		eval "$cmd"
 	else
-		grep -l --line-buffered "$@" | xargs -n1 open -a"$app"
+		grep -l --line-buffered "$@" | xargs -n1 open -a"$DEFAULT_TEXT_APP"
 	fi
+}
+
+gropenList(){
+	# For use by gropen() if passing a stream of path strings instead of grepping files
+	# The same except for no '-l' option
+	#
+	grep --line-buffered "$@" | xargs -n1 open -a"$DEFAULT_TEXT_APP"
 }
 
 gropen2() {
@@ -183,10 +195,9 @@ topen() {
 	# topen newfile.txt
 	#
 	if [ "$1" != "" ]; then
-		app='/Applications/Sublime Text 2.app'
 		mkdir -p `dirname "$1"`
 		touch $1
-		open -a"$app" $1
+		open -a"$DEFAULT_TEXT_APP" $1
 	fi
 }
 
