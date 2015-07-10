@@ -1,6 +1,14 @@
+https://chrome.google.com/webstore/detail/jector/akipdbfhijllabkgnhdmkhobnffoibdj
+
 -- How to publish --
 https://developer.chrome.com/webstore/publish
 (1) Zip files
 (2) Update version in manifest.json
 (3) Visit Developer Dashboard https://chrome.google.com/webstore/developer/dashboard
 (4) Click Edit > Upload Updated Package
+
+-- To Do --
+- Fix redirect issue on stale visit
+- Instructions
+	- Consider putting in popup with button on top right like other apps
+

@@ -1,3 +1,3 @@
-* [04/30/15] Allows silent editing of wordpress articles while another editor has control for any LuckyShops.com website
-* [04/30/15] Removes flash ads and other elements that interfere with video play on watch-tvseries.net
 * [05/02/15] Auto-bidding for rewards.verizonwireless.com
+* [04/30/15] Removes flash ads and other elements that interfere with video play on watch-tvseries.net
+* [04/30/15] Allows silent editing of wordpress articles while another editor has control for any LuckyShops.com website
