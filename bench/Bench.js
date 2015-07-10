@@ -192,6 +192,20 @@ Bench = {
 		z.$.b.html('Error: '+err);
 	}
 
+	,selector: function(opts){
+		var z = this
+			,$selector = $('<select class="'+z.config.key+'-selector" />')
+		;
+		$selector.append('<option>Select a test...</option>');
+		for (var i=0;i<opts.length;++i)
+			$selector.append('<option value="'+opts[i]+'">'+opts[i]+'</option>');
+		$selector.bind('change',function(){
+			var k = $selector.val();
+			if (k) z.run(k);
+		});
+		return $selector;
+	}
+
 	,util: {
 		rand: function(min,max){
 			return min+Math.round(Math.random()*(max-min));

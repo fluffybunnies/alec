@@ -12,7 +12,26 @@
 //Bench.run('FormatNum');
 //Bench.run('Undefined');
 //Bench.run('Count');
-Bench.run('ApplyVsCall');
+//Bench.run('ApplyVsCall');
+//Bench.run('IsArray');
+//Bench.run('IsObject');
+//Bench.run('JqEachRef');
+
+$(function(){
+	Bench.selector([
+		'Numberify',
+		'FormatPlace',
+		'ByteLength',
+		'FormatNum',
+		'Undefined',
+		'Count',
+		'ApplyVsCall',
+		'IsArray',
+		'IsObject',
+		'IsFunction',
+		'JqEachRef'
+	]).appendTo($('body'));
+});
 
 </script>
 </head>

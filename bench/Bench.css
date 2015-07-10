@@ -48,3 +48,9 @@
 .Bench .winner div:nth-child(n+2) >span:nth-child(1) {
 	color: transparent;
 }
+
+select.Bench-selector {
+	-webkit-appearance: none;
+	font-size: 30px;
+	padding: 0.2em 1em 0.23em;
+}
