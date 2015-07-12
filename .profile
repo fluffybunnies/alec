@@ -96,6 +96,29 @@ bitch() {
 	fi
 }
 
+grepl() ( # <- for ulimit + local vars
+	# grep the last N lines of file, defaults to last 10 lines
+	# grepl -R '?>' ./
+	# grepl -1 -R '?>' ./
+	# grepl -3 -R '?>' ./ | xargs topen
+	#
+	searchIn=./
+	searchLast=10
+	for arg in "$@"; do
+		if [ $arg == '-r' -o $arg == '-R' ]; then recursive='-r'
+		elif [[ "$arg" =~ ^-[0-9]+$ ]]; then searchLast=`echo "$arg" | sed "s/^-//"`
+		elif [ ! "$search" ]; then search=$arg
+		elif [ ! "$searchIn" ]; then searchIn=$arg
+		else args="$args $arg"; fi
+	done
+	if [ ! "$search" ]; then
+		>&2 echo "please provide a search value"
+	else
+		ulimit -n 5000
+		grep -lI $recursive "$search" "$searchIn" 2>/dev/null | xargs tail -$searchLast | grep -B$searchLast "$search" | grep '==> .* <==' | sed 's/==> \(.*\) <==/\1/'
+	fi
+)
+
 gropen() {
 	# Stream open files matched with grep
 	# gropen -R 'interesting text' ./
@@ -167,8 +190,19 @@ shudo() {
 	# shudo ec2-107-20-26-208.compute-1.amazonaws.com
 	#
 	s='2>/dev/null'
-	c="cd /var/www && cd api_internal $s || cd platform-v2 $s || cd wordpress $s && cd current"
-	ssh -t ubuntu@$1 "sudo -i su -c '$c; /bin/bash'"
+	c="cd /var/www && cd api_internal $s || cd platform-v2 $s || cd wordpress $s || cd lucky-forwarder $s || cd lucky-bak $s && cd current $s"
+	t="sudo -i su -c '$c; /bin/bash'"
+	
+	# begin waglabs
+	# This works once inside: [ -d /var/www ] && su ubuntu -c 'cd /var/www; /bin/bash'
+	#c="$c; [ -d /var/www/html/wag_api ] && su - ubuntu -c 'cd /var/www/html/wag_api; /bin/bash'"
+	# Unknown id: /var/www/html/wag_api
+	if [ "$1" == "52.4.9.222" -o "$1" == "54.172.164.179" -o "$1" == "54.67.7.34" ]; then
+		t="cd /var/www/html/wag_api; /bin/bash"
+	fi
+	# end waglabs
+
+	ssh -t ubuntu@$1 $t
 }
 
 shelease() {
@@ -309,6 +343,14 @@ shrestart() {
 			shrestart $@
 		fi
 		echo "$@" > "$mem"
+	fi
+}
+
+wclear(){
+	if [ -d ./app/storage ]; then
+		rm -fr ./app/storage/cache/* ./app/storage/meta/* ./app/storage/views/*
+	else
+		>&2 echo './app/storage is not a directory'
 	fi
 }
 
