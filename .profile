@@ -197,7 +197,7 @@ shudo() {
 	# This works once inside: [ -d /var/www ] && su ubuntu -c 'cd /var/www; /bin/bash'
 	#c="$c; [ -d /var/www/html/wag_api ] && su - ubuntu -c 'cd /var/www/html/wag_api; /bin/bash'"
 	# Unknown id: /var/www/html/wag_api
-	if [ "$1" == "52.4.9.222" -o "$1" == "54.172.164.179" -o "$1" == "54.67.7.34" ]; then
+	if [ "$1" == "54.152.199.226" -o "$1" == "52.4.9.222" -o "$1" == "54.172.164.179" -o "$1" == "54.152.18.15" -o "$1" == "54.67.7.34" ]; then
 		t="cd /var/www/html/wag_api; /bin/bash"
 	fi
 	# end waglabs
@@ -347,8 +347,15 @@ shrestart() {
 }
 
 wclear(){
+	# Clear laravel cache
+	# wclear
+	# wclear -a
+	#
 	if [ -d ./app/storage ]; then
 		rm -fr ./app/storage/cache/* ./app/storage/meta/* ./app/storage/views/*
+		if [ "$1" == "-a" ]; then
+			rm -fr ./app/storage/logs/* ./app/storage/sessions/*
+		fi
 	else
 		>&2 echo './app/storage is not a directory'
 	fi
@@ -372,6 +379,8 @@ if [ "`which realpath`" == "" ]; then
 	}
 fi
 
+
+cd ~/Dropbox/wag/wagapi
 
 # zat (app maker for zendesk) doesnt like echoes in .profile
 #echo "yay profile"
