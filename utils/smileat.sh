@@ -1,6 +1,11 @@
 #!/bin/bash
 # ./smileat.sh /dev/pts/2 10
-
+#
+# w
+#
+# disguise yourself
+# wall -n sup
+#
 
 smile(){
 	if [ ! -d /tmp/node_modules/cool-ascii-faces ]; then

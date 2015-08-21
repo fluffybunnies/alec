@@ -2,7 +2,7 @@
 winner: prog1 > prog3 >  prog2
 
 Note: This is not a fair test for several reasons,
-	including the lack of memoization of prog1, which
+	including the lack of memoization of prog1 (or did i mean prog3?), which
 	would exist in RL
 */
 
@@ -17,6 +17,7 @@ Fib = Test.extend({
 		arr.sort(function(){
 			return Math.random()-0.5;
 		});
+		//vals = [1,1];
 		return arr;
 	}
 	,prog1: function(n){

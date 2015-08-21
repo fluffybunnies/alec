@@ -1,0 +1,224 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title></title>
+<link rel="stylesheet" type="text/css" href="http://static-start.jewelmint.com/k/assets/reset.css" />
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+<script>
+
+/*
+
+sqrt(2)  .
+         . 1
+       ...
+        1
+
+sqrt(18)  .
+          . 3
+        ...
+         3
+
+Math.asin(3/Math.sqrt(18)) * 57.2957795 = 45deg
+
+   .
+5  .
+   . 4
+ ...
+  3
+
+Math.asin(4/5) * 57.2957795 = 53.1deg
+
+      .
+      .
+10    .
+      . 8
+      .
+ ......
+    6
+
+*/
+
+/*
+for (i=0;i<100;++i) {
+	a = []
+	if (i % 3) a.push('fizz')
+	if (i % 5) a.push('buzz')
+	console.log(a.join(' '))
+}
+
+(function(){
+	var a = 0, b = 1, next; 
+	function nextFibonacci() {
+		next = a + b;
+		return b = (a = b, next);
+	}
+	console.log(nextFibonacci(), nextFibonacci(), nextFibonacci(), nextFibonacci(), nextFibonacci(), nextFibonacci());
+}());
+
+
+(function(){
+function renderCurve(){
+	for(var a = 1, b = 15; a*b; a++, b--)
+		console.log(new Array(a*b).join('*'));
+}
+renderCurve()
+}());
+*/
+
+/*
+var bc = '1.618033988750';
+log( scoreBaseConstant(bc) );
+//log( findNextBaseDigit(bc) );
+
+function scoreBaseConstant(c){
+	var score = 0;
+	for (var i=0;i<1000;++i) {
+		log(fib(i),' == ',fib2(i,c,0));
+		if (fib(i) == fib2(i,c,0))
+			++score;
+	}
+	return score;
+}
+
+function findNextBaseDigit(bc){
+	var currentScore = scoreBaseConstant(bc)
+		,best, next, i
+	;
+	for (i=0;i<10;++i) {
+		next = scoreBaseConstant(bc+''+i);
+		log(bc+''+i+' == '+next);
+		if (!best || next > best[1])
+			best = [bc+''+i,next];
+		else if (next < best[1])
+			break;
+	}
+	return best;
+}
+*/
+
+/*
+function MyClass(opts){
+	if (!(this instanceof MyClass))
+		return new MyClass(opts);
+}
+
+MyClass.prototype.assignedProperty = 20;
+
+Object.defineProperty(MyClass.prototype, 'definedProperty_default', {
+	value: 20
+});
+
+!function(){
+	var val = 20;
+	Object.defineProperty(MyClass.prototype, 'definedProperty_configurable', {
+		get: function(){ return val; }
+		,set: function(v){ val = v*2; }
+		,configurable: true
+	});
+}()
+
+
+instance = new MyClass();
+
+console.log('assignedProperty',instance.assignedProperty);
+instance.assignedProperty = 40;
+console.log('assignedProperty',instance.assignedProperty);
+
+console.log('definedProperty_default',instance.definedProperty_default);
+instance.definedProperty_default = 40;
+console.log('definedProperty_default',instance.definedProperty_default);
+
+console.log('definedProperty_configurable',instance.definedProperty_configurable);
+instance.definedProperty_configurable = 40;
+console.log('definedProperty_configurable',instance.definedProperty_configurable);
+
+
+a = new (function(){
+		return { Class: function() { } }; 
+}()).Class;
+
+b = new (function(){
+		return { Class: function() { } }; 
+})().Class;
+*/
+
+
+CalcText = {
+	config: {
+		key: 'CalcText'
+	}
+	,init: function($cont){
+		var z = this, x = z.config.key;
+		z.$cont = $cont.addClass(x);
+		z.$intro = $('<div class="'+x+'-intro">Paste text into input box and hit <small>ENTER</small></div>').appendTo($cont);
+		z.$input = $('<textarea class="'+x+'-input">').appendTo($cont);
+		z.$out = $('<div class="'+x+'-out"><pre><code></code></pre></div>').appendTo($cont).find('code');
+		z.$input.bind('keyup',function(e){
+			if (e.which != 13)
+				return;
+			z.calc($(this).val());
+		});
+	}
+	,calc: function(text){
+		var z = this
+			,longestLine
+		;
+		text = text.split('\n');
+		$.each(text,function(i,line){
+			if (!longestLine || line.length > longestLine.length)
+				longestLine = line;
+		});
+		z.printResult(longestLine);
+		delete text;
+	}
+	,printResult: function(data){
+		var z = this
+		;
+		data = {
+			line: data
+			,len: data.length
+		}
+		z.$out.text(JSON.stringify(data,null,3));
+		delete data;
+	}
+}
+$(function(){
+	CalcText.init($('<div>').appendTo('body'));
+});
+
+
+</script>
+
+<style type="text/css">
+body {
+	font-size: 11px;
+	font-family: monospace;
+	padding: 2em 3em;
+}
+.CalcText {
+	font-family: monospace;
+	font-size: 12px;
+	/*padding: 2em 3em;*/
+}
+.CalcText-intro {
+	padding-bottom: 0.5em;
+}
+.CalcText textarea {
+	width: 200px;
+	height: 60px;
+}
+.CalcText-out {
+	padding: 0.5em 0;
+}
+</style>
+
+</head>
+<body>
+
+
+
+
+
+</body>
+</html>

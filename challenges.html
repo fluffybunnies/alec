@@ -78,9 +78,19 @@ console.log('\n');
 Scrabble
 Given a set of letters and a dictionary, find the highest-scoring (in this case, simply longest) word you can make.
 */
-// given...
-dictionary = ['aah','abate','abbey','abbreviate','aberrance'/*,...*/];
-myLetters = 'atheyab';
+
+var dictionary = ['aah','abate','abbey','abbreviate','aberrance'/*, ...*/];
+var myLetters = 'atheyab';
+
+console.log( 'TopScoringWord():',
+  findTopScoringWord(myLetters, dictionary)
+);
+
+
+function findTopScoringWord(myLetters, dictionary) {
+  // fill Javascript code in here
+}
+
 
 // solution 1...
 max = null;
@@ -174,6 +184,22 @@ for (i in t) console.log(t[i]+': '+Fib.get(t[i]));
 
 
 // check hasSuffiecentCharacters() in test_bench.html
+
+
+
+
+// misc
+
+/*
+	Write a function that sorts a list of strings alphabetically case insensitive
+*/
+
+function sortAbc(list){
+	return list.sort(function(a,b){
+		return a.toLowerCase() > b.toLowerCase() ? 1 : -1;
+	});
+}
+
 
 </script>
 

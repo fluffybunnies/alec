@@ -1,4 +1,8 @@
 /*
+
+	stayLoggedIn temporarily disabled cuz i was getting my account locked from glitch where it keeps attempting over and over
+		#here
+
 	To Do
 		- Query directly instead of using sendRequest() so we can kill slow processes when lapped
 			- The browser will queue up http requests, which we can't have
@@ -219,9 +223,14 @@ window.Auctit = {
 				refreshLogin();
 		},10000);
 		function refreshLogin(){
+// #here
+z.log('authAttempt', 'pre', z.readCookie('authAttempt'));
 			if (z.readCookie('authAttempt'))
 				return z.log('not logged in, but not attempting again so we dont get locked');
 			z.setCookie('authAttempt',1,{expires:60*1000});
+// #here
+z.log('authAttempt', 'post', z.readCookie('authAttempt'));
+return;
 			z.setOrders([
 				'goto: https://login.verizonwireless.com/amserver/UI/Login'
 				,'submitLogin-userId'

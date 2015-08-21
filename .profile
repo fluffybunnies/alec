@@ -21,6 +21,9 @@ export PS1="\u@\h \w \[$txtcyn\]\$git_branch\[$txtred\]\$git_dirty\[$txtrst\]\$ 
 # stop merge message prompt
 export GIT_MERGE_AUTOEDIT=no
 
+# php
+export PATH=/usr/local/php5/bin:$PATH
+
 # mysql
 export PATH=/usr/local/mysql/bin:$PATH
 
@@ -29,6 +32,15 @@ export PATH=~/bin:$PATH
 
 # for: grep, topen, etc
 export DEFAULT_TEXT_APP='/Applications/Sublime Text 2.app'
+export DEFAULT_WEB_APP='/Applications/Google Chrome.app'
+
+saveprofile()(
+	src='/Users/ahulce/.profile'
+	dest='/Users/ahulce/Dropbox/alec_repo/.profile'
+	ls -lh "$dest"
+	cp "$src" "$dest"
+	ls -lh "$dest"
+)
 
 #alias smile="curl http://smiley.meatcub.es:1337"
 smile(){
@@ -78,14 +90,22 @@ mastit(){
 	echocute 'git pull origin master'
 	echocute "git checkout $currentBranch"
 	echocute "git merge master && git push origin $currentBranch"
+	echocute 'git diff master...'
 }
 
 mastif(){
+	# Sync local branch with origin. Defaults to master
+	# mastif patch-brownies
+	#
 	branch=$1
 	if [ "$branch" == "" ]; then
 		branch='master'
 	fi
 	echocute "git fetch && git checkout $branch && git pull origin $branch && git fetch --tags"
+}
+
+gcp(){
+	git cherry-pick $1
 }
 
 bitch() {
@@ -189,6 +209,7 @@ shudo() {
 	# Same as: ssh ubuntu@instance, sudo -i, cd to web directory
 	# shudo ec2-107-20-26-208.compute-1.amazonaws.com
 	#
+	d=$1
 	s='2>/dev/null'
 	c="cd /var/www && cd api_internal $s || cd platform-v2 $s || cd wordpress $s || cd lucky-forwarder $s || cd lucky-bak $s && cd current $s"
 	t="sudo -i su -c '$c; /bin/bash'"
@@ -197,12 +218,25 @@ shudo() {
 	# This works once inside: [ -d /var/www ] && su ubuntu -c 'cd /var/www; /bin/bash'
 	#c="$c; [ -d /var/www/html/wag_api ] && su - ubuntu -c 'cd /var/www/html/wag_api; /bin/bash'"
 	# Unknown id: /var/www/html/wag_api
-	if [ "$1" == "54.152.199.226" -o "$1" == "52.4.9.222" -o "$1" == "54.172.164.179" -o "$1" == "54.152.18.15" -o "$1" == "54.67.7.34" ]; then
+	if [ "$d" == "-s" ]; then d=$2; fi
+	if [ "$d" == "dev1" ]; then d=54.152.199.226
+	elif [ "$d" == "dev2" ]; then d=52.4.9.222
+	elif [ "$d" == "stage" ]; then d=54.172.164.179
+	elif [ "$d" == "qa" ] || [ "$d" == "prelease" ]; then d=54.152.18.15
+	elif [ "$d" == "scripts" ]; then d=50.18.217.82
+	elif [ "$d" == "prod" ]; then d=54.67.7.34
+	fi
+
+	if [ "$d" == "54.152.199.226" -o "$d" == "52.4.9.222" -o "$d" == "54.172.164.179" -o "$d" == "54.152.18.15" -o "$d" == "54.67.7.34" ]; then
 		t="cd /var/www/html/wag_api; /bin/bash"
+	fi
+	echo "$d"
+	if [ "$1" != "-s" ] && [ "$2" != "-s" ]; then
+		ssh -t ubuntu@$d $t
 	fi
 	# end waglabs
 
-	ssh -t ubuntu@$1 $t
+	#ssh -t ubuntu@$d $t
 }
 
 shelease() {
@@ -230,19 +264,37 @@ topen() {
 	#
 	if [ "$1" != "" ]; then
 		mkdir -p `dirname "$1"`
-		touch $1
-		open -a"$DEFAULT_TEXT_APP" $1
+		touch "$1"
+		open -a"$DEFAULT_TEXT_APP" "$1"
 	fi
+}
+
+wopen() {
+	open -a"$DEFAULT_WEB_APP" "$1"
+}
+
+bopen() {
+	topen "$1"
+	wopen "$1"
 }
 
 authme() {
 	# Give yourself root access
 	# authme ec2-54-159-48-203.compute-1.amazonaws.com
 	#
+	#ubuntuAuthKey=/Users/ahulce/.ssh/mac.pem
+	ubuntuAuthKey=/Users/ahulce/.ssh/wag-api-test.pem
 	serverName=$1
-	if [ "`ssh -oStrictHostKeyChecking=no root@$serverName 'echo "ok"'`" != "ok" ]; then
-		echo "pushing pubKey..."
-		pubKey=`cat ~/.ssh/id_rsa.pub | sed -n 's/\(.*\) .*$/\1/p'`
+	if [ "$1" == "prod" ]; then
+		ubuntuAuthKey=/Users/ahulce/.ssh/wagprod2.pem
+		serverName=$2
+	fi
+	pubKey=`cat ~/.ssh/id_rsa.pub | sed -n 's/\(.*\) .*$/\1/p'`
+	if [ "`ssh -oStrictHostKeyChecking=no ubuntu@$serverName 'echo "ok"'`" != "ok" ]; then
+		echo "pushing pubKey for ubuntu..."
+		ssh -i$ubuntuAuthKey ubuntu@$serverName "echo '$pubKey' >> ~/.ssh/authorized_keys"
+	elif [ "`ssh -oStrictHostKeyChecking=no root@$serverName 'echo "ok"'`" != "ok" ]; then
+		echo "pushing pubKey for root..."
 		ssh ubuntu@$serverName "echo '$pubKey' | sudo tee -a /root/.ssh/authorized_keys > /dev/null"
 	else
 		echo "already authed"
@@ -379,8 +431,20 @@ if [ "`which realpath`" == "" ]; then
 	}
 fi
 
+gp(){
+	if [ "$1" ]; then
+		gitp_cwd=`pwd`
+		cd "$1"
+		time (mastif && git gc)
+		cd "$gitp_cwd"
+	else
+		ls
+	fi
+}
 
-cd ~/Dropbox/wag/wagapi
+if [ -f /tmp/start.sh ]; then
+	./tmp/start.sh
+fi
 
 # zat (app maker for zendesk) doesnt like echoes in .profile
 #echo "yay profile"
