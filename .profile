@@ -253,11 +253,10 @@ shudo() {
 
 shtag_head()(
 	# Create tag off HEAD and push to env
-	# Note: this does some weird stuff when using --git-dir. everything seems to end up ok if i run git reset at the end.
-	#	though i havent had time to figure out the weirdness yet.
+	# @todo: If tag has already been cut (i.e. last tag == HEAD), then just push it to env
 	# shtag_head qa
 	#
-	# git tag -d 20150821e_release && git push origin :refs/tags/20150821e_release
+	# git tag -d 20150821g_release && git push origin :refs/tags/20150821g_release
 	#
 	env=`wag_instance $1`
 	currentTag=`get_current_tag $env`
@@ -276,9 +275,9 @@ shtag_head()(
 	nextTag=`echo $currentTag | sed "s/$letter/$nextLetter/"`
 	git tag $nextTag || exit 1
 	git push --tags || exit 1
-	gitDir=/var/www/html/wag_api/.git # different from prod so we dont accidentally push to live
-	#echo "ssh ubuntu@$env \"git --git-dir=$gitDir fetch --tags && git --git-dir=$gitDir checkout $nextTag\""
-	ssh ubuntu@$env "git --git-dir=$gitDir fetch --tags && git --git-dir=$gitDir checkout $nextTag && git --git-dir=$gitDir reset --hard HEAD" || exit 1
+	gitDir=/var/www/html/wag_api # different from prod so we dont accidentally push to live
+	remoteCnf="--git-dir=$gitDir/.git --work-tree=$gitDir"
+	ssh ubuntu@$env "git $remoteCnf fetch --tags && git $remoteCnf checkout $nextTag" || exit 1
 	echo "pushed $nextTag to $env"
 )
 
