@@ -205,6 +205,25 @@ myec2() {
 	fi
 }
 
+get_current_tag()(
+	url=$1/id
+	cnf=`curl -sS "$url"`
+	echo $cnf | sed -n 's/.*"tag":"\([^"]*\).*/\1/p'
+)
+
+wag_instance()(
+	d=$1
+	if [ "$d" == "-s" ]; then d=$2; fi
+	if [ "$d" == "dev1" ]; then d=54.152.199.226
+	elif [ "$d" == "dev2" ]; then d=52.4.9.222
+	elif [ "$d" == "stage" ]; then d=54.172.164.179
+	elif [ "$d" == "qa" ] || [ "$d" == "prelease" ]; then d=54.152.18.15
+	elif [ "$d" == "scripts" ]; then d=50.18.217.82
+	elif [ "$d" == "prod" ]; then d=54.67.7.34
+	fi
+	echo $d
+)
+
 shudo() {
 	# Same as: ssh ubuntu@instance, sudo -i, cd to web directory
 	# shudo ec2-107-20-26-208.compute-1.amazonaws.com
@@ -218,14 +237,7 @@ shudo() {
 	# This works once inside: [ -d /var/www ] && su ubuntu -c 'cd /var/www; /bin/bash'
 	#c="$c; [ -d /var/www/html/wag_api ] && su - ubuntu -c 'cd /var/www/html/wag_api; /bin/bash'"
 	# Unknown id: /var/www/html/wag_api
-	if [ "$d" == "-s" ]; then d=$2; fi
-	if [ "$d" == "dev1" ]; then d=54.152.199.226
-	elif [ "$d" == "dev2" ]; then d=52.4.9.222
-	elif [ "$d" == "stage" ]; then d=54.172.164.179
-	elif [ "$d" == "qa" ] || [ "$d" == "prelease" ]; then d=54.152.18.15
-	elif [ "$d" == "scripts" ]; then d=50.18.217.82
-	elif [ "$d" == "prod" ]; then d=54.67.7.34
-	fi
+	d=`wag_instance "$d"`
 
 	if [ "$d" == "54.152.199.226" -o "$d" == "52.4.9.222" -o "$d" == "54.172.164.179" -o "$d" == "54.152.18.15" -o "$d" == "54.67.7.34" ]; then
 		t="cd /var/www/html/wag_api; /bin/bash"
@@ -238,6 +250,37 @@ shudo() {
 
 	#ssh -t ubuntu@$d $t
 }
+
+shtag_head()(
+	# Create tag off HEAD and push to env
+	# Note: this does some weird stuff when using --git-dir. everything seems to end up ok if i run git reset at the end.
+	#	though i havent had time to figure out the weirdness yet.
+	# shtag_head qa
+	#
+	# git tag -d 20150821e_release && git push origin :refs/tags/20150821e_release
+	#
+	env=`wag_instance $1`
+	currentTag=`get_current_tag $env`
+	letter=`echo $currentTag | sed 's/[0-9]*\([a-z]\).*/\1/'`
+	if [ ! "$letter" ] || [ "$letter" == 'z' ]; then
+		>&2 echo "unable to create next tag; letter: $letter" # @todo: continue on past z
+		exit 1
+	fi
+	abc=(a b c d e f g h i j k l m n o p q r s t u v w x y z)
+	i=0
+	for l in ${abc[@]}; do
+			i=$[i+1]
+			if [ $letter == $l ]; then break; fi
+	done
+	nextLetter=${abc[$i]}
+	nextTag=`echo $currentTag | sed "s/$letter/$nextLetter/"`
+	git tag $nextTag || exit 1
+	git push --tags || exit 1
+	gitDir=/var/www/html/wag_api/.git # different from prod so we dont accidentally push to live
+	#echo "ssh ubuntu@$env \"git --git-dir=$gitDir fetch --tags && git --git-dir=$gitDir checkout $nextTag\""
+	ssh ubuntu@$env "git --git-dir=$gitDir fetch --tags && git --git-dir=$gitDir checkout $nextTag && git --git-dir=$gitDir reset --hard HEAD" || exit 1
+	echo "pushed $nextTag to $env"
+)
 
 shelease() {
 	# Deploy a tag to multiple instances
