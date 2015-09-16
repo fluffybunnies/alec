@@ -2,7 +2,7 @@
 	"manifest_version": 2,
 	"name": "jector",
 	"description": "rewards.verizonwireless.com + watch-tvseries.net + wordpress",
-	"version": "0.0.7",
+	"version": "0.0.9",
 	"xicons": {
 		"16": "icon.svg",
 		 "48": "icon.svg",
@@ -14,11 +14,11 @@
 		"default_popup": "popup.html"
 	},
 	"xpermissions": ["<all_urls>"],
-	"permissions": [ "contentSettings", "tabs", "cookies", "<all_urls>" ],
+	"permissions": [ "contentSettings", "tabs", "cookies", "webRequest", "webRequestBlocking", "<all_urls>" ],
 	"web_accessible_resources": ["scripts.js","vzw/Auctit.js"],
 	"content_scripts": [
 		{
-			"matches": ["*://*.luckyshops.com/*","*://*.watch-tvseries.net/*","*://*.solarmovie.cz/*","*://*.putlocker.tn/*","*://*.wagwalking.com/*"],
+			"matches": ["*://*.luckyshops.com/*","*://*.watch-tvseries.net/*","*://*.solarmovie.cz/*","*://*.putlocker.tn/*","*://*.putlocker.is/*"],
 			"css": ["styles.css"],
 			"js": ["inject.js"],
 			"run_at": "document_end"

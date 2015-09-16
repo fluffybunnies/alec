@@ -178,6 +178,15 @@ Fib = {
 	}
 };
 
+// solution 4...
+function fib(n) {
+if(n == 1 || n == 2) {
+ return 1;
+} else {
+ return fib(n - 1) + fib(n - 2);
+}
+}
+
 t = [1,2,3,4,5,6,1000];
 for (i in t) console.log(t[i]+': '+Fib.get(t[i]));
 

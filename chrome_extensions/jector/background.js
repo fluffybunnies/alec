@@ -1,10 +1,20 @@
 
 chrome.runtime.onMessageExternal.addListener(function(request, sender, sendResponse){
-	//console.log(request,sender,sendResponse);
+	//console.log('jector', 'chrome.runtime.onMessageExternal.addListener', request, sender, sendResponse);
 	if (!api[request])
 		return sendResponse('unknown api request');
 	api[request](sender.tab,sendResponse);
 });
+
+
+chrome.webRequest.onBeforeRequest.addListener(
+	function(details){
+		//console.log('jector', 'block web requests for ad libraries', details);
+		return {cancel: true};
+	},
+	{urls: ["*://onclickads.net/*"]},
+	["blocking"]
+);
 
 
 api = {

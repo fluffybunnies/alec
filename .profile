@@ -42,6 +42,12 @@ saveprofile()(
 	ls -lh "$dest"
 )
 
+pmo()(
+	# @todo: if input is git commit, parse out pivotal ticket number
+	# positiveInt='^[1-9][0-9]*$'; if ! [[ "$1" =~ $positiveInt ]]; then ...
+	open -a"$DEFAULT_WEB_APP" "https://www.pivotaltracker.com/story/show/$1"
+)
+
 #alias smile="curl http://smiley.meatcub.es:1337"
 smile(){
 	if [ ! -d /tmp/node_modules/cool-ascii-faces ]; then
@@ -55,7 +61,7 @@ echocute(){
 	eval "$1"
 }
 
-poo(){
+poo()(
 	# Push changes to current branch
 	# poo optional message
 	#
@@ -64,20 +70,20 @@ poo(){
 	if [ "$msg" == "" ]; then msg=`smile`; fi
 	git add --all .
 	git commit -a -m "$msg"
-	git pull origin $currentBranch
+	git pull origin $currentBranch #|| exit 1 # commented out so we can push new branches at the cost of missing potential merge conflict
 	git push origin $currentBranch
-}
+)
 
-pop(){
+pop()(
 	# Merge master into prod and push prod up
 	#
 	git fetch
 	git checkout prod
 	git pull origin prod
 	git merge master && git push origin prod && git checkout master
-}
+)
 
-mastit(){
+mastit()(
 	# Sync current branch with origin master
 	#
 	currentBranch=$1
@@ -85,15 +91,15 @@ mastit(){
 		currentBranch=`git branch | grep '*' | head -n1 | sed -n 's/^\* //p'`
 	fi
 	echo "current branch: $currentBranch"
-	echocute 'git checkout master'
-	echocute 'git fetch'
-	echocute 'git pull origin master'
-	echocute "git checkout $currentBranch"
-	echocute "git merge master && git push origin $currentBranch"
-	echocute 'git diff master...'
-}
+	git checkout master || exit 1
+	git fetch
+	git pull origin master || exit 1
+	(git checkout $currentBranch && git merge master && git push origin $currentBranch) || exit 1
+	echo 'git diff master...'
+	git --no-pager diff master
+)
 
-mastif(){
+mastif()(
 	# Sync local branch with origin. Defaults to master
 	# mastif patch-brownies
 	#
@@ -102,10 +108,25 @@ mastif(){
 		branch='master'
 	fi
 	echocute "git fetch && git checkout $branch && git pull origin $branch && git fetch --tags"
-}
+)
 
 gcp(){
 	git cherry-pick $1
+}
+
+gco(){
+	git checkout $1
+}
+
+glc(){
+	if [ `which pbcopy` ]; then
+		git log $1 | head -n1 | awk '{print $2}' | pbcopy
+	fi
+	git log $1 | head -n5
+}
+
+gbb(){
+	git checkout -
 }
 
 bitch() {
@@ -139,7 +160,7 @@ grepl() ( # <- for ulimit + local vars
 	fi
 )
 
-gropen() {
+gropen()(
 	# Stream open files matched with grep
 	# gropen -R 'interesting text' ./
 	#
@@ -155,7 +176,7 @@ gropen() {
 	else
 		grep -l --line-buffered "$@" | xargs -n1 open -a"$DEFAULT_TEXT_APP"
 	fi
-}
+)
 
 gropenList(){
 	# For use by gropen() if passing a stream of path strings instead of grepping files
@@ -176,7 +197,7 @@ gropen2() {
 	IFS=$_IFS
 }
 
-fsh() {
+fsh()(
 	# Ssh with pem file
 	#
 	ip=$1
@@ -189,9 +210,9 @@ fsh() {
 	else
 		ssh -i/Users/ahulce/.ssh/fabfitfun2.pem -oStrictHostKeyChecking=no $user@"$ip"
 	fi
-}
+)
 
-myec2() {
+myec2()(
 	# Ssh to primary instance. Instance set in hosts file: myec2 123.123.123.123
 	#
 	ip=`cat /etc/hosts | grep myec2 | head -n1 | awk '{print $1}'`
@@ -203,7 +224,7 @@ myec2() {
 		#c="cd /var/www"
 		#ssh -t ubuntu@$ip "sudo -i su -c '$c; /bin/bash'"
 	fi
-}
+)
 
 get_current_tag()(
 	url=$1/id
@@ -214,34 +235,32 @@ get_current_tag()(
 wag_instance()(
 	d=$1
 	if [ "$d" == "-s" ]; then d=$2; fi
-	if [ "$d" == "dev1" ]; then d=54.152.199.226
+	if [ "$d" == "dev1" ]; then d=54.164.7.90
 	elif [ "$d" == "dev2" ]; then d=52.4.9.222
-	elif [ "$d" == "stage" ]; then d=54.172.164.179
-	elif [ "$d" == "qa" ] || [ "$d" == "prelease" ]; then d=54.152.18.15
+	elif [ "$d" == "uat" ]; then d=54.152.199.226
+	elif [ "$d" == "stage" -o "$d" == "stage-prod" ]; then d=54.172.164.179
+	elif [ "$d" == "qa" ]; then d=54.152.18.15
 	elif [ "$d" == "scripts" ]; then d=50.18.217.82
 	elif [ "$d" == "prod" ]; then d=54.67.7.34
 	fi
 	echo $d
 )
 
-shudo() {
+shudo()(
 	# Same as: ssh ubuntu@instance, sudo -i, cd to web directory
 	# shudo ec2-107-20-26-208.compute-1.amazonaws.com
 	#
 	d=$1
+	if [ "$1" == "-s" ]; then d=$2; fi
 	s='2>/dev/null'
-	c="cd /var/www && cd api_internal $s || cd platform-v2 $s || cd wordpress $s || cd lucky-forwarder $s || cd lucky-bak $s && cd current $s"
+	c="cd /var/www && cd wagapi $s || cd api_internal $s || cd platform-v2 $s || cd wordpress $s || cd lucky-forwarder $s || cd lucky-bak $s && cd current $s"
 	t="sudo -i su -c '$c; /bin/bash'"
 	
 	# begin waglabs
-	# This works once inside: [ -d /var/www ] && su ubuntu -c 'cd /var/www; /bin/bash'
-	#c="$c; [ -d /var/www/html/wag_api ] && su - ubuntu -c 'cd /var/www/html/wag_api; /bin/bash'"
-	# Unknown id: /var/www/html/wag_api
+	#if [ "$d" == "qa" ]; then
+	#	t="cd /var/www/html/wag_api; /bin/bash"
+	#fi
 	d=`wag_instance "$d"`
-
-	if [ "$d" == "54.152.199.226" -o "$d" == "52.4.9.222" -o "$d" == "54.172.164.179" -o "$d" == "54.152.18.15" -o "$d" == "54.67.7.34" ]; then
-		t="cd /var/www/html/wag_api; /bin/bash"
-	fi
 	echo "$d"
 	if [ "$1" != "-s" ] && [ "$2" != "-s" ]; then
 		ssh -t ubuntu@$d $t
@@ -249,7 +268,7 @@ shudo() {
 	# end waglabs
 
 	#ssh -t ubuntu@$d $t
-}
+)
 
 shtag_head()(
 	# Create tag off HEAD and push to env
@@ -281,7 +300,7 @@ shtag_head()(
 	echo "pushed $nextTag to $env"
 )
 
-shelease() {
+shelease()(
 	# Deploy a tag to multiple instances
 	# shelease v0.3.152_release-fbs-dev ec2-54-82-41-81.compute-1.amazonaws.com ec2-54-147-31-5.compute-1.amazonaws.com
 	#
@@ -298,9 +317,9 @@ shelease() {
 		echo $arg
 		ssh -t ubuntu@$arg "sudo -i su -c '$c; $r'"
 	done
-}
+)
 
-topen() {
+topen()(
 	# Open a file for editing, creating it if not exists
 	# topen newfile.txt
 	#
@@ -309,18 +328,18 @@ topen() {
 		touch "$1"
 		open -a"$DEFAULT_TEXT_APP" "$1"
 	fi
-}
+)
 
-wopen() {
+wopen()(
 	open -a"$DEFAULT_WEB_APP" "$1"
-}
+)
 
 bopen() {
 	topen "$1"
 	wopen "$1"
 }
 
-authme() {
+authme()(
 	# Give yourself root access
 	# authme ec2-54-159-48-203.compute-1.amazonaws.com
 	#
@@ -341,9 +360,9 @@ authme() {
 	else
 		echo "already authed"
 	fi
-}
+)
 
-shep() {
+shep()(
 	# Copy local file to remote
 	# Set remote: shep set ec2-54-159-58-209.compute-1.amazonaws.com
 	# Copy file: shep docroot/lucky/wp-content/test.txt
@@ -399,9 +418,9 @@ shep() {
 			path=`dirname "$path"`
 		done
 	fi
-}
+)
 
-shrestart() {
+shrestart()(
 	# Restart Pv3 instance from local
 	# shrestart ec2-54-145-59-103.compute-1.amazonaws.com
 	# shrestart ec2-54-145-59-103.compute-1.amazonaws.com -c v0.3.232_release-1
@@ -438,25 +457,54 @@ shrestart() {
 		fi
 		echo "$@" > "$mem"
 	fi
-}
+)
 
-wclear(){
-	# Clear laravel cache
-	# wclear
-	# wclear -a
+tardir()(
+	# Tar+Zip large directory
+	# tardir path/to/dir path/to/archive
 	#
-	if [ -d ./app/storage ]; then
-		rm -fr ./app/storage/cache/* ./app/storage/meta/* ./app/storage/views/*
-		if [ "$1" == "-a" ]; then
-			rm -fr ./app/storage/logs/* ./app/storage/sessions/*
-		fi
-	else
-		>&2 echo './app/storage is not a directory'
+	# Omit second argument to target cwd
+	# tardir path/to/dir
+	#
+	source=$1
+	target=$2
+	if [ "$1" == '-x' ]; then
+		source=$2
+		target=$3
+		untardirc "$2" "$3"
+		exit
 	fi
-}
+	if [ ! "$target" ]; then target=`pwd`/`basename "$source"`.tar.gz; # tardirc /tmp
+	elif [ -d "$target" ]; then target=`cd "$target";pwd`/`basename "$source"`.tar.gz; # tardirc /tmp ../
+	fi
+
+	curdir=`pwd`
+	cd "$source"
+	includeFile=`mktemp -t tartmp.XXXXXX`
+	find . -type f > "$includeFile"
+
+	tar -T "$includeFile" -zcf "$target"
+
+	rm "$includeFile"
+	cd "$curdir"
+)
+
+untardir()(
+	# Untar+unzip archive
+	# tardirc path/to/archive.tar.gz path/to/target/dir
+	#
+	# Omit second argument to target cwd
+	# untardir path/to/archive.tar.gz
+	#
+	source=$1
+	target=$2
+	if [ ! "$target" ]; then target=./; fi
+
+	tar -zxf "$source" -C "$target"
+)
 
 if [ "`which realpath`" == "" ]; then
-	realpath() {
+	realpath()(
 		if [ ! -f "$1" ] && [ ! -d "$1" ]; then
 			>&2 echo 'path does not exist'
 		else
@@ -470,10 +518,10 @@ if [ "`which realpath`" == "" ]; then
 			fi
 			echo $path
 		fi
-	}
+	)
 fi
 
-gp(){
+gp()(
 	if [ "$1" ]; then
 		gitp_cwd=`pwd`
 		cd "$1"
@@ -482,7 +530,7 @@ gp(){
 	else
 		ls
 	fi
-}
+)
 
 if [ -f /tmp/start.sh ]; then
 	./tmp/start.sh

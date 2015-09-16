@@ -6,6 +6,7 @@ jector = {
 		,checkDelay: 15
 		,checkDelayDecayAt: 100
 		,checkDelayDecayRate: function(current,orig){return current*1.5;}
+		,requireJqueryVersion: '1.8'
 	}
 	,init: function(){
 		var z = this;
@@ -55,23 +56,83 @@ jector = {
 		});
 	}
 	,handlePutLocker: function(){
-		var z = this;
+		var z = this
+			,nullA = function(){console.log('jector hijacked')}
 		z.log('putlocker');
-		
 
+		// replace entire DOM with copy of itself to wipe event listeners
+		//document.replaceChild(document.documentElement.cloneNode(true), document.documentElement)
 		z.disableCookies();
+		window.open = nullA
 
 		var deleteStuff = function(){
-			z.removeElements('iframe');
+			z.log('deleteStuff()')
+			//z.removeElements('iframe');
 			z.removeElements('script');
+			z.removeElements('menu-box', 'className');
 			z.removeElements('fb_iframe_widget', 'className');
+			z.removeElementByID('MarketGidScriptRootC9737');
+			z.removeElementByID('_atssh');
+			z.removeElementByID('twttrHubFrameSecure');
+			z.removeElementByID('twttrHubFrame');
+
+			//window.onClickTrigger = nullA
 		};
 		deleteStuff();
 		setInterval(deleteStuff,1000);
 
-		z.onJquery(function($){
-			alert('jquery!');
-		});
+		/*
+	    function k() {
+  	      return +new Date();
+    	}
+			// ...
+      if (o9 + 250 > k()) {
+          return;
+      }
+		*/
+		/* prevents popup, but breaks play btn
+		Date.prototype.valueOf = function(){
+			z.log('callee', arguments.callee.caller, arguments.callee.caller.toString().indexOf('function k()'));
+			if (arguments.callee.caller.toString().indexOf('function k()') != -1) return 1;
+			return this.getTime();
+		}*/
+
+		var madeNextBtn = false
+		makeNextBtn()
+		function makeNextBtn(){
+			if (madeNextBtn) return;
+			madeNextBtn = true
+			z.requireJquery(function($){
+				var btnToReplace = $('a.movgre:first')
+					,currentPath = window.location.pathname
+					,currentEpisode = currentPath.match(/season-([0-9]+)-episode-([0-9]+)/)
+					,prevUrl = currentPath.replace(currentEpisode[0], 'season-'+currentEpisode[1]+'-episode-'+(+currentEpisode[2]-1))
+					,nextUrl = currentPath.replace(currentEpisode[0], 'season-'+currentEpisode[1]+'-episode-'+(+currentEpisode[2]+1))
+					,$newBtns
+				btnToReplace.replaceWith($newBtns=$('<a class="movgre jector-prev" href="'+prevUrl+'" title="Prev">Prev</a><a class="movgre jector-next" href="'+nextUrl+'" title="Next">Next</a>'))
+				$('head').append('<style type="text/css">.movgre{color:#fff !important; margin:0 0.2em;}</style>')
+
+				$.ajax({
+					method: 'HEAD'
+					,url: nextUrl
+					,cache: true
+					,complete: function(res){
+						if (res.status == 404)
+							$newBtns.eq(1).attr('href',currentPath.replace(currentEpisode[0], 'season-'+(+currentEpisode[1]+1)+'-episode-1'))
+					}
+				})
+			})
+		}
+
+		var addedOtherLink = false
+		addOtherLink()
+		function addOtherLink(){
+			if (addedOtherLink) return;
+			addedOtherLink = true
+			z.requireJquery(function($){
+				$('.mainlogo').append('<div style="position:relative;left:188px;top:-34px;">Can\'t find what you\'re looking for? Try <a href="http://watch-tvseries.net">watch-tvseries.net</a></div>')
+			})
+		}
 	}
 	,handleWatchTvSeries: function(){
 		var z = this;
@@ -98,6 +159,15 @@ jector = {
 				});
 				//$('*').unbind('click');
 			}
+
+			var addedOtherLink = false
+			addOtherLink()
+			function addOtherLink(){
+				if (addedOtherLink) return;
+				addedOtherLink = true
+				$('.spbackgrd').append('<div style="text-align:right;font-size:12px;line-height:1.4;padding:0.45em 0.7em 0 0;">Can\'t find what you\'re looking for?<br />Try <a href="http://putlocker.is">putlocker.is</a></div>')
+			}
+
 		});
 	}
 	,handleWagApi: function(){
@@ -124,6 +194,10 @@ jector = {
 		for (i=0;i<elms.length;++i) {
 			(!check || check(elms[i])) && elms[i].parentNode.removeChild(elms[i]);
 		}
+	}
+	,removeElementByID: function(search){
+		var el = document.getElementById(search)
+		if (el) el.parentNode.removeChild(el)
 	}
 	,onJquery: function(cb){
 		var z = this;
@@ -159,6 +233,33 @@ jector = {
 		for (i=0;i<arguments.length;++i)
 			args.push(arguments[i]);
 		console.log.apply(console,arguments);
+	}
+
+
+	,requireJquery: function(cb){
+		var z = this;
+		function gotIt(o){
+			setTimeout(function(){
+				z.$ = o;
+				cb(o);
+			},0);
+		}
+		if (z.isJquery(window.jQuery))
+			return gotIt(jQuery);
+		if (z.isJquery(window.$))
+			return gotIt($);
+		z.log('cant find jQuery, loading v'+z.config.requireJqueryVersion+' from google');
+		var s = document.createElement('script');
+		s.async = true;
+		s.onload = function(){
+			this.parentNode.removeChild(this);
+			gotIt(window.jQuery);
+		}
+		s.src = '//ajax.googleapis.com/ajax/libs/jquery/'+z.config.requireJqueryVersion+'/jquery.min.js';
+		(document.head||document.documentElement).appendChild(s);
+	}
+	,isJquery: function(o){
+		return !!(o && o.ajax instanceof Function);
 	}
 }
 jector.init();
