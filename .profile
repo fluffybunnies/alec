@@ -28,11 +28,17 @@ export PATH=/usr/local/php5/bin:$PATH
 export PATH=/usr/local/mysql/bin:$PATH
 
 # lein
-export PATH=~/bin:$PATH
+#export PATH=~/bin:$PATH
+
+### Added by the Heroku Toolbelt
+#export PATH="/usr/local/heroku/bin:$PATH"
+
+if [ -d /usr/local/phpunit-git-deploy/bin ]; then export PATH=/usr/local/phpunit-git-deploy/bin:$PATH; fi
+
 
 # for: grep, topen, etc
-export DEFAULT_TEXT_APP='/Applications/Sublime Text 2.app'
-export DEFAULT_WEB_APP='/Applications/Google Chrome.app'
+DEFAULT_TEXT_APP='/Applications/Sublime Text 2.app'
+DEFAULT_WEB_APP='/Applications/Google Chrome.app'
 
 saveprofile()(
 	src='/Users/ahulce/.profile'
@@ -46,6 +52,11 @@ pmo()(
 	# @todo: if input is git commit, parse out pivotal ticket number
 	# positiveInt='^[1-9][0-9]*$'; if ! [[ "$1" =~ $positiveInt ]]; then ...
 	open -a"$DEFAULT_WEB_APP" "https://www.pivotaltracker.com/story/show/$1"
+)
+
+opem()(
+	# cuz i suck at typing
+	open $@
 )
 
 #alias smile="curl http://smiley.meatcub.es:1337"
@@ -237,6 +248,7 @@ wag_instance()(
 	if [ "$d" == "-s" ]; then d=$2; fi
 	if [ "$d" == "dev1" ]; then d=54.164.7.90
 	elif [ "$d" == "dev2" ]; then d=52.4.9.222
+	elif [ "$d" == "dev3" ]; then d=54.165.251.139
 	elif [ "$d" == "uat" ]; then d=54.152.199.226
 	elif [ "$d" == "stage" -o "$d" == "stage-prod" ]; then d=54.172.164.179
 	elif [ "$d" == "qa" ]; then d=54.152.18.15

@@ -1,6 +1,6 @@
 #!/bin/bash
 #	cd [to repo]
-#	~/Dropbox/alec_repo/utils/parse_tickets.sh 20150805l_release..20150815p_release
+#	~/Dropbox/alec_repo/utils/parse_tickets.sh 20150921a_release..20150923e_release
 #
 
 cd "`pwd`"
