@@ -6,6 +6,16 @@
 >&2 echo 'err!'
 ```
 
+## Correct error redirection
+See ./bash_redir_proof/
+
+```
+# correct
+./throws.sh > ./good.log~ 2>&1
+# incorrect
+./throws.sh 2>&1 > ./bad.log~
+```
+
 
 ## tar
 
@@ -119,7 +129,10 @@ cat /tmp/myfile | head -n1 | tr -d '\n'
 ```
 
 
-
-
+## Make vim (basic) your default text editor
+Tired of crontab -e opening up in Tiny?
+@todo
+```
+```
 
 
