@@ -27,6 +27,11 @@
 			"matches": ["*://*.verizonwireless.com/*"],
 			"js": ["inject.vzw.js"],
 			"run_at": "document_end"
+		},
+		{
+			"matches": ["*://www.pivotaltracker.com/*"],
+			"css": ["pivotal.css"],
+			"run_at": "document_end"
 		}
 	],
 	"externally_connectable": {

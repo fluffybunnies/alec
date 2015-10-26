@@ -131,8 +131,8 @@ cat /tmp/myfile | head -n1 | tr -d '\n'
 
 ## Make vim (basic) your default text editor
 Tired of crontab -e opening up in Tiny?
-@todo
 ```
+update-alternatives --config editor
 ```
 
 

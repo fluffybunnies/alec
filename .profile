@@ -51,7 +51,11 @@ saveprofile()(
 pmo()(
 	# @todo: if input is git commit, parse out pivotal ticket number
 	# positiveInt='^[1-9][0-9]*$'; if ! [[ "$1" =~ $positiveInt ]]; then ...
-	open -a"$DEFAULT_WEB_APP" "https://www.pivotaltracker.com/story/show/$1"
+	tid=$1
+	if [ "${tid:0:1}" == '#' ]; then
+		tid=${tid:1}
+	fi
+	open -a"$DEFAULT_WEB_APP" "https://www.pivotaltracker.com/story/show/$tid"
 )
 
 opem()(
@@ -121,13 +125,21 @@ mastif()(
 	echocute "git fetch && git checkout $branch && git pull origin $branch && git fetch --tags"
 )
 
-gcp(){
+gcp()(
+	git fetch
 	git cherry-pick $1
-}
+)
 
-gco(){
-	git checkout $1
-}
+gco()(
+	branch=$1
+	if [ ! "$branch" ]; then
+		branch=`git branch | grep '*' | head -n1 | sed -n 's/^\* //p'`
+		if [ "`echo '$branch' | grep 'detached from'`" ]; then
+			branch=`git describe --tags`
+		fi
+	fi
+	git fetch && git fetch --tags && git checkout "$branch" && git pull origin "$branch"
+)
 
 glc(){
 	if [ `which pbcopy` ]; then
@@ -136,9 +148,26 @@ glc(){
 	git log $1 | head -n5
 }
 
-gbb(){
+gbb()(
 	git checkout -
-}
+)
+
+gbd()(
+	# Delete a branch if the last commit is in master
+	# gbd patch-sql-updates
+	#
+	branch=$1
+	if [ ! "$branch" ]; then
+		>&2 echo 'branch required' 
+		exit 1
+	fi
+	lastCommitIsInMaster=`git log master | grep \`git log "$branch" | head -n1 | awk '{print $2}'\``
+	if [ "$lastCommitIsInMaster" ]; then
+		# delete branch
+		echo "deleting $branch"
+		git branch -D "$branch"
+	fi
+)
 
 bitch() {
 	if [[ $1 -eq "please" ]]; then
@@ -174,6 +203,7 @@ grepl() ( # <- for ulimit + local vars
 gropen()(
 	# Stream open files matched with grep
 	# gropen -R 'interesting text' ./
+	# @todo: make this work for any list of files, e.g. git diff --name-only 20150821za_release..20150923m_release app/database/
 	#
 	if [ "$1" == "" ]; then
 		# we just grepped but really wish we had gropened instead...
@@ -243,7 +273,7 @@ get_current_tag()(
 	echo $cnf | sed -n 's/.*"tag":"\([^"]*\).*/\1/p'
 )
 
-wag_instance()(
+name_to_ip()(
 	d=$1
 	if [ "$d" == "-s" ]; then d=$2; fi
 	if [ "$d" == "dev1" ]; then d=54.164.7.90
@@ -251,9 +281,10 @@ wag_instance()(
 	elif [ "$d" == "dev3" ]; then d=54.165.251.139
 	elif [ "$d" == "uat" ]; then d=54.152.199.226
 	elif [ "$d" == "stage" -o "$d" == "stage-prod" ]; then d=54.172.164.179
-	elif [ "$d" == "qa" ]; then d=54.152.18.15
-	elif [ "$d" == "scripts" ]; then d=50.18.217.82
+	elif [ "$d" == "qa" ]; then d=52.23.156.43 # old: d=54.152.18.15
 	elif [ "$d" == "prod" ]; then d=54.67.7.34
+	elif [ "$d" == "scripts" ]; then d=54.183.79.4
+	elif [ "$d" == "scripts-old" ]; then d=50.18.217.82
 	fi
 	echo $d
 )
@@ -263,23 +294,18 @@ shudo()(
 	# shudo ec2-107-20-26-208.compute-1.amazonaws.com
 	#
 	d=$1
-	if [ "$1" == "-s" ]; then d=$2; fi
+	if [ "$1" == "-s" -o "$1" == "-u" ]; then d=$2; fi
 	s='2>/dev/null'
 	c="cd /var/www && cd wagapi $s || cd api_internal $s || cd platform-v2 $s || cd wordpress $s || cd lucky-forwarder $s || cd lucky-bak $s && cd current $s"
-	t="sudo -i su -c '$c; /bin/bash'"
+	#t="sudo -i su -c '$c; /bin/bash'"
+	t='sudo -i' # su -c no longer allows interactive shells, which is annoying when ctrl+c destroys your connection. instead, push your cd command to /root/.bashrc
+	if [ "$1" == "-u" ]; then t="$c; /bin/bash"; fi
 	
-	# begin waglabs
-	#if [ "$d" == "qa" ]; then
-	#	t="cd /var/www/html/wag_api; /bin/bash"
-	#fi
-	d=`wag_instance "$d"`
+	d=`name_to_ip "$d"`
 	echo "$d"
 	if [ "$1" != "-s" ] && [ "$2" != "-s" ]; then
 		ssh -t ubuntu@$d $t
 	fi
-	# end waglabs
-
-	#ssh -t ubuntu@$d $t
 )
 
 shtag_head()(
@@ -289,7 +315,7 @@ shtag_head()(
 	#
 	# git tag -d 20150821g_release && git push origin :refs/tags/20150821g_release
 	#
-	env=`wag_instance $1`
+	env=`name_to_ip $1`
 	currentTag=`get_current_tag $env`
 	letter=`echo $currentTag | sed 's/[0-9]*\([a-z]\).*/\1/'`
 	if [ ! "$letter" ] || [ "$letter" == 'z' ]; then
@@ -333,9 +359,15 @@ shelease()(
 
 topen()(
 	# Open a file for editing, creating it if not exists
-	# topen newfile.txt
+	# topen dir/that/not/exist/newfile.txt
 	#
-	if [ "$1" != "" ]; then
+	if [ "$2" ]; then
+		for arg in "$@"; do
+			topen "$arg"
+		done
+		exit
+	fi
+	if [ "$1" ]; then
 		mkdir -p `dirname "$1"`
 		touch "$1"
 		open -a"$DEFAULT_TEXT_APP" "$1"
@@ -357,10 +389,9 @@ authme()(
 	#
 	#ubuntuAuthKey=/Users/ahulce/.ssh/mac.pem
 	ubuntuAuthKey=/Users/ahulce/.ssh/wag-api-test.pem
-	serverName=$1
-	if [ "$1" == "prod" ]; then
+	serverName=`name_to_ip $1`
+	if [ "$1" == "prod" -o "$1" == "scripts" -o "$1" == "scripts-old" ]; then
 		ubuntuAuthKey=/Users/ahulce/.ssh/wagprod2.pem
-		serverName=$2
 	fi
 	pubKey=`cat ~/.ssh/id_rsa.pub | sed -n 's/\(.*\) .*$/\1/p'`
 	if [ "`ssh -oStrictHostKeyChecking=no ubuntu@$serverName 'echo "ok"'`" != "ok" ]; then
@@ -483,11 +514,11 @@ tardir()(
 	if [ "$1" == '-x' ]; then
 		source=$2
 		target=$3
-		untardirc "$2" "$3"
+		untardir "$2" "$3"
 		exit
 	fi
-	if [ ! "$target" ]; then target=`pwd`/`basename "$source"`.tar.gz; # tardirc /tmp
-	elif [ -d "$target" ]; then target=`cd "$target";pwd`/`basename "$source"`.tar.gz; # tardirc /tmp ../
+	if [ ! "$target" ]; then target=`pwd`/`basename "$source"`.tar.gz; # tardir /tmp
+	elif [ -d "$target" ]; then target=`cd "$target";pwd`/`basename "$source"`.tar.gz; # tardir /tmp ../
 	fi
 
 	curdir=`pwd`
@@ -503,7 +534,7 @@ tardir()(
 
 untardir()(
 	# Untar+unzip archive
-	# tardirc path/to/archive.tar.gz path/to/target/dir
+	# tardir path/to/archive.tar.gz path/to/target/dir
 	#
 	# Omit second argument to target cwd
 	# untardir path/to/archive.tar.gz
@@ -513,6 +544,62 @@ untardir()(
 	if [ ! "$target" ]; then target=./; fi
 
 	tar -zxf "$source" -C "$target"
+)
+
+mysqlc()(
+	mysql -h127.0.0.1 -proot -uroot --port=8889 wagapi -A
+)
+
+mysqlq()(
+	# mysqlq 'show create table owner' | grep app_version
+	# @todo: convert '\n' to newline - currently not working
+	# @todo: update config.sh to set and reset pwd
+	#
+	#. ~/Dropbox/wag/wagapi/config.sh
+	cd ~/Dropbox/wag/wagapi
+	. ./config.sh
+	if [ "$mysqlPort" ]; then port=" --port=$mysqlPort"; fi
+	#echo "$@" | mysql -h$mysqlHost $port -u$mysqlUser -p$mysqlPass $mysqlDb -A
+	#echo "$@" | mysql -h$mysqlHost $port -u$mysqlUser -p$mysqlPass $mysqlDb -A | tr '\\\n' $'\n'
+	echo "$@" | mysql -h$mysqlHost $port -u$mysqlUser -p$mysqlPass $mysqlDb -A | tr '\\\n' $'\n'
+)
+
+escape_bash_val()(
+	# echo '$wef="w\$ef"' | sed 's/\(["$\]\)/\\\1/g'
+	echo "$1" | sed 's/\(["$\]\)/\\\1/g'
+)
+
+pushbash()(
+	# Push DEV.bashrc to remote
+	# pushbash stage-prod
+	#
+	localRc=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/DEV.bashrc
+	remoteRc=/root/.bashrc
+
+	if [ "$2" ]; then
+		for arg in "$@"; do
+			pushbash $arg
+		done
+		exit
+	fi
+	remote=`name_to_ip $1`
+	tmp1=`mktemp -t pushbash.XXXXXX`
+	tmp2=`mktemp -t pushbash.XXXXXX`
+	scp "root@$remote:'$remoteRc'" "$tmp1"
+	lineNum=`cat "$tmp1" | grep -n '# wag stuff' | head -n1 | sed 's/\([0-9]*\).*/\1/g'`
+	if [ "$lineNum" ]; then
+		head -n$((lineNum-2)) "$tmp1" > "$tmp2"
+	else
+		cat "$tmp1" > "$tmp2"
+		echo $'\n\n' >> "$tmp2"
+	fi
+	ssh root@$remote "cp -n '$remoteRc' '$remoteRc.pushbash.bak'"
+	ssh root@$remote "cp -n '$remoteRc' '/tmp/pushbash.$(date +%Y%m%d_%H%M%S).bak'"
+	cat "$localRc" >> "$tmp2"
+	scp "$tmp2" "root@$remote:'$remoteRc'"
+	rm "$tmp1"
+	rm "$tmp2"
+	echo "pushed to $1"
 )
 
 if [ "`which realpath`" == "" ]; then

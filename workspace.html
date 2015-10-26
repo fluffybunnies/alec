@@ -9,6 +9,18 @@
 
 myJson = '{"name":"<\/script><script>alert(\"hello!\");<\/script>"}';
 
+
+outerloop:
+for (var i=0;i<10;++i) {
+	innerloop:
+	for (var n=0;n<10;++n) {
+		console.log('i',i,'n',n)
+		if (i==1) break outerloop;
+	}
+}
+
+
+
 /*
 
 sqrt(2)  .

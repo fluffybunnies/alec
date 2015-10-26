@@ -1,5 +1,5 @@
 /*
-winner: 
+winner: prog1
 */
 
 ReplaceAll = Test.extend({
@@ -29,6 +29,12 @@ ReplaceAll = Test.extend({
 		v = ReplaceAll.replaceAll(v, v.charAt(2), '%%%%')
 		return v.length
 	}
+	,prog3: function(v){
+		v = ReplaceAll.replaceAll2(v, 'a', '#')
+		v = ReplaceAll.replaceAll2(v, v.charAt(9)+v.charAt(10), '$')
+		v = ReplaceAll.replaceAll2(v, v.charAt(2), '%%%%')
+		return v.length
+	}
 	,replaceAll: function(str, search, replace){
 		var index = str.indexOf(search)
 		while (index != -1) {
@@ -36,5 +42,8 @@ ReplaceAll = Test.extend({
 			index = str.indexOf(search, index+search.length)
 		}
 		return str
+	}
+	,replaceAll2: function(str, search, replace){
+		return (str||'').split(search).join(replace)
 	}
 });

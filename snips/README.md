@@ -16,6 +16,17 @@
 
 <!--
 
+- - - WISHLIST - - -
+
+pv (apt-get install pv)
+	pv /tmp/db.bak.sql | mysql -h... -u... -p... db
+
+disk space
+	ls -lh
+	mounts/file systems: df -v
+	files: du -skh *
+		du -skh * | sort
+
 var a; getStuff(function(a){ doStuff(); }); function doStuff(){ console.log('a',a); }
 
 - find bigQuery or bigInsert method i made
@@ -33,7 +44,9 @@ how to echo to stderr
 apropos
 	e.g. `apropos split`
 
-php vs js: $a = 1 ? 1 : 2 ? 2 : 3;
+php vs js:
+	$a = 1 ? 1 : 2 ? 2 : 3;
+	$a = 1 ? 1 : (2 ? 2 : 3);
 
 
 -->
