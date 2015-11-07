@@ -1,11 +1,14 @@
 #!/bin/bash
 #
 #	cd [to repo]
-#	~/Dropbox/alec_repo/utils/parse_tickets.sh 20151006kn_release..20151015d_release
+#	~/Dropbox/alec_repo/utils/parse_tickets.sh 20151022d_release..20151103PAYn_release
 #
-#	~/Dropbox/alec_repo/utils/parse_tickets.sh 20151006kn_release..20151015d_release | xargs -0 bash -i -c pmo
+#	~/Dropbox/alec_repo/utils/parse_tickets.sh 20151022d_release..20151103PAYn_release | xargs -0 bash -i -c pmo
 #
 #	git log --pretty=format:%s 20151006kn_release..20151015d_release | sed -En 's/.*([0-9]{8,9}).*/\1/gp'
+#
+#	To Do:
+#		- curl ticket for title + format for insertion into RM card. or look for pivotal api so we dont need to find auth cookie every time
 #
 
 cd "`pwd`"

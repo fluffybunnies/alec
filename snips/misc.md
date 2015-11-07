@@ -20,3 +20,9 @@ cmd + shift + p
 cmd + shift + p
 # type "markdown"
 ```
+
+### What's that term I'm thinking of?
+- idempotent
+- design pattern
+
+
