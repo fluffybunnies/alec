@@ -7,8 +7,7 @@
 #
 #	git log --pretty=format:%s 20151006kn_release..20151015d_release | sed -En 's/.*([0-9]{8,9}).*/\1/gp'
 #
-#	To Do:
-#		- curl ticket for title + format for insertion into RM card. or look for pivotal api so we dont need to find auth cookie every time
+#	Place PIVOTAL_API_TOKEN and PIVOTAL_PROJECT_ID in ~/.secrets to format list like "- [#ID] NAME"
 #
 
 cd "`pwd`"
@@ -19,12 +18,19 @@ out=
 #tins=`git log --pretty=format:%s $1 | sed -En 's/[^0-9]*([0-9]{8,9}).*/\1/gp'` # misses "1st commit [394850384]"
 # 10/19/2015 dont have time to figure out cases this misses, swapped out in favor of second one above
 tins=`git log --pretty=format:%s $1 | sed -En 's/.*([0-9]{9}).*/\1/gp'` # {8,9} isnt greedy, end up with stuff like "05699832"
-echo "https://www.pivotaltracker.com/story/show/"
+if [ ! "$PIVOTAL_API_TOKEN" -o ! "$PIVOTAL_PROJECT_ID" ]; then
+	echo "https://www.pivotaltracker.com/story/show/"
+fi
 for tin in $tins; do
 	#echo "tin: $tin"
 	if [ "${saved[$tin]}" == "" ]; then
 		#tid="TLG-$tin"
 		tid="#$tin"
+		if [ "$2" != "--raw" ] && [ "$PIVOTAL_API_TOKEN" ] && [ "$PIVOTAL_PROJECT_ID" ]; then
+			ticketName=`curl -sS -X GET -H "X-TrackerToken: $PIVOTAL_API_TOKEN" "https://www.pivotaltracker.com/services/v5/projects/$PIVOTAL_PROJECT_ID/stories/$tin" | \
+			perl -pe 's|.*?"name":"([^"]*)".*|\1|'`
+			tid="- [#$tin] $ticketName"
+		fi
 		if [ "$out" == "" ]; then out=$tid; else out=$out'\n'$tid; fi
 		saved[tin]=1
 	fi

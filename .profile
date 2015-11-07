@@ -1,3 +1,7 @@
+if [ -f ~/.secrets ]; then
+	. ~/.secrets
+	echo 'wef'
+fi
 
 # elastic beanstalk
 export PATH=$PATH:/Users/ahulce/AWS-ElasticBeanstalk-CLI-2.6.3/eb/macosx/python2.7
@@ -280,7 +284,7 @@ name_to_ip()(
 	elif [ "$d" == "dev2" ]; then d=52.4.9.222
 	elif [ "$d" == "dev3" ]; then d=54.165.251.139
 	elif [ "$d" == "uat" ]; then d=54.152.199.226
-	elif [ "$d" == "stage" -o "$d" == "stage-prod" ]; then d=54.172.164.179
+	elif [ "$d" == "stage" -o "$d" == "stage-prod" ]; then d=52.23.225.118 # old: 54.172.164.179
 	elif [ "$d" == "qa" ]; then d=52.23.156.43 # old: d=54.152.18.15
 	elif [ "$d" == "prod" ]; then d=54.67.7.34
 	elif [ "$d" == "scripts" ]; then d=54.183.79.4
