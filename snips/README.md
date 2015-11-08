@@ -20,6 +20,8 @@
 			- responsive design
 			- bonus: formatted code blocks
 		- options
+			- http://themeforest.net/item/manual-best-online-documentation/full_screen_preview/12997044
+			- http://themeforest.net/item/basic-ultraclean-responsive-wordpress-theme/full_screen_preview/4345245
 			- http://www.elegantthemes.com/gallery/trim/
 			- http://www.elegantthemes.com/gallery/askit/
 			- http://www.elegantthemes.com/gallery/businesscard/
