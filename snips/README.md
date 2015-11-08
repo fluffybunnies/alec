@@ -12,6 +12,26 @@
 - Create pretty blog-type website powered by these files
 	- find cool wordpress theme, set up repo + sire + todo doc
 		- keyword/label it up! parent web page could have php,css,html5,bash,shell,etc
+		- what i want
+			- sleek, simple, dark, easy-to-read body text
+			- extendable top nav for each language
+			- comments under each page
+			- obvious search bar on each page, most prominent on hp
+			- responsive design
+			- bonus: formatted code blocks
+		- options
+			- http://www.elegantthemes.com/gallery/trim/
+			- http://www.elegantthemes.com/gallery/askit/
+			- http://www.elegantthemes.com/gallery/businesscard/
+			- http://www.elegantthemes.com/gallery/puretype/
+				- With color theme + font updates
+			- http://themeforest.net/item/uncode-creative-multiuse-wordpress-theme/full_screen_preview/13373220 (creative freelance)
+			- http://themeforest.net/item/qanda-wp-questions-and-answers/4524028
+				- http://themeforest.net/item/qanda-wp-questions-and-answers/full_screen_preview/4524028
+			- http://themeforest.net/item/evoke-wordpress-theme/full_screen_preview/11827132
+				- icon lib
+	- design cool logo
+	- design cool tagline
 
 
 <!--
