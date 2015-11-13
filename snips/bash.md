@@ -1,4 +1,11 @@
 # bash
+<!--
+	@todo: explain these are in unix-type syntax
+	@todo: consider format where title explains generic action and below it are more specific questions that you could use the solution to solve
+		like: Title: Run a command after sshing in one line, Subtitle: How to change current working directory immediately after SSHing into a remote machine?
+	@todo: consider googling the questions to find better titles, or terms people are looking for
+-->
+
 
 
 ## echo to stderr
@@ -17,6 +24,13 @@ See ./bash_redir_proof/
 ./throws.sh 2>&1 > ./bad.log~
 ```
 <!-- Tags: bash, file redirection? -->
+
+
+
+## Write to both stdout and a file
+```
+echo "sup" 2>&1 | tee pathtofile
+```
 
 
 
@@ -165,6 +179,63 @@ ctrl + a + d
 Or:
 ```
 nohup ([run commands])
+```
+
+
+
+## OptArgs
+<!-- @todo: better description + keywords, also explain you can reference $1, $2, etc. explain what $0 is here -->
+```
+while getopts 'm:q' opt; do
+	case $opt in
+		m)
+			arg1=1
+		;;
+		q)
+			arg2=$OPTARG
+		;;
+	esac
+done
+```
+
+
+
+## Run a command immediately after sshing in one line
+@todo
+<!-- Maybe more specific title, with subtitle like: "Same as: ssh ubuntu@instance, sudo -i, cd to web directory" -->
+```
+```
+
+
+
+## Change user to root immediately after sshing in one line
+@todo
+<!-- Explain: "su -c no longer allows interactive shells, which is annoying when ctrl+c destroys your connection. instead, push your cd command to /root/.bashrc" -->
+```
+```
+
+
+
+## Get directory of script being run
+@todo
+<!-- @todo: better title -->
+<!-- @todo: subtitle like "ensure your script's current working directory" or "" -->
+<!-- @todo: explain this does not work with sourced files, e.g. `. path/to/script` -->
+<!-- @todo: try to break it with spaces -->
+```
+# change to script's directory right away
+cd `dirname "$0"`
+# 
+```
+
+
+
+## Delete files older than a certain amount of time
+<!-- @todo: explain why "-print0" in find and "-0" in xargs - separates results with NUL so files with spaces dont screw things up -->
+<!-- @todo: explain that "+7" defaults to days, but check your `man find` docs for other time formats -->
+```
+# delete 
+find ./path/to/dir/ -mtime +7 -type f -print0 | xargs -0 rm -v
 ```
 
 

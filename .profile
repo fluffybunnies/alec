@@ -1,6 +1,5 @@
 if [ -f ~/.secrets ]; then
 	. ~/.secrets
-	echo 'wef'
 fi
 
 # elastic beanstalk
@@ -283,6 +282,7 @@ name_to_ip()(
 	if [ "$d" == "dev1" ]; then d=54.164.7.90
 	elif [ "$d" == "dev2" ]; then d=52.4.9.222
 	elif [ "$d" == "dev3" ]; then d=54.165.251.139
+	elif [ "$d" == "dev4" ]; then d=54.175.47.224
 	elif [ "$d" == "uat" ]; then d=54.152.199.226
 	elif [ "$d" == "stage" -o "$d" == "stage-prod" ]; then d=52.23.225.118 # old: 54.172.164.179
 	elif [ "$d" == "qa" ]; then d=52.23.156.43 # old: d=54.152.18.15
@@ -576,6 +576,7 @@ escape_bash_val()(
 pushbash()(
 	# Push DEV.bashrc to remote
 	# pushbash stage-prod
+	# pushbash dev1 dev2 dev3 uat qa stage-prod
 	#
 	localRc=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/DEV.bashrc
 	remoteRc=/root/.bashrc
