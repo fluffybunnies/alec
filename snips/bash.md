@@ -225,7 +225,7 @@ done
 ```
 # change to script's directory right away
 cd `dirname "$0"`
-# 
+# @todo: return realpath to script's dir to var
 ```
 
 

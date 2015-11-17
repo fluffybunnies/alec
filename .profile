@@ -580,6 +580,9 @@ pushbash()(
 	#
 	localRc=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/DEV.bashrc
 	remoteRc=/root/.bashrc
+	if [ "1" == "prod" ]; then
+		localRc=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/PROD.bashrc
+	fi
 
 	if [ "$2" ]; then
 		for arg in "$@"; do
