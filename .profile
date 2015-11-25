@@ -281,7 +281,7 @@ name_to_ip()(
 	if [ "$d" == "-s" ]; then d=$2; fi
 	if [ "$d" == "dev1" ]; then d=54.164.7.90
 	elif [ "$d" == "dev2" ]; then d=52.4.9.222
-	elif [ "$d" == "dev3" ]; then d=54.165.251.139
+	elif [ "$d" == "dev3" ]; then d=54.172.115.236 # old: d=54.165.251.139
 	elif [ "$d" == "dev4" ]; then d=54.175.47.224
 	elif [ "$d" == "uat" ]; then d=54.152.199.226
 	elif [ "$d" == "stage" -o "$d" == "stage-prod" ]; then d=52.23.225.118 # old: 54.172.164.179
@@ -580,7 +580,7 @@ pushbash()(
 	#
 	localRc=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/DEV.bashrc
 	remoteRc=/root/.bashrc
-	if [ "1" == "prod" ]; then
+	if [ "$1" == "prod" -o "$1" == "scripts" ]; then
 		localRc=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/PROD.bashrc
 	fi
 

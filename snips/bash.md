@@ -38,7 +38,7 @@ echo "sup" 2>&1 | tee pathtofile
 
 ### Single file
 ```
-tar zcf test.sql.Z test.sql
+tar zcf test.sql.tar.Z test.sql
 ```
 
 ### Directory
@@ -157,7 +157,11 @@ cat /tmp/myfile | head -n1 | tr -d '\n'
 ## Make vim (basic) your default text editor
 Tired of crontab -e opening up in Tiny?
 ```
+# unix:
 update-alternatives --config editor
+export VISUAL=vim
+# mac:
+export EDITOR=nano
 ```
 
 

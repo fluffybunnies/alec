@@ -1,13 +1,16 @@
 #!/bin/bash
 #
 #	cd [to repo]
-#	~/Dropbox/alec_repo/utils/parse_tickets.sh 20151022d_release..20151103PAYn_release
+#	~/Dropbox/alec_repo/utils/parse_tickets.sh 20151109ne_release..proposed-release-2015-11-17
 #
 #	~/Dropbox/alec_repo/utils/parse_tickets.sh 20151022d_release..20151103PAYn_release | xargs -0 bash -i -c pmo
 #
 #	git log --pretty=format:%s 20151006kn_release..20151015d_release | sed -En 's/.*([0-9]{8,9}).*/\1/gp'
 #
 #	Place PIVOTAL_API_TOKEN and PIVOTAL_PROJECT_ID in ~/.secrets to format list like "- [#ID] NAME"
+#
+#	To Do
+#		- Ticket title gets cut off if double quote exists
 #
 
 cd "`pwd`"
