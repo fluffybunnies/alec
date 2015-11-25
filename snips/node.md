@@ -13,8 +13,9 @@ Each individual file's response is cached globally, so you must delete each one 
 ```
 delete require.cache[require.resolve('./config.js')]
 delete require.cache[require.resolve('./config.local.json')]
-
-# The above would invalidate config.local.json but keep the original value of config.json if config.js looked like:
+```
+The above would invalidate config.local.json but keep the original value of config.json if config.js looked like:
+```
 var sext = require('sext'), config = require('./config.json')
 try {
   sext(config,require('./config.local.json'));
@@ -32,4 +33,13 @@ Will a modified property of an object returned by require() exist if subsequentl
 ```
 # @todo: write example
 # @todo: link to subfolder example: node ./require_caches_by_reference/index.js
+```
+
+
+
+### process.nextTick() Beats setTimeout(...,0)
+@todo
+<!-- @todo: write subfolder example -->
+```
+# @todo
 ```
