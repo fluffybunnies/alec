@@ -39,7 +39,11 @@ Will a modified property of an object returned by require() exist if subsequentl
 
 ### process.nextTick() Beats setTimeout(...,0)
 @todo
-<!-- @todo: write subfolder example -->
+<!--
+@todo: write subfolder example
+	have a file that setTimeout(0)s before process.nextTick()ing
+	run this file 1000 times and record that nextTick() fires first each time
+-->
 ```
 # @todo
 ```
