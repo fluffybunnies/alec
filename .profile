@@ -38,6 +38,10 @@ export PATH=/usr/local/mysql/bin:$PATH
 
 if [ -d /usr/local/phpunit-git-deploy/bin ]; then export PATH=/usr/local/phpunit-git-deploy/bin:$PATH; fi
 
+# increase max-files-open
+ulimit -Sn 2048
+#ulimit -S -u 1024 # <-- careful with this one
+
 
 # for: grep, topen, etc
 DEFAULT_TEXT_APP='/Applications/Sublime Text 2.app'
@@ -283,7 +287,7 @@ name_to_ip()(
 	elif [ "$d" == "dev2" ]; then d=52.4.9.222
 	elif [ "$d" == "dev3" ]; then d=54.172.115.236 # old: d=54.165.251.139
 	elif [ "$d" == "dev4" ]; then d=54.175.47.224
-	elif [ "$d" == "uat" ]; then d=54.152.199.226
+	elif [ "$d" == "uat" ]; then d=54.84.201.95 # old: d=54.152.199.226
 	elif [ "$d" == "stage" -o "$d" == "stage-prod" ]; then d=52.23.225.118 # old: 54.172.164.179
 	elif [ "$d" == "qa" ]; then d=52.23.156.43 # old: d=54.152.18.15
 	elif [ "$d" == "prod" ]; then d=54.67.7.34
@@ -379,10 +383,16 @@ topen()(
 )
 
 wopen()(
+	# Open a file in your default web browser
+	# wopen dir/that/not/exist/webpage.html
+	#
 	open -a"$DEFAULT_WEB_APP" "$1"
 )
 
 bopen() {
+	# Open a file in your browser and text editor
+	# Useful if your default application for an .html or .php is your text editor but you want to open it in your browser as well to view
+	#
 	topen "$1"
 	wopen "$1"
 }
@@ -507,7 +517,7 @@ shrestart()(
 )
 
 tardir()(
-	# Tar+Zip large directory
+	# Tar+Zip contents of large directory
 	# tardir path/to/dir path/to/archive
 	#
 	# Omit second argument to target cwd
