@@ -10,7 +10,7 @@
 - Places to check
 	- ace (ut.js), alec_repo (utils/), .profile, diff.sh, lucky-forwarder, lucky-bak, immediate_todo-alec.txt
 - Create pretty blog-type website powered by these files
-	- find cool wordpress theme, set up repo + sire + todo doc
+	- find cool wordpress theme, set up repo + sire + todo doc (or instead...*)
 		- keyword/label it up! parent web page could have php,css,html5,bash,shell,etc
 		- what i want
 			- sleek, simple, dark, easy-to-read body text
@@ -32,8 +32,18 @@
 				- http://themeforest.net/item/qanda-wp-questions-and-answers/full_screen_preview/4524028
 			- http://themeforest.net/item/evoke-wordpress-theme/full_screen_preview/11827132
 				- icon lib
+	- *...make the site yourself using Ace
+		- might actually be faster/easier than using WP, plus faster + more impressive
+		- find the mock i drew up; had some cool ideas on it
+		- make sure to 
+		- link to npm ace in footer
+		- security: prevent xss and all that
 	- design cool logo
 	- design cool tagline
+	- big search bar on top of homepage (and probs every page)
+	- make sure topics are easy to browse without having to search
+		- nicely formatted/navigable listings
+			- navigable: you know what language you are interested in most likely, so that should be first. follow this pattern as you click
 
 
 <!--
