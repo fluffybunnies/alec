@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #	cd [to repo]
-#	~/Dropbox/alec_repo/utils/parse_tickets.sh 20151109ne_release..proposed-release-2015-11-17
+#	~/Dropbox/alec_repo/utils/parse_tickets.sh 20151117nabi_release..20151117nabv_release
 #
 #	~/Dropbox/alec_repo/utils/parse_tickets.sh 20151022d_release..20151103PAYn_release | xargs -0 bash -i -c pmo
 #

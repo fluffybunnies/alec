@@ -50,3 +50,17 @@ git push origin :branch
 ```
 
 
+## Delete all unmerged local branches except master
+git branch names are not allowed whitespace, so xargs is sufficient
+```
+# make sure you are on master - you won't be able to delete the branch you have checked out
+git checkout master
+# delete em all!
+git branch | xargs git branch -d
+
+# use uppercase delete arg if you want to wipe unmerged branches
+git branch | xargs git branch -D
+```
+
+
+

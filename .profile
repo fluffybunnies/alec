@@ -83,6 +83,18 @@ echocute(){
 	eval "$1"
 }
 
+gca()(
+	# Same as git commit -a -m "message"
+	#
+	#
+	msg="$@"
+	if [ ! "$msg" ]; then
+		>&2 echo "Please supply a commit message"
+		exit
+	fi
+	git commit -a -m "$msg"
+)
+
 poo()(
 	# Push changes to current branch
 	# poo optional message
@@ -133,7 +145,14 @@ mastif()(
 )
 
 gcp()(
+	# Same as git cherry-pick COMMIT
+	# gcp 79d675c4704a81d86cfb17987209087c6a52fe60
+	#
 	git fetch
+	if [ ! "$1" ]; then
+		>&2 echo 'Please supply a commit to cherry-pick'
+		exit
+	fi
 	git cherry-pick $1
 )
 
@@ -145,7 +164,22 @@ gco()(
 			branch=`git describe --tags`
 		fi
 	fi
-	git fetch && git fetch --tags && git checkout "$branch" && git pull origin "$branch"
+	#git fetch && git fetch --tags && git reset --hard origin/$branch && git checkout -f $branch && git pull origin $branch
+	# the above doesnt work with tags. for now i dont have a way to guarantee the targeted commit will be checked out
+	#		i.e. origin/TAG is not recognized, so i cant reset my local based on remote for tags, so i could get stuck with both modified and unable to checkout -f
+	echocute "git fetch && git fetch --tags && git reset --hard origin/HEAD && git checkout -f $branch && git pull origin $branch"
+)
+
+gcb()(
+	# Same as git checkout -b patch-NAME
+	# gcb puppies
+	#
+	name=$1
+	if [ ! "$name" ]; then
+		#name=happies # @todo: randomize
+		name=`smile`
+	fi
+	mastif master && git checkout -b patch-$1
 )
 
 glc(){
@@ -174,6 +208,19 @@ gbd()(
 		echo "deleting $branch"
 		git branch -D "$branch"
 	fi
+)
+
+gdel()(
+	# Delete all merged branches (locally)
+	# gdel
+	#
+	git branch
+	#if [ "$1" == "-f" ]; then
+	#	git branch | xargs git branch -D
+	#else
+		git branch | xargs git branch -d
+	#fi
+	git branch
 )
 
 bitch() {
@@ -287,9 +334,10 @@ name_to_ip()(
 	elif [ "$d" == "dev2" ]; then d=52.4.9.222
 	elif [ "$d" == "dev3" ]; then d=54.172.115.236 # old: d=54.165.251.139
 	elif [ "$d" == "dev4" ]; then d=54.175.47.224
+	elif [ "$d" == "dev5" ]; then d=54.86.134.253
 	elif [ "$d" == "uat" ]; then d=54.84.201.95 # old: d=54.152.199.226
 	elif [ "$d" == "stage" -o "$d" == "stage-prod" ]; then d=52.23.225.118 # old: 54.172.164.179
-	elif [ "$d" == "qa" ]; then d=52.23.156.43 # old: d=54.152.18.15
+	elif [ "$d" == "qa" ]; then d=52.91.3.22 # old: d=52.23.156.43 # old: d=54.152.18.15
 	elif [ "$d" == "prod" ]; then d=54.67.7.34
 	elif [ "$d" == "scripts" ]; then d=54.183.79.4
 	elif [ "$d" == "scripts-old" ]; then d=50.18.217.82
@@ -424,6 +472,7 @@ shep()(
 	# Set remote: shep set ec2-54-159-58-209.compute-1.amazonaws.com
 	# Copy file: shep docroot/lucky/wp-content/test.txt
 	#
+	remoteServer=`name_to_ip $2`
 	remotePrefix=/var/www/
 	sourceFile=`realpath "$1" 2>/dev/null`
 	path=$sourceFile
@@ -432,7 +481,7 @@ shep()(
 	remotePath=
 	addr=`cat "$mem" 2>/dev/null`
 	if [ "$1" == "set" ]; then
-		echo "$2" > "$mem"
+		echo "$remoteServer" > "$mem"
 	elif [ "$1" == "get" ] || [ "$1" == "" ]; then
 		echo "$addr"
 	elif [ "$addr" == "" ]; then
@@ -455,9 +504,13 @@ shep()(
 				remoteAppName='api_internal'
 			elif [ "$dir" == "magento19" ]; then
 				remoteAppName='magento'
+			elif [ "$dir" == "wagapi" ]; then
+				remoteAppName='wagapi'
 			fi
 			if [ "$remoteAppName" != "" ]; then
-				remotePath=`echo "$sourceFile" | sed -n "s/.*\/$dir\(.*\)\$/$remoteAppName\/current\1/p"`
+				# beachmint: (prepends current/)
+				#remotePath=`echo "$sourceFile" | sed -n "s/.*\/$dir\(.*\)\$/$remoteAppName\/current\1/p"`
+				remotePath=`echo "$sourceFile" | sed -n "s/.*\/$dir\(.*\)\$/$remoteAppName\1/p"`
 				#echo "scp \"$sourceFile\" \"root@$addr:$remotePrefix$remotePath\""
 				r=`scp "$sourceFile" "root@$addr:$remotePrefix$remotePath" 2>&1`
 				#echo "$r"
@@ -590,8 +643,11 @@ pushbash()(
 	#
 	localRc=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/DEV.bashrc
 	remoteRc=/root/.bashrc
+	localTools=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/DEV.wagtools
+	remoteTools=/root/.wagtools
 	if [ "$1" == "prod" -o "$1" == "scripts" ]; then
 		localRc=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/PROD.bashrc
+		localTools=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/PROD.wagtools
 	fi
 
 	if [ "$2" ]; then
@@ -600,7 +656,11 @@ pushbash()(
 		done
 		exit
 	fi
+
 	remote=`name_to_ip $1`
+
+	scp "$localTools" "root@$remote:'$remoteTools'"
+	
 	tmp1=`mktemp -t pushbash.XXXXXX`
 	tmp2=`mktemp -t pushbash.XXXXXX`
 	scp "root@$remote:'$remoteRc'" "$tmp1"

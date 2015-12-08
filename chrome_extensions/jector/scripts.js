@@ -71,10 +71,11 @@ jector = {
 			z.removeElements('script');
 			z.removeElements('menu-box', 'className');
 			z.removeElements('fb_iframe_widget', 'className');
-			z.removeElementByID('MarketGidScriptRootC9737');
-			z.removeElementByID('_atssh');
-			z.removeElementByID('twttrHubFrameSecure');
-			z.removeElementByID('twttrHubFrame');
+			z.removeElements('addthis_toolbox', 'className');
+			z.removeElementById('MarketGidScriptRootC9737');
+			z.removeElementById('_atssh');
+			z.removeElementById('twttrHubFrameSecure');
+			z.removeElementById('twttrHubFrame');
 
 			//window.onClickTrigger = nullA
 		};
@@ -195,7 +196,7 @@ jector = {
 			(!check || check(elms[i])) && elms[i].parentNode.removeChild(elms[i]);
 		}
 	}
-	,removeElementByID: function(search){
+	,removeElementById: function(search){
 		var el = document.getElementById(search)
 		if (el) el.parentNode.removeChild(el)
 	}
