@@ -30,6 +30,10 @@ export PATH=/usr/local/php5/bin:$PATH
 # mysql
 export PATH=/usr/local/mysql/bin:$PATH
 
+# Setting PATH for Python 3.4
+# The orginal version is saved in .profile.pysave
+export PATH="/Library/Frameworks/Python.framework/Versions/3.4/bin:${PATH}"
+
 # lein
 #export PATH=~/bin:$PATH
 
@@ -160,7 +164,7 @@ gco()(
 	branch=$1
 	if [ ! "$branch" ]; then
 		branch=`git branch | grep '*' | head -n1 | sed -n 's/^\* //p'`
-		if [ "`echo '$branch' | grep 'detached from'`" ]; then
+		if [ "`echo $branch | grep 'detached from'`" ]; then
 			branch=`git describe --tags`
 		fi
 	fi
@@ -179,7 +183,7 @@ gcb()(
 		#name=happies # @todo: randomize
 		name=`smile`
 	fi
-	mastif master && git checkout -b patch-$1
+	mastif master && git checkout -b patch-$1 # && git push origin +patch-$1 # << might want this last bit so things dont get jacked when you `poo`
 )
 
 glc(){
@@ -258,6 +262,7 @@ gropen()(
 	# Stream open files matched with grep
 	# gropen -R 'interesting text' ./
 	# @todo: make this work for any list of files, e.g. git diff --name-only 20150821za_release..20150923m_release app/database/
+	# 	or e.g. grep -Ri 'get' app/controllers/ | grep 's(' | grep public | grep ApiController
 	#
 	if [ "$1" == "" ]; then
 		# we just grepped but really wish we had gropened instead...
@@ -486,9 +491,14 @@ shep()(
 		echo "$addr"
 	elif [ "$addr" == "" ]; then
 		echo "use shep set <addr> to set a remote address"
-	elif [ "$1" == "-a" ]; then
-		echo "shepping all modified files..."
-		files=`git ls-files -m`
+	elif [ "$1" == "-a" -o "$2" ]; then
+		if [ "$1" == "-a" ]; then
+			echo "shepping all modified files..."
+			files=`git ls-files -m`
+		else
+			echo "shepping several files..."
+			files="$@"
+		fi
 		for file in $files; do
 			if [ "$file" != "-a" ]; then # avoid recursion
 				echo "$file..."
@@ -506,6 +516,8 @@ shep()(
 				remoteAppName='magento'
 			elif [ "$dir" == "wagapi" ]; then
 				remoteAppName='wagapi'
+			elif [ "$dir" == "raptor" ]; then
+				remoteAppName='raptor'
 			fi
 			if [ "$remoteAppName" != "" ]; then
 				# beachmint: (prepends current/)
@@ -636,6 +648,20 @@ escape_bash_val()(
 	echo "$1" | sed 's/\(["$\]\)/\\\1/g'
 )
 
+pushsql(){
+	where="$1"
+	if [ ! "$where" ]; then
+		where='qa'
+	fi
+	bak=`find ~/Downloads/ | grep wag.prod | tail -n1`
+	if [ ! "$bak" ]; then
+		>&2 echo 'cant find bak file in ~/Downloads/'
+		exit
+	fi
+	echo "pushing $bak to $where:/tmp/"
+	scp "$bak" ubuntu@`shudo -s "$where"`:/tmp/
+}
+
 pushbash()(
 	# Push DEV.bashrc to remote
 	# pushbash stage-prod
@@ -709,9 +735,20 @@ gp()(
 	fi
 )
 
+atest(){
+	check=
+	if [ "`grep -E "(^|\s)-e(\s|$)" <<< "$@"`" ]; then
+		echo "1"
+	else
+		echo "2"
+	fi
+}
+
 if [ -f /tmp/start.sh ]; then
 	./tmp/start.sh
 fi
 
 # zat (app maker for zendesk) doesnt like echoes in .profile
 #echo "yay profile"
+
+

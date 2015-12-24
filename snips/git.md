@@ -63,4 +63,15 @@ git branch | xargs git branch -D
 ```
 
 
+## Disable push to master
+@todo
+<!-- http://stackoverflow.com/questions/10260311/git-how-to-disable-push -->
+
+
+## Disable push to repo
+@todo
+<!-- http://stackoverflow.com/questions/10260311/git-how-to-disable-push -->
+
+
+
 

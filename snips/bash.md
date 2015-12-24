@@ -243,3 +243,79 @@ find ./path/to/dir/ -mtime +7 -type f -print0 | xargs -0 rm -v
 ```
 
 
+
+## Pipe stuff without invoking echo command
+For example: If you want to pipe/pass "-e" as a string and don't want `echo` to interpret it as an argument
+```
+echo "-e" | sed 's/-e/sup/'
+# vs
+sed 's/-e/sup/' <<< "-e"
+```
+<!-- @todo: would be awesome to have a function like doesArgExistAndRemoveFromListIfItDoes() or removeArgIfExists() -->
+
+
+
+## Updating Python on Max OSX
+Example below uses version 3.4.4
+0. Check current version
+
+```
+which python && python --version || >&2 echo 'cant find python path'
+```
+1. Download desired version: http://python.org/download
+2. Install package via double-clicking on downloaded .pkg
+3. Move downloaded version to python directory
+
+	```
+	sudo mv /Library/Frameworks/Python.framework/Versions/3.4 /System/Library/Frameworks/Python.framework/Versions
+	```
+4. Point current at new version
+
+	```
+	# navigate to python directory
+	cd /System/Library/Frameworks/Python.framework/Versions
+	# inspect existing symlink in case need to revert
+	ls -l ./Current
+	# create the symlink
+	sudo ln -sfh 3.4 ./Current
+	```
+5. Set user group/permissions
+
+	```
+	sudo chown -R root:wheel ./3.4
+	```
+7. Symlink /usr/bin (if haven't already)
+
+	```
+	# back up files just in case
+	mkdir /tmp/python-upgrade-baks
+	sudo cp /usr/bin/pydoc /tmp/python-upgrade-baks/
+	sudo cp /usr/bin/python /tmp/python-upgrade-baks/
+	sudo cp /usr/bin/pythonw /tmp/python-upgrade-baks/
+	sudo cp /usr/bin/python-config /tmp/python-upgrade-baks/
+	sudo ln -sfh /System/Library/Frameworks/Python.framework/Versions/3.4/bin/pydoc3 /usr/bin/pydoc
+	sudo ln -sfh /System/Library/Frameworks/Python.framework/Versions/3.4/bin/python3 /usr/bin/python
+	#sudo ln -sfh /System/Library/Frameworks/Python.framework/Versions/3.4/bin/pythonw3 /usr/bin/pythonw
+	# ^^ pythonw not a thing in 3.4, if accidentally symlinked, run this to revert:
+	# sudo ln -sfh /System/Library/Frameworks/Python.framework/Versions/2.7/bin/pythonw /usr/bin/pythonw
+	sudo ln -sfh /System/Library/Frameworks/Python.framework/Versions/3.4/bin/python3-config /usr/bin/python-config
+	# these probably arent necessary, but to match existing pattern just in case edge-case references:
+	sudo ln -s /System/Library/Frameworks/Python.framework/Versions/3.4/bin/pydoc3.4 /usr/bin/pydoc3.4
+	sudo ln -s /System/Library/Frameworks/Python.framework/Versions/3.4/bin/python3.4 /usr/bin/python3.4
+	sudo ln -s /System/Library/Frameworks/Python.framework/Versions/3.4/bin/python3.4-config /usr/bin/python3.4-config
+	#sudo ln -s /System/Library/Frameworks/Python.framework/Versions/3.4/bin/pythonw3.4 /usr/bin/pythonw3.4
+	# ^^ pythonw not a thing in 3.4, if accidentally symlinked, run this to revert:
+	# sudo rm -f /usr/bin/pythonw3.4
+	```
+8. Clean up
+
+	```
+	rm -v ~/Downloads/python-3.4.4-macosx10.6.pkg
+	# optional: delete older versions
+	sudo rm -frv ./2.*
+	```
+9. Update your IDE to point at new installation if you use one
+
+
+
+
