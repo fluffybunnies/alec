@@ -358,8 +358,8 @@ shudo()(
 	if [ "$1" == "-s" -o "$1" == "-u" ]; then d=$2; fi
 	s='2>/dev/null'
 	c="cd /var/www && cd wagapi $s || cd api_internal $s || cd platform-v2 $s || cd wordpress $s || cd lucky-forwarder $s || cd lucky-bak $s && cd current $s"
-	#t="sudo -i su -c '$c; /bin/bash'"
-	t='sudo -i' # su -c no longer allows interactive shells, which is annoying when ctrl+c destroys your connection. instead, push your cd command to /root/.bashrc
+	#t="sudo -i su -c '$c; /bin/bash'" # su -c no longer allows interactive shells, which is annoying when ctrl+c destroys your connection. instead, push your cd command to /root/.bashrc
+	t='sudo -i'
 	if [ "$1" == "-u" ]; then t="$c; /bin/bash"; fi
 	
 	d=`name_to_ip "$d"`
