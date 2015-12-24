@@ -256,7 +256,7 @@ sed 's/-e/sup/' <<< "-e"
 
 
 ## Updating Python on Max OSX
-Example below uses version 3.4.4
+<div style="opacity:0.8;">Example below uses version 3.4.4</div>
 1. Check current version
 
 ```
