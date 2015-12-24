@@ -307,7 +307,7 @@ which python && python --version || >&2 echo 'cant find python path'
 	# ^^ pythonw not a thing in 3.4, if accidentally symlinked, run this to revert:
 	# sudo rm -f /usr/bin/pythonw3.4
 	```
-8. Clean up
+8. Clean things up
 
 	```
 	rm -v ~/Downloads/python-3.4.4-macosx10.6.pkg
