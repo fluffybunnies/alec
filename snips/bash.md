@@ -36,17 +36,17 @@ echo "sup" 2>&1 | tee pathtofile
 
 ## tar and compress
 
-### Single file
+#### Single file
 ```
 tar zcf test.sql.tar.Z test.sql
 ```
 
-### Directory
+#### Directory
 @todo
 ```
 ```
 
-### Very large directory
+#### Very large directory
 We `cd` in order for `find` to output relative paths
 ```
 tardir()(
@@ -80,7 +80,7 @@ tardir()(
 )
 ```
 
-### Untar + unzip archive
+#### Untar + unzip archive
 ```
 untardir()(
 	# Untar+unzip archive
@@ -120,21 +120,29 @@ wont run. the `if [ 0 ]` bit is just a safeguard against human error / collision
 
 
 
-## Empty and Edit File in One Command
-Useful if working on a file locally and testing on remote server via ssh shell
+## Empty a File and Open For Editing in One Command
+Useful if working on a file locally and testing on remote server via ssh shell<br />
+I can copy the entire contents from my local text editor, and paste it into my shell to overwrite the remote file
+<!-- @todo: follow this up with `shep` -->
+<!-- "See `shep` below for an even easier method to accomplish the same task" -->
 ```
 : > path/to/file && vim path/to/file
 ```
+`: > path/to/file` truncates the file<br />
+`vim path/to/file` opens it up for editing<br />
+You can change `vim` to whatever editor suits your preference
 
 
 
-## Echo Single Line (no trailing newline)
+## Echo Single Line With No Trailing Newline Character
 ```
 # Remove all newlines:
 tr -d '\n'
 # Example:
 cat /tmp/myfile | head -n1 | tr -d '\n'
 ```
+<!-- @todo: use the word "strip" -->
+<!-- @todo: useful-for example, e.g. piping to sed, e.g. see what problems will or rob had when building the auto-git-prepend-ticket-number script -->
 
 
 
@@ -146,7 +154,7 @@ cat /tmp/myfile | head -n1 | tr -d '\n'
 
 
 
-## Run Output
+## Run Piped Input
 @todo
 ```
 # php bin/mysql.php | awk [line 2] | exec
@@ -176,9 +184,9 @@ bg
 If not:
 ```
 screen
-ENTER / SPACE
-[run commands]
-ctrl + a + d
+# [press ENTER / SPACE]
+# [run commands]
+ctrl + a + d # to exit while leaving commands running in background
 ```
 Or:
 ```
@@ -188,59 +196,111 @@ nohup ([run commands])
 
 
 ## OptArgs
-<!-- @todo: better description + keywords, also explain you can reference $1, $2, etc. explain what $0 is here -->
+Prepend letter with a colon (":") to expect argument value as `$OPTARG`
 ```
-while getopts 'm:q' opt; do
+while getopts 'm:qs' opt; do
 	case $opt in
 		m)
-			arg1=1
+			arg1=true
 		;;
 		q)
 			arg2=$OPTARG
 		;;
+		m)
+			arg3=1
+		;;
 	esac
 done
 ```
+<!-- @todo: better description + keywords, also explain you can reference $1, $2, etc. explain what $0 is here -->
 
 
 
-## Run a command immediately after sshing in one line
+## Switch user to root immediately after SSHing, in one line
+```
+ssh -t ubuntu@187.65.43.21 'sudo -i'
+```
+
+
+
+## Navigate to a directory immediately after SSHing, in one line
+```
+ssh -t ubuntu@187.65.43.21 'cd /path/to/default/dir; /bin/bash'
+```
+You can create a function to attempt several directories so it will work when connecting to various frequently-visited environments:
+```
+shudo()(
+	# I webadmin WalMart, a php plaform, and a site that houses my resume
+	# I'd like to be able to `shudo my_server` and instantly arrive in my website's root directory
+	# Usage: shudo 187.65.43.21
+	remoteServer=$1
+	ssh -t ubuntu@$remoteServer 'cd /var/www && cd walmart-web 2>/dev/null || cd resume_site 2>/dev/null || cd platform-v2 2>/dev/null; /bin/bash'
+)
+```
+The above will place you in `/var/www` regardless, and proceed to `/var/www/walmart-web` or `/var/www/resume_site` etc if the directory exists.
+
+
+
+## Switch user to root AND change directory immediately after SSHing
+```
+ssh -t ubuntu@187.65.43.21 "sudo -i su -c 'cd /var/www && cd walmart-web 2>/dev/null || cd resume_site 2>/dev/null || cd platform-v2 2>/dev/null; /bin/bash'"
+```
+Let's make a function using the above concept that we could add to our `~/.profile` or `~/.bashrc`:
+```
+shudo()(
+	# Usage: shudo 187.65.43.21
+	remoteServer=$1
+	s='2>/dev/null'
+	c="cd /var/www && cd walmart-web $s || cd resume_site $s || cd platform-v2 $s"
+	t="sudo -i su -c '$c; /bin/bash'"
+	ssh -t ubuntu@$remoteServer $t
+)
+```
+Unfortunately, newer versions of ubuntu no longer allow interactive shells to be initialized via scripts for security reasons. Which means if you ever hit `ctrl+c`, your SSH shell will terminate and your remote connection will be lost.<br />
+To avoid this, we can use a combination of a simplified `shudo` function with an addition to our remote instance's `~/.bashrc`:
+```
+# add this to your local ~/.profile or ~/.bashrc:
+shudo()(
+	# Usage: shudo 187.65.43.21
+	ssh -t ubuntu@$1 'sudo -i'
+)
+# then add this snippet to the remote instance's ~/.bashrc (potentially via deployment script [e.g. chef])
+cd /var/www && cd walmart-web 2>/dev/null || cd resume_site 2>/dev/null || cd platform-v2 2>/dev/null
+```
+Now you can `shudo 187.65.43.21` and be instantly logged in as root _and_ be placed in your web root directory _without_ the inconvenience of getting logged out if you press `ctrl+c` after, for example, `tail -f`ing or `top`ing
+
+
+
+## Run any command immediately after SSHing, in one line
 @todo
-<!-- Maybe more specific title, with subtitle like: "Same as: ssh ubuntu@instance, sudo -i, cd to web directory" -->
 ```
 ```
-
-
-
-## Change user to root immediately after sshing in one line
-@todo
-<!-- Explain: "su -c no longer allows interactive shells, which is annoying when ctrl+c destroys your connection. instead, push your cd command to /root/.bashrc" -->
-```
-```
+<!-- @todo: Maybe more specific title, with subtitle like: "Same as: ssh ubuntu@instance, sudo -i, cd to web directory" -->
+<!-- @todo: Language that follows up on previous snips. Maybe simply copy the best previus shudo() and include "any command" as argument -->
 
 
 
 ## Get directory of script being run
 @todo
-<!-- @todo: better title -->
-<!-- @todo: subtitle like "ensure your script's current working directory" or "" -->
-<!-- @todo: explain this does not work with sourced files, e.g. `. path/to/script` -->
-<!-- @todo: try to break it with spaces -->
 ```
 # change to script's directory right away
 cd `dirname "$0"`
 # @todo: return realpath to script's dir to var
 ```
+<!-- @todo: better title -->
+<!-- @todo: subtitle like "ensure your script's current working directory" or "" -->
+<!-- @todo: explain this does not work with sourced files, e.g. `. path/to/script` -->
+<!-- @todo: try to break it with spaces -->
 
 
 
 ## Delete files older than a certain amount of time
-<!-- @todo: explain why "-print0" in find and "-0" in xargs - separates results with NUL so files with spaces dont screw things up -->
-<!-- @todo: explain that "+7" defaults to days, but check your `man find` docs for other time formats -->
 ```
 # delete 
 find ./path/to/dir/ -mtime +7 -type f -print0 | xargs -0 rm -v
 ```
+<!-- @todo: explain why "-print0" in find and "-0" in xargs - separates results with NUL so files with spaces dont screw things up -->
+<!-- @todo: explain that "+7" defaults to days, but check your `man find` docs for other time formats -->
 
 
 
