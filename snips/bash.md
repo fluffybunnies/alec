@@ -256,20 +256,20 @@ sed 's/-e/sup/' <<< "-e"
 
 
 ## Updating Python on Max OSX
-Example below uses version 3.4.4
-0. Check current version
+Example below uses version 3.4.4<br />
+1. Check current version
 
 ```
 which python && python --version || >&2 echo 'cant find python path'
 ```
-1. Download desired version: http://python.org/download
-2. Install package via double-clicking on downloaded .pkg
-3. Move downloaded version to python directory
+2. Download desired version: http://python.org/download
+3. Install package via double-clicking on downloaded .pkg
+4. Move downloaded version to python directory
 
 	```
 	sudo mv /Library/Frameworks/Python.framework/Versions/3.4 /System/Library/Frameworks/Python.framework/Versions
 	```
-4. Point current at new version
+5. Point current at new version
 
 	```
 	# navigate to python directory
@@ -279,7 +279,7 @@ which python && python --version || >&2 echo 'cant find python path'
 	# create the symlink
 	sudo ln -sfh 3.4 ./Current
 	```
-5. Set user group/permissions
+6. Set user group/permissions
 
 	```
 	sudo chown -R root:wheel ./3.4
