@@ -104,14 +104,14 @@ jector = {
 			if (madeNextBtn) return;
 			madeNextBtn = true
 			z.requireJquery(function($){
-				var btnToReplace = $('a.movgre:first')
+				var btnToReplace = $('a.movgr:first')
 					,currentPath = window.location.pathname
 					,currentEpisode = currentPath.match(/season-([0-9]+)-episode-([0-9]+)/)
 					,prevUrl = currentPath.replace(currentEpisode[0], 'season-'+currentEpisode[1]+'-episode-'+(+currentEpisode[2]-1))
 					,nextUrl = currentPath.replace(currentEpisode[0], 'season-'+currentEpisode[1]+'-episode-'+(+currentEpisode[2]+1))
 					,$newBtns
-				btnToReplace.replaceWith($newBtns=$('<a class="movgre jector-prev" href="'+prevUrl+'" title="Prev">Prev</a><a class="movgre jector-next" href="'+nextUrl+'" title="Next">Next</a>'))
-				$('head').append('<style type="text/css">.movgre{color:#fff !important; margin:0 0.2em;}</style>')
+				btnToReplace.replaceWith($newBtns=$('<a class="movgr jector-prev" href="'+prevUrl+'" title="Prev">Prev</a><a class="movgr jector-next" href="'+nextUrl+'" title="Next">Next</a>'))
+				$('head').append('<style type="text/css">.movgr{color:#fff !important; margin:0 0.2em;}</style>')
 
 				$.ajax({
 					method: 'HEAD'

@@ -2,6 +2,9 @@ if [ -f ~/.secrets ]; then
 	. ~/.secrets
 fi
 
+# Setting PATH for Python 3.4
+export PATH="/Library/Frameworks/Python.framework/Versions/3.4/bin:${PATH}"
+
 # elastic beanstalk
 export PATH=$PATH:/Users/ahulce/AWS-ElasticBeanstalk-CLI-2.6.3/eb/macosx/python2.7
 
@@ -29,10 +32,6 @@ export PATH=/usr/local/php5/bin:$PATH
 
 # mysql
 export PATH=/usr/local/mysql/bin:$PATH
-
-# Setting PATH for Python 3.4
-# The orginal version is saved in .profile.pysave
-export PATH="/Library/Frameworks/Python.framework/Versions/3.4/bin:${PATH}"
 
 # lein
 #export PATH=~/bin:$PATH
@@ -358,8 +357,8 @@ shudo()(
 	if [ "$1" == "-s" -o "$1" == "-u" ]; then d=$2; fi
 	s='2>/dev/null'
 	c="cd /var/www && cd wagapi $s || cd api_internal $s || cd platform-v2 $s || cd wordpress $s || cd lucky-forwarder $s || cd lucky-bak $s && cd current $s"
-	#t="sudo -i su -c '$c; /bin/bash'" # su -c no longer allows interactive shells, which is annoying when ctrl+c destroys your connection. instead, push your cd command to /root/.bashrc
-	t='sudo -i'
+	#t="sudo -i su -c '$c; /bin/bash'"
+	t='sudo -i' # su -c no longer allows interactive shells, which is annoying when ctrl+c destroys your connection. instead, push your cd command to /root/.bashrc
 	if [ "$1" == "-u" ]; then t="$c; /bin/bash"; fi
 	
 	d=`name_to_ip "$d"`
@@ -750,5 +749,6 @@ fi
 
 # zat (app maker for zendesk) doesnt like echoes in .profile
 #echo "yay profile"
+
 
 

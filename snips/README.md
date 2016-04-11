@@ -52,6 +52,9 @@
 
 `sed` replace something(s) with newlines or tabs; e.g. for ../utils/parse_tickets.sh
 
+truncate / split a file
+	did this before
+
 pv (apt-get install pv)
 	pv /tmp/db.bak.sql | mysql -h... -u... -p... db
 
