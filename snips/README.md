@@ -51,6 +51,7 @@
 - - - WISHLIST - - -
 
 `sed` replace something(s) with newlines or tabs; e.g. for ../utils/parse_tickets.sh
+(includes?: `sed` replace all occurrences of string in multiple files
 
 truncate / split a file
 	did this before

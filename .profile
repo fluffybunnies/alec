@@ -75,7 +75,8 @@ opem()(
 
 #alias smile="curl http://smiley.meatcub.es:1337"
 smile(){
-	if [ ! -d /tmp/node_modules/cool-ascii-faces ]; then
+	if [ ! -f /tmp/node_modules/cool-ascii-faces/cli.js ]; then
+		#rm -fr /tmp/node_modules/cool-ascii-faces
 		npm install --prefix /tmp cool-ascii-faces > /dev/null
 	fi
 	node /tmp/node_modules/cool-ascii-faces/cli.js
@@ -625,7 +626,9 @@ untardir()(
 )
 
 mysqlc()(
-	mysql -h127.0.0.1 -proot -uroot --port=8889 wagapi -A
+	# MAMP...
+	#mysql -h127.0.0.1 -proot -uroot --port=8889 wagapi -A
+	mysql -uroot -A
 )
 
 mysqlq()(

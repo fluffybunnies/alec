@@ -378,4 +378,19 @@ which python && python --version || >&2 echo 'cant find python path'
 
 
 
+### Monitor progress of pipe
+Pipeviewer
+```
+# install pipe viewer
+[apt-get/yum/sudo port] install pv
+
+# use pv instead of cat
+pv /tmp/backup.sql > /dev/null
+
+# monitor tar progress
+tar -czf - . | pv > out.tgz
+
+# etc
+```
+
 
