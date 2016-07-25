@@ -50,6 +50,35 @@ ulimit -Sn 2048
 DEFAULT_TEXT_APP='/Applications/Sublime Text 2.app'
 DEFAULT_WEB_APP='/Applications/Google Chrome.app'
 
+
+
+# BEGIN docker init
+if [ "`which docker-machine`" ]; then
+	env="$(docker-machine env)"
+	echo "docker:: checking env vars look ok..."
+	looksGood=1
+	while IFS= read -r line; do
+		if [[ $line != \#* ]] && [[ $line != export\ * ]]; then
+			#echo "nope: $line"
+			looksGood=0
+		fi
+	done <<< "$env"
+
+	if [ $looksGood == 1 ]; then
+		echo "docker:: evaling env vars to set up parent proc"
+		eval "$(docker-machine env)"
+	else
+		echo "docker:: env vars look fishy. not evaling"
+		echo
+		echo "$(docker-machine env)"
+		echo
+	fi
+fi
+# END docker init
+
+
+
+
 saveprofile()(
 	src='/Users/ahulce/.profile'
 	dest='/Users/ahulce/Dropbox/alec_repo/.profile'
