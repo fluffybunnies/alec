@@ -785,9 +785,10 @@ dockercc()(
 		docker stop "$SPECIFIC_CONTAINER"
 		docker rm "$SPECIFIC_CONTAINER"
 		if [ "$REMOVE_IMAGES" == 1 ]; then
-			echo "WARNING! Removing image $SPECIFIC_CONTAINER in 3 seconds. Press ctrl+c to cancel"
+			imgId=`docker images | grep "$SPECIFIC_CONTAINER " | awk '{print $3}'`
+			echo "WARNING! Removing image $SPECIFIC_CONTAINER ($imgId) in 3 seconds. Press ctrl+c to cancel"
 			sleep 3
-			docker rmi "$SPECIFIC_CONTAINER"
+			docker rmi $imgId
 		fi
 	else
 		echo "stopping + removing ALL containers"
