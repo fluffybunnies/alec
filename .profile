@@ -775,7 +775,7 @@ dockercc()(
 	if [ "$1" == "-i" ]; then
 		echo "WARNING! Removing all images in 3 seconds. Press ctrl+c to cancel"
 		sleep 3
-		docker rmi $(docker images -a -q)
+		docker rmi $(docker images -q)
 	fi
 )
 
