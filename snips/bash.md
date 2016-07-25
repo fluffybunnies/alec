@@ -175,11 +175,17 @@ export EDITOR=nano
 
 
 ## Run process in background
+<!-- @todo: explain nohup vs disown vs &
+		http://unix.stackexchange.com/questions/3886/difference-between-nohup-disown-and
+-->
 If already running:
 ```
 [run commands]
 ctrl + z
 bg
+# if want to exit a parent process like a tty, continue with disown + exit:
+disown
+exit
 ```
 If not:
 ```

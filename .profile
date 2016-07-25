@@ -766,6 +766,19 @@ gp()(
 	fi
 )
 
+dockercc()(
+	# Stop and remove all docker containers
+	# Pass -i to also remove all images
+	#
+	docker stop $(docker ps -a -q)
+	docker rm $(docker ps -a -q)
+	if [ "$1" == "-i" ]; then
+		echo "WARNING! Removing all images in 3 seconds. Press ctrl+c to cancel"
+		sleep 3
+		docker rmi $(docker images -a -q)
+	fi
+)
+
 atest(){
 	check=
 	if [ "`grep -E "(^|\s)-e(\s|$)" <<< "$@"`" ]; then
