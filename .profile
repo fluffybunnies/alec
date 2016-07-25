@@ -767,15 +767,37 @@ gp()(
 )
 
 dockercc()(
-	# Stop and remove all docker containers
+	# Stop and remove docker containers
 	# Pass -i to also remove all images
 	#
-	docker stop $(docker ps -a -q)
-	docker rm $(docker ps -a -q)
-	if [ "$1" == "-i" ]; then
-		echo "WARNING! Removing all images in 3 seconds. Press ctrl+c to cancel"
-		sleep 3
-		docker rmi $(docker images -q)
+	# Remove all docker containers: dockercc
+	# Remove all docker containers and images: dockercc -i
+	# Remove specific container: dockercc api
+	#
+	# @todo: Grab container-image link in case image isn't named the same as SPECIFIC_CONTAINER
+	#
+	if [ "$1" == "-i" ] || [ "$2" == "-i" ]; then REMOVE_IMAGES=1; fi
+	if [ "$1" ] && [[ $1 != \-* ]]; then SPECIFIC_CONTAINER="$1";
+	elif [ "$2" ] && [[ $2 != \-* ]]; then SPECIFIC_CONTAINER="$2"; fi
+
+	if [ "$SPECIFIC_CONTAINER" ]; then
+		echo "stopping + removing container $SPECIFIC_CONTAINER"
+		docker stop "$SPECIFIC_CONTAINER"
+		docker rm "$SPECIFIC_CONTAINER"
+		if [ "$REMOVE_IMAGES" == 1 ]; then
+			echo "WARNING! Removing image $SPECIFIC_CONTAINER in 3 seconds. Press ctrl+c to cancel"
+			sleep 3
+			docker rmi "$SPECIFIC_CONTAINER"
+		fi
+	else
+		echo "stopping + removing ALL containers"
+		docker stop $(docker ps -a -q)
+		docker rm $(docker ps -a -q)
+		if [ "$REMOVE_IMAGES" == 1 ]; then
+			echo "WARNING! Removing all images in 3 seconds. Press ctrl+c to cancel"
+			sleep 3
+			docker rmi $(docker images -q)
+		fi
 	fi
 )
 
