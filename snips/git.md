@@ -63,6 +63,15 @@ git branch | xargs git branch -D
 ```
 
 
+## git diff excluding specific directory
+<!-- git diff except directory, git diff ignore directory -->
+<!-- @todo: explain syntax like using | for multiple dirs etc -->
+```
+git diff -- . ':!node_modules'
+```
+
+
+
 ## Disable push to master
 @todo
 <!-- http://stackoverflow.com/questions/10260311/git-how-to-disable-push -->
