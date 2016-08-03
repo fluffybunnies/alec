@@ -400,3 +400,21 @@ tar -czf - . | pv > out.tgz
 ```
 
 
+
+### Watch File / Directory for Changes
+```bash
+# Ex: Run a server restart script when any nodejs-type file in application changes
+inotifywait -r -m \
+--exclude "node_modules|.git" \
+-e create,modify,moved_to,moved_from,delete \
+"$appRoot" |
+while read -r line; do
+	if [ "`echo \"$line\" | grep '.js\|.jsx\|.json\|.hbs\|.jade'`" ]; then
+		"$appRoot/dev_restart.sh"
+		sleep 1 # forever's spinSleepTime defaults to 1000ms, need to be up for at least that long for forever to care
+		break # we only need to restart once
+	fi
+done
+```
+
+

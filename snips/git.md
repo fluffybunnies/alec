@@ -25,6 +25,8 @@ Warning: Should only do this prior to pull request merge<br />
 Can get hairy if this is done to a shared branch (e.g. master)
 ```
 git rebase -i master
+# or
+git rebase -i HEAD~2 # where 2 means we are looking at the last 2 commits
 # change "pick" to "s" (or "squash") for all but the top commit
 git push origin +BRANCH
 ```

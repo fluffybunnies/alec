@@ -264,6 +264,12 @@ bitch() {
 	fi
 }
 
+grepv()(
+	# grep excluding common directories
+	#
+	grep $@ | grep -v 'node_modules/\|.git/'
+)
+
 grepl() ( # <- for ulimit + local vars
 	# grep the last N lines of file, defaults to last 10 lines
 	# grepl -R '?>' ./
@@ -766,6 +772,12 @@ gp()(
 	fi
 )
 
+
+dockersql()(
+	~/Dropbox/urbankitchens/util/docker/dev_mysql.sh
+)
+
+
 dockercc()(
 	# Stop and remove docker containers
 	# Pass -i to also remove all images
@@ -782,8 +794,7 @@ dockercc()(
 
 	if [ "$SPECIFIC_CONTAINER" ]; then
 		echo "stopping + removing container $SPECIFIC_CONTAINER"
-		docker stop "$SPECIFIC_CONTAINER"
-		docker rm "$SPECIFIC_CONTAINER"
+		docker rm -f "$SPECIFIC_CONTAINER"
 		if [ "$REMOVE_IMAGES" == 1 ]; then
 			imgId=`docker images | grep "$SPECIFIC_CONTAINER " | awk '{print $3}'`
 			echo "WARNING! Removing image $SPECIFIC_CONTAINER ($imgId) in 3 seconds. Press ctrl+c to cancel"
@@ -792,14 +803,142 @@ dockercc()(
 		fi
 	else
 		echo "stopping + removing ALL containers"
-		docker stop $(docker ps -a -q)
-		docker rm $(docker ps -a -q)
+		docker rm -f $(docker ps -a -q)
 		if [ "$REMOVE_IMAGES" == 1 ]; then
 			echo "WARNING! Removing all images in 3 seconds. Press ctrl+c to cancel"
 			sleep 3
 			docker rmi $(docker images -q)
 		fi
 	fi
+)
+
+dockersh()(
+	# Shortcut for connecting to active docker container
+	#
+	# dockersh CONTAINER_NAME
+	#
+	docker exec -ti "$1" /bin/bash
+)
+
+dockergits()(
+	# Sync instance with git
+	# Uses local keys for verification, removing them from instance when done
+	#
+	# dockergits CONTAINER_NAME
+	# 	CONTAINER_NAME tries to guess if empty (optional)
+	# 	-i path to key for git, tries ~/.ssh/id_rsa if empty (optional)
+	# 	-k leave your ssh keys on the VM (optional)
+	#
+
+	dockerContainer=`last_plain_arg $@`
+	# try and guess dockerContainer
+	if [ ! "$dockerContainer" ]; then
+		cwd=$(basename $(pwd))
+		if [ "$cwd" == 'be' -a "`docker ps --format '{{.Names}}' 2>/dev/null | grep nodejs`" == 'nodejs' ]; then dockerContainer=nodejs;
+		elif [ "$cwd" == 'fe' -a "`docker ps --format '{{.Names}}' 2>/dev/null | grep react`" == 'react' ]; then dockerContainer=react;
+		elif [ "$cwd" == 'fe' -a "`docker ps --format '{{.Names}}' 2>/dev/null | grep mysql-magento-1`" == 'mysql-magento-1' ]; then dockerContainer=mysql-magento-1; fi
+		if [ "$dockerContainer" ]; then echo "dockerContainer not supplied as argument, guessing \"$dockerContainer\""; fi
+	fi
+	if [ ! "$dockerContainer" ]; then >&2 echo 'Please supply docker container as first argument'; exit; fi
+
+	while getopts ':ik' opt; do
+		case $opt in
+			i)
+				PUB_KEY_PATH=$OPTARG
+			;;
+			k)
+				KEEP_SSH_KEYS=1
+			;;
+		esac
+	done
+
+	echo "Finding local repo context..."
+	currentBranch=`git rev-parse --abbrev-ref HEAD`
+	if [ ! "$currentBranch" ]; then >&2 echo 'Unable to identify current branch. Is your cwd a git repo?'; exit; fi
+
+	echo "Finding remote dir..."
+	lookIn=/home/ubuntu/dev
+	remoteDir=`docker exec $dockerContainer /bin/bash -c "ls $lookIn 2>/dev/null | head -n1"`
+	if [ ! "$remoteDir" ]; then >&2 echo "Unable to identify remote directory in $lookIn"; exit; fi
+	remoteDir=$lookIn/"$remoteDir"
+
+	echo "Copying ssh keys..."
+	docker_copy_ssh_keys $dockerContainer $PUB_KEY_PATH
+
+	echo "Adding git's public key to known_hosts..."
+	docker exec $dockerContainer /bin/bash -c 'ssh -oStrictHostKeyChecking=no git@github.com'
+
+	echo "Attempting to simulate git repo..."
+	gitConfig=`cat ./.git/config`
+	#if [ ! "`docker exec $dockerContainer /bin/bash -c 'ls -d '$remoteDir/.git' 2>/dev/null'`" ]; then
+		docker exec $dockerContainer /bin/bash -c "cd '$remoteDir'; git init; echo '$gitConfig' > .git/config; chmod 0644 .git/config"
+	#fi
+
+	echo "Syncing branch $currentBranch..."
+	docker exec $dockerContainer /bin/bash -c "cd '$remoteDir'; git fetch; git checkout -f $currentBranch; git pull origin $currentBranch"
+
+	if [ ! "$KEEP_SSH_KEYS" ]; then
+		echo "Cleaning up ssh keys..."
+		docker_clean_ssh_keys
+	fi
+)
+
+
+docker_copy_ssh_keys()(
+	# Note this really should be used programmatically in conjunction with docker_clean_ssh_keys()
+	# Why? Cuz docker_clean_ssh_keys() assumes docker_copy_ssh_keys() was just run. Could overwrite keys otherwise.
+	# @todo: Enforce this by using a $RANDOM key to create tmpbaks, which docker_clean_ssh_keys() will require as arg
+	#
+	dockerContainer=$1
+	PUB_KEY_PATH=$2
+	if [ ! "$dockerContainer" ]; then >&2 echo "Please supply a dockerContainer as first argument"; exit; fi
+	if [ ! "$PUB_KEY_PATH" ]; then PUB_KEY_PATH=~/.ssh/id_rsa; fi # @todo: there's got to be a way to commandeer `ssh`'s findBestKey() logic
+	machineSshKeyPrivate=`cat "$PUB_KEY_PATH"`
+	machineSshKeyPublic=`cat "$PUB_KEY_PATH.pub"`
+	docker exec $dockerContainer sudo /bin/bash -c 'if [ -f /root/.ssh/id_rsa ]; then mv /root/.ssh/id_rsa /root/.ssh/id_rsa.tmpbak; fi'
+	docker exec $dockerContainer sudo /bin/bash -c 'if [ -f /root/.ssh/id_rsa.pub ]; then mv /root/.ssh/id_rsa.pub /root/.ssh/id_rsa.pub.tmpbak; fi'
+	docker exec $dockerContainer /bin/bash -c "echo '$machineSshKeyPrivate' > /root/.ssh/id_rsa"
+	docker exec $dockerContainer /bin/bash -c "echo '$machineSshKeyPublic' > /root/.ssh/id_rsa.pub"
+	docker exec $dockerContainer /bin/bash -c 'chmod 0400 /root/.ssh/id_rsa'
+)
+
+
+docker_clean_ssh_keys()(
+	dockerContainer=$1
+	if [ ! "$dockerContainer" ]; then >&2 echo "Please supply a dockerContainer as first argument"; exit; fi
+	docker exec $dockerContainer sudo /bin/bash -c 'rm /root/.ssh/id_rsa; rm /root/.ssh/id_rsa.pub'
+	docker exec $dockerContainer sudo /bin/bash -c 'if [ -f /root/.ssh/id_rsa.tmpbak ]; then mv /root/.ssh/id_rsa.tmpbak /root/.ssh/id_rsa; fi'
+	docker exec $dockerContainer sudo /bin/bash -c 'if [ -f /root/.ssh/id_rsa.pub.tmpbak ]; then mv /root/.ssh/id_rsa.pub.tmpbak /root/.ssh/id_rsa.pub; fi'
+)
+
+
+last_plain_arg()(
+	for arg in $@; do
+		if [[ $arg != \-* ]]; then lastArg=$arg; fi
+	done
+	echo $lastArg
+)
+
+npv()(
+	# Return version of package in ./node_modules
+	#
+	# npv babel
+	# > 5.8.35
+	#
+	packageName=$1
+	if [ ! "$packageName" ]; then
+		>&2 echo "Please pass packageVersion as first argument"
+		exit
+	fi
+	packageVersion=`cat "./node_modules/$packageName/package.json" 2>/dev/null | grep '"version"' | sed 's/version//' | sed 's/[[:space:]]//g' | sed 's/"//g' | sed 's/://g' | sed 's/,//g'`
+	if [ ! "$packageVersion" ]; then
+		>&2 echo "Can't find package version of $packageName"
+		>&2 echo "Try npm list | grep '$packageName'"
+		exit
+	fi
+	# @todo: option to strip newline from echo: (useful sometimes in scripts)
+	#echo $packageVersion | tr -d '\n'
+	echo $packageVersion
 )
 
 atest(){
