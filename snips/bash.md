@@ -34,6 +34,17 @@ echo "sup" 2>&1 | tee pathtofile
 
 
 
+## Escape Bash Value Control Characters
+```
+escape_bash_val(){
+	# Usage: line=`escape_bash_val "$line"`
+	# echo '$wef="w\$ef"' | sed 's/\(["$\]\)/\\\1/g'
+	echo "$1" | sed 's/\(["$\]\)/\\\1/g'
+}
+```
+
+
+
 ## tar and compress
 
 #### Single file
@@ -384,7 +395,7 @@ which python && python --version || >&2 echo 'cant find python path'
 
 
 
-### Monitor progress of pipe
+## Monitor progress of pipe
 Pipeviewer
 ```
 # install pipe viewer
@@ -401,7 +412,7 @@ tar -czf - . | pv > out.tgz
 
 
 
-### Watch File / Directory for Changes
+## Watch File / Directory for Changes
 ```bash
 # Ex: Run a server restart script when any nodejs-type file in application changes
 inotifywait -r -m \

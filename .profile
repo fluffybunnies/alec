@@ -53,27 +53,55 @@ DEFAULT_WEB_APP='/Applications/Google Chrome.app'
 
 
 # BEGIN docker init
-if [ "`which docker-machine`" ]; then
+docker_init(){
+	while getopts 'f' opt; do
+		case $opt in
+			f)
+				docker_init_FORCE=1
+			;;
+		esac
+	done
+
+	if [ -f "$docker_init_lockFile" ] && [ ! "$docker_init_FORCE" ]; then
+		echo "docker_init:: lock file detected, exiting"
+		return
+	fi
+	if [ ! "`which docker-machine`" ]; then
+		>&2 echo "docker_init:: docker-machine not found in PATH, exiting"
+		return
+	fi
+
+	docker_init_lockFile=/tmp/docker_init
+	if [ -f "$docker_init_lockFile" ] && [ ! "$docker_init_FORCE" ]; then
+		echo "docker_init:: lock file detected, not checking docker server"
+	elif [ "`docker version 2>&1 | grep 'Cannot connect to the Docker daemon. Is the docker daemon running on this host'`" ]; then
+		date > "$docker_init_lockFile"
+		echo "docker_init:: cannot detect docker server, attempting boot"
+		docker-machine start
+		rm "$docker_init_lockFile"
+	fi
+
 	env="$(docker-machine env)"
 	echo "docker:: checking env vars look ok..."
 	looksGood=1
 	while IFS= read -r line; do
 		if [[ $line != \#* ]] && [[ $line != export\ * ]]; then
-			#echo "nope: $line"
+			echo "docker_init:: line: $line"
 			looksGood=0
 		fi
 	done <<< "$env"
 
 	if [ $looksGood == 1 ]; then
-		echo "docker:: evaling env vars to set up parent proc"
+		echo "docker_init:: evaling env vars to set up parent proc"
 		eval "$(docker-machine env)"
 	else
-		echo "docker:: env vars look fishy. not evaling"
+		echo "docker_init:: env vars look fishy. not evaling"
 		echo
 		echo "$(docker-machine env)"
 		echo
 	fi
-fi
+}
+docker_init
 # END docker init
 
 
@@ -86,6 +114,11 @@ saveprofile()(
 	cp "$src" "$dest"
 	ls -lh "$dest"
 )
+
+rprofile(){
+	# reload this file
+	. ~/.profile
+}
 
 pmo()(
 	# @todo: if input is git commit, parse out pivotal ticket number
@@ -485,6 +518,10 @@ bopen() {
 	wopen "$1"
 }
 
+watch()(
+	/Users/ahulce/Dropbox/alec_repo/watch.js $@
+)
+
 authme()(
 	# Give yourself root access
 	# authme ec2-54-159-48-203.compute-1.amazonaws.com
@@ -879,7 +916,7 @@ dockergits()(
 
 	if [ ! "$KEEP_SSH_KEYS" ]; then
 		echo "Cleaning up ssh keys..."
-		docker_clean_ssh_keys
+		docker_clean_ssh_keys $dockerContainer
 	fi
 )
 
