@@ -112,6 +112,10 @@ Bench = {
 		return progs;
 	}
 
+	,getProgLabel: function(k,test){
+		return test['prog'+k+'Label'] || test[k+'Label'] || k
+	}
+
 	,randomize: function(list){
 		return list.sort(function(){return Math.random()-0.5});
 	}
@@ -128,9 +132,10 @@ Bench = {
 			,x = z.config.key
 			,runTime = endTime-startTime
 			,stats = test.stats[test.stats.length-1]
+			,progLabel = z.getProgLabel(progKey,test)
 			,$score
 		;
-		$score = $('<div><span>'+runTime+'</span><span>('+progKey+')</span><span>'+log+'</span></div>').appendTo($set);
+		$score = $('<div><span>'+runTime+'</span><span>('+progLabel+')</span><span>'+log+'</span></div>').appendTo($set);
 		stats.push({k:progKey, ms:runTime, $score:$score});
 		(test.stats.progs[progKey] || (test.stats.progs[progKey] = [])).push(runTime);
 	}
@@ -164,7 +169,7 @@ Bench = {
 		progs.forEach(function(k){
 			$winnerBox.append('<div>'
 				+ '<span>Winner:</span>'
-				+ '<span>'+k+'</span>'
+				+ '<span>'+z.getProgLabel(k,test)+'</span>'
 				+ '<span>Wins: '+(test.stats.wins[k]||0)+'/'+test.stats.length+'</span>'
 				+ '<span>Avg ms: '+(test.stats.progs[k].reduce(function(a,b){return a+b})/test.stats.progs[k].length).toFixed(2)+'</span>'
 			+ '</div>');

@@ -497,8 +497,10 @@ topen()(
 		exit
 	fi
 	if [ "$1" ]; then
-		mkdir -p `dirname "$1"`
-		touch "$1"
+		if [ ! -f "$1" ]; then
+			mkdir -p `dirname "$1"`
+			touch "$1"
+		fi
 		open -a"$DEFAULT_TEXT_APP" "$1"
 	fi
 )
@@ -519,7 +521,7 @@ bopen() {
 }
 
 watch()(
-	/Users/ahulce/Dropbox/alec_repo/watch.js $@
+	/Users/ahulce/Dropbox/Beachmint/watchs/index.js $@
 )
 
 authme()(
@@ -912,7 +914,13 @@ dockergits()(
 	#fi
 
 	echo "Syncing branch $currentBranch..."
-	docker exec $dockerContainer /bin/bash -c "cd '$remoteDir'; git fetch; git checkout -f $currentBranch; git pull origin $currentBranch"
+	# _temp_ branch is so `git pull` doesnt create a merge commit and subsequently require auth
+	docker exec $dockerContainer /bin/bash -c "cd '$remoteDir'; git fetch; git checkout -f -b _temp_; git checkout -f _temp_; git branch -D $currentBranch; git checkout -f $currentBranch; git branch -D _temp_;"
+
+	if [ "`docker exec $dockerContainer ls -f $remoteDir/scripts/dev_restart.sh 2>/dev/null`" ]; then
+		echo "Running scripts/dev_restart.sh..."
+		docker exec $dockerContainer $remoteDir/scripts/dev_restart.sh
+	fi
 
 	if [ ! "$KEEP_SSH_KEYS" ]; then
 		echo "Cleaning up ssh keys..."

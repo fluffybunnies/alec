@@ -73,6 +73,25 @@ git diff -- . ':!node_modules'
 ```
 
 
+## Avoid auth check on `git pull`
+If `git pull` requires a commit to merge incoming changes, it can error out with "*** Please tell me who you are. ... fatal: unable to auto-detect email address"
+<br />Instead, delete the target branch and check it out again
+```
+# Instead of...
+git fetch
+git checkout -f $targetBranch
+git pull origin $targetBranch
+
+# Do this...
+git fetch
+git checkout -f -b _temp_
+git checkout -f _temp_
+git branch -D $targetBranch
+git checkout -f $targetBranch
+git branch -D _temp_
+```
+
+
 
 ## Disable push to master
 @todo

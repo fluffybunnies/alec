@@ -157,6 +157,18 @@ cat /tmp/myfile | head -n1 | tr -d '\n'
 
 
 
+## Replace newlines in stream
+```
+# tr is the simplest, if only need to replace with single character
+echo 'yo'$'\n''dawg' | tr '\n' ' '
+# or awk
+git log --pretty=%s | awk '$1=$1' ORS='; '
+# sed is the best tool semantically, but have many issues writing for both gnu and bsd
+# not even gonna bother with examples cuz it depends on too many factors
+```
+
+
+
 ## Extract Specific Line Number from Input
 @todo
 ```
