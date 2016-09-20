@@ -45,6 +45,14 @@ escape_bash_val(){
 
 
 
+### CD To Script's Directory
+Handles spaces in path
+```
+cd "$(dirname "$0")"
+```
+
+
+
 ## tar and compress
 
 #### Single file

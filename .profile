@@ -498,7 +498,7 @@ topen()(
 	fi
 	if [ "$1" ]; then
 		if [ ! -f "$1" ]; then
-			mkdir -p `dirname "$1"`
+			mkdir -p "$(dirname "$1")"
 			touch "$1"
 		fi
 		open -a"$DEFAULT_TEXT_APP" "$1"
