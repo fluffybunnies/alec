@@ -60,9 +60,9 @@ cd "$(dirname "$0")"
 tar zcf test.sql.tar.Z test.sql
 ```
 
-#### Directory
-@todo
+#### All Visible Files in Directory
 ```
+tar zcf packedFiles.tar.Z ./*
 ```
 
 #### Very large directory

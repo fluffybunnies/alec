@@ -280,6 +280,7 @@ gdel()(
 	# Delete all merged branches (locally)
 	# gdel
 	#
+	git checkout master || exit 1
 	git branch
 	#if [ "$1" == "-f" ]; then
 	#	git branch | xargs git branch -D
@@ -954,6 +955,12 @@ docker_clean_ssh_keys()(
 	docker exec $dockerContainer sudo /bin/bash -c 'rm /root/.ssh/id_rsa; rm /root/.ssh/id_rsa.pub'
 	docker exec $dockerContainer sudo /bin/bash -c 'if [ -f /root/.ssh/id_rsa.tmpbak ]; then mv /root/.ssh/id_rsa.tmpbak /root/.ssh/id_rsa; fi'
 	docker exec $dockerContainer sudo /bin/bash -c 'if [ -f /root/.ssh/id_rsa.pub.tmpbak ]; then mv /root/.ssh/id_rsa.pub.tmpbak /root/.ssh/id_rsa.pub; fi'
+)
+
+docker_reset_vm()(
+	# Fixes some problems like "Error checking TLS connection: Something went wrong running an SSH command! ... ip addr show"
+	docker-machine rm default
+	docker-machine create --driver virtualbox default
 )
 
 
