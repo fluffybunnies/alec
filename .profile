@@ -813,6 +813,14 @@ gp()(
 )
 
 
+sshcron()(
+	~/Dropbox/urbankitchens/util/misc/ssh.cron.sh
+)
+
+sshqa()(
+	~/Dropbox/urbankitchens/util/misc/ssh.qa.sh
+)
+
 dockersql()(
 	~/Dropbox/urbankitchens/util/docker/dev_mysql.sh
 )
@@ -957,10 +965,35 @@ docker_clean_ssh_keys()(
 	docker exec $dockerContainer sudo /bin/bash -c 'if [ -f /root/.ssh/id_rsa.pub.tmpbak ]; then mv /root/.ssh/id_rsa.pub.tmpbak /root/.ssh/id_rsa.pub; fi'
 )
 
+docker_soft_reset()(
+	docker-machine kill
+	docker_init
+)
+
 docker_reset_vm()(
 	# Fixes some problems like "Error checking TLS connection: Something went wrong running an SSH command! ... ip addr show"
+	# Before running this, see if this works instead: `docker_soft_reset`
 	docker-machine rm default
 	docker-machine create --driver virtualbox default
+	docker_init
+	echo "Probly want to run docker_create_images now"
+)
+
+docker_create_images()(
+	# Adjust filenames to fit your sit
+	dir=~/Documents/dockerimages
+	docker rmi mysql_magento
+	docker import $dir/mysql_magento.tar.gz
+	tag=`docker images | grep '<none>' | head -n1 | awk '{print $3}'`
+	docker tag $tag mysql_magento
+	docker rmi nodejs
+	docker import $dir/nodejs.tar
+	tag=`docker images | grep '<none>' | head -n1 | awk '{print $3}'`
+	docker tag $tag nodejs
+	docker rmi react
+	docker import $dir/react-1.tar
+	tag=`docker images | grep '<none>' | head -n1 | awk '{print $3}'`
+	docker tag $tag react
 )
 
 

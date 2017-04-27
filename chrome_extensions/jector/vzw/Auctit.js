@@ -125,7 +125,7 @@ window.Auctit = {
 			/* ace additions */\
 			.ace-pop-bg { z-index:600; } .ace-pop { z-index:601; }\
 		</style>');
-		$('#globalNavId a.o-logo').unbind('click').attr('onclick','').attr('href',z.opts.auctionHome);
+		$('#globalNavId a[title="Verizon Wireless Logo"]').unbind('click').attr('onclick','').attr('href',z.opts.auctionHome);
 	}
 	,onAuctionHome: function(){
 		return window.location.href.indexOf(this.opts.auctionHome) == 0;

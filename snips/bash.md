@@ -45,6 +45,14 @@ escape_bash_val(){
 
 
 
+## Get Unix User and Group IDs
+```
+ntpUsr=`cat /etc/passwd | grep ntp | sed -e 's/ntp:x:\([0-9]*\).*/\1/'`
+ntpGrp=`cat /etc/group | grep ntp | sed -e 's/ntp:x:\([0-9]*\).*/\1/'`
+```
+
+
+
 ### CD To Script's Directory
 Handles spaces in path
 ```
@@ -181,6 +189,17 @@ git log --pretty=%s | awk '$1=$1' ORS='; '
 @todo
 ```
 # cat /my/file | awk [line 2]
+```
+
+
+
+## Replace string in file using sed
+```
+# delete the first number on all lines that start with a "#"
+cat numbered_lines.txt | sed '/^#/ s/[0-9][0-9]*//'
+#                              ^ operate on lines that match this
+#                                      ^ search for this
+#                                               ^ and replace with this (empty string)
 ```
 
 

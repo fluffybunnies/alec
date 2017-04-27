@@ -92,6 +92,19 @@ git branch -D _temp_
 ```
 
 
+# State info
+```
+# current tag
+git describe --tags
+# current commit hash
+git rev-parse HEAD
+# current branch
+git rev-parse --abbrev-ref HEAD
+# commit history
+git log --pretty=%s | head -n4
+```
+
+
 
 ## Disable push to master
 @todo
