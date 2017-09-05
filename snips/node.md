@@ -25,26 +25,31 @@ module.exports = config;
 
 
 
-### require() Caches By Reference
-<!--
-If you change the properties/value of an object returned/fetched by require(), does that changed value persist?
-Will a modified property of an object returned by require() exist if subsequently require()d by separate file?
--->
+### ES5 Event Emitter Syntax
 ```
-# @todo: write example
-# @todo: link to subfolder example: node ./require_caches_by_reference/index.js
+var EventEmitter = require('events')
+,inherits = require('util').inherits
+
+inherits(MyClass, EventEmitter);
+function MyClass() {
+	EventEmitter.call(this)
+}
+
+module.exports = MyClass
 ```
 
 
 
-### process.nextTick() Beats setTimeout(...,0)
-@todo
-<!--
-@todo: write subfolder example
-	have a file that setTimeout(0)s before process.nextTick()ing
-	run this file 1000 times and record that nextTick() fires first each time
-	write to stdout and parse in parent file
--->
+### Real string length (number of bytes)
+Example: Verify won't get truncated when inserting into mysql db
+```
+Buffer.byteLength(str, 'utf8')
+```
+
+
+
+### Manual Garbage Collection
 ```
 # @todo
 ```
+

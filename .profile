@@ -821,6 +821,10 @@ sshqa()(
 	~/Dropbox/urbankitchens/util/misc/ssh.qa.sh
 )
 
+sshqa2()(
+	~/Dropbox/urbankitchens/util/misc/ssh.qa2.sh
+)
+
 dockersql()(
 	~/Dropbox/urbankitchens/util/docker/dev_mysql.sh
 )
