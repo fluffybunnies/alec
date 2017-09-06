@@ -1,6 +1,17 @@
 # git
 
 
+## How to page down/up in less-like buffers?
+In some shells, Fn + Down Arrow does not do the trick
+```
+Page Down: space bar
+Page Up: w
+Next Line: return
+Help: h
+Quit: q
+```
+
+
 ## Edit most recent commit message
 ```
 git commit --amend
