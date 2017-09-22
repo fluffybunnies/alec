@@ -125,6 +125,14 @@ untardir()(
 ```
 
 
+## Strip Color Codes
+```
+sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g"
+# Example: To tail a forever log via forever list that outputs in colors...
+forever list | grep 'my/script' | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mGK]//g" | awk '{print $8}' | xargs tail -f
+```
+
+
 
 ## Multiline Comments
 ```
