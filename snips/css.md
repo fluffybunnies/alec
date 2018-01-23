@@ -26,3 +26,17 @@ Example below maintains a 16:9 ratio for background video
 	transform: translate(-50%, -50%);
 }
 ```
+
+
+### Vertical Text Overflow Ellipsis
+Works on Chrome + Safari, other browsers will cut off without ellipsis
+```
+.vertical-text-overflow-ellipsis {
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	max-height: 2.9em; /* Adjust this to fit your line-height */
+}
+```
+

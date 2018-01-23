@@ -53,10 +53,18 @@ ntpGrp=`cat /etc/group | grep ntp | sed -e 's/ntp:x:\([0-9]*\).*/\1/'`
 
 
 
-### CD To Script's Directory
+## CD To Script's Directory
 Handles spaces in path
 ```
 cd "$(dirname "$0")"
+```
+
+
+
+## Disk Usage
+```
+df -v
+du -skh *
 ```
 
 
