@@ -1,7 +1,7 @@
 {
 	"name" : "UberCookies",
-	"version" : "0.0.2",
-	"description" : "UberCookies",
+	"version" : "0.0.3",
+	"description" : "View session and tracking cookies set by Uber services. This is a read-only service.",
 	"permissions": [ "cookies", "tabs", "http://*/*", "https://*/*" ],
 	"icons": { "16": "cookie.png", "48": "cookie.png", "128": "cookie.png" },
 	"browser_action": {

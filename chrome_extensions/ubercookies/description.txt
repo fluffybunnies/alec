@@ -1,0 +1,7 @@
+View session and tracking cookies set by Uber services.
+
+STEP 1 - Sign in to any Uber website (ex: UberEATS, Uber Rides, etc)
+STEP 2 - Click the gingerbread man in the top right of your Chrome browser
+STEP 3 - View all tracking cookies that have been set
+
+Disclaimer: This is a read-only service. No information - personal or otherwise - is sent to the publisher of this extension, or to any other source.
