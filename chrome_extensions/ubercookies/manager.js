@@ -263,9 +263,9 @@ document.addEventListener('DOMContentLoaded', function() {
 // alec replacements...
 function onload(){
 	chrome.cookies.getAll({
-		//domain: 'uber.com' // this would get ALL uber cookies
+		domain: 'uber.com' // this would get ALL uber cookies
 		                     // might be useful later, but for now just get stuff for restaurants.uber.com api calls
-		url: 'https://restaurants.uber.com'
+		//url: 'https://restaurants.uber.com'
 	},function(cookies){
 		console.log(cookies)
 		var byDomain = {}

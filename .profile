@@ -46,8 +46,15 @@ ulimit -Sn 2048
 #ulimit -S -u 1024 # <-- careful with this one
 
 
-# for: grep, topen, etc
-DEFAULT_TEXT_APP='/Applications/Sublime Text 2.app'
+# Export ssl key log for use in wireshark
+# https://github.com/billfeller/billfeller.github.io/issues/121
+#export SSLKEYLOGFILE=~/Documents/sslkeylog.log
+# Then open Chrome like:
+# /Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary 
+
+
+# for: gropen, topen, etc
+DEFAULT_TEXT_APP='/Applications/Sublime Text.app'
 DEFAULT_WEB_APP='/Applications/Google Chrome.app'
 
 
@@ -74,10 +81,13 @@ docker_init(){
 	docker_init_lockFile=/tmp/docker_init
 	if [ -f "$docker_init_lockFile" ] && [ ! "$docker_init_FORCE" ]; then
 		echo "docker_init:: lock file detected, not checking docker server"
-	elif [ "`docker version 2>&1 | grep 'Cannot connect to the Docker daemon. Is the docker daemon running on this host'`" ]; then
+	elif [ "`docker version 2>&1 | grep 'Is the docker daemon running'`" ]; then
 		date > "$docker_init_lockFile"
 		echo "docker_init:: cannot detect docker server, attempting boot"
-		docker-machine start
+		if [ "`docker-machine start 2>&1 | grep 'Error checking TLS connection'`" ]; then
+			echo "docker_init:: TLS connection error, regenerating certs"
+			docker-machine regenerate-certs default
+		fi
 		rm "$docker_init_lockFile"
 	fi
 
@@ -166,6 +176,10 @@ poo()(
 	# poo optional message
 	#
 	currentBranch=`git branch | grep '*' | head -n1 | sed -n 's/^\* //p'`
+	#if [ "$currentBranch" = "master" ]; then
+	#	>&2 echo "WARNING! You are on master, please don't push directly to master"
+	#	exit 1
+	#fi
 	msg="$@"
 	if [ "$msg" == "" ]; then msg=`smile`; fi
 	git add --all .
@@ -223,6 +237,7 @@ gcp()(
 )
 
 gco()(
+	# makes sure you check out this branch and sync with origin, and ditching all uncommitted changes
 	branch=$1
 	if [ ! "$branch" ]; then
 		branch=`git branch | grep '*' | head -n1 | sed -n 's/^\* //p'`
@@ -817,6 +832,10 @@ sshcron()(
 	~/Dropbox/urbankitchens/util/misc/ssh.cron.sh
 )
 
+sshcron2()(
+	ssh ubuntu@ec2-54-67-9-170.us-west-1.compute.amazonaws.com
+)
+
 sshqa()(
 	~/Dropbox/urbankitchens/util/misc/ssh.qa.sh
 )
@@ -930,7 +949,9 @@ dockergits()(
 	# _temp_ branch is so `git pull` doesnt create a merge commit and subsequently require auth
 	docker exec $dockerContainer /bin/bash -c "cd '$remoteDir'; git fetch; git checkout -f -b _temp_; git checkout -f _temp_; git branch -D $currentBranch; git checkout -f $currentBranch; git branch -D _temp_;"
 
-	if [ "`docker exec $dockerContainer ls -f $remoteDir/scripts/dev_restart.sh 2>/dev/null`" ]; then
+	if [ "$1" == "-n" ]; then
+		echo "Skipping restart"
+	elif [ "`docker exec $dockerContainer ls -f $remoteDir/scripts/dev_restart.sh 2>/dev/null`" ]; then
 		echo "Running scripts/dev_restart.sh..."
 		docker exec $dockerContainer $remoteDir/scripts/dev_restart.sh
 	fi
@@ -955,6 +976,7 @@ docker_copy_ssh_keys()(
 	machineSshKeyPublic=`cat "$PUB_KEY_PATH.pub"`
 	docker exec $dockerContainer sudo /bin/bash -c 'if [ -f /root/.ssh/id_rsa ]; then mv /root/.ssh/id_rsa /root/.ssh/id_rsa.tmpbak; fi'
 	docker exec $dockerContainer sudo /bin/bash -c 'if [ -f /root/.ssh/id_rsa.pub ]; then mv /root/.ssh/id_rsa.pub /root/.ssh/id_rsa.pub.tmpbak; fi'
+	docker exec $dockerContainer /bin/bash -c "mkdir -p /root/.ssh"
 	docker exec $dockerContainer /bin/bash -c "echo '$machineSshKeyPrivate' > /root/.ssh/id_rsa"
 	docker exec $dockerContainer /bin/bash -c "echo '$machineSshKeyPublic' > /root/.ssh/id_rsa.pub"
 	docker exec $dockerContainer /bin/bash -c 'chmod 0400 /root/.ssh/id_rsa'
@@ -978,7 +1000,8 @@ docker_reset_vm()(
 	# Fixes some problems like "Error checking TLS connection: Something went wrong running an SSH command! ... ip addr show"
 	# Before running this, see if this works instead: `docker_soft_reset`
 	docker-machine rm default
-	docker-machine create --driver virtualbox default
+	docker-machine create --driver virtualbox --virtualbox-disk-size "100000" default
+	# Run `docker-machine create --driver virtualbox --help` for more options
 	docker_init
 	echo "Probly want to run docker_create_images now"
 )
@@ -986,20 +1009,11 @@ docker_reset_vm()(
 docker_create_images()(
 	# Adjust filenames to fit your sit
 	dir=~/Documents/dockerimages
-	docker rmi mysql_magento
-	docker import $dir/mysql_magento.tar.gz
-	tag=`docker images | grep '<none>' | head -n1 | awk '{print $3}'`
-	docker tag $tag mysql_magento
-	docker rmi nodejs
-	docker import $dir/nodejs.tar
-	tag=`docker images | grep '<none>' | head -n1 | awk '{print $3}'`
-	docker tag $tag nodejs
-	docker rmi react
-	docker import $dir/react-1.tar
-	tag=`docker images | grep '<none>' | head -n1 | awk '{print $3}'`
-	docker tag $tag react
+	dockercc -i
+	docker load -i $dir/nodejs.tar
+	docker load -i $dir/react.tar
+	docker load -i $dir/magento.tar
 )
-
 
 last_plain_arg()(
 	for arg in $@; do
