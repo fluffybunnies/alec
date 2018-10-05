@@ -833,7 +833,8 @@ sshcron()(
 )
 
 sshcron2()(
-	ssh ubuntu@ec2-54-67-9-170.us-west-1.compute.amazonaws.com
+	ssh ubuntu@ec2-52-53-247-242.us-west-1.compute.amazonaws.com
+	#ssh ubuntu@ec2-54-67-9-170.us-west-1.compute.amazonaws.com
 )
 
 sshqa()(

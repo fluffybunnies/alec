@@ -18,3 +18,8 @@ mysql -h$(docker-machine ip) -uuk_api -p333tkd333 --column-names=TRUE urbankitch
 > ~/Downloads/query.csv
 ```
 
+
+### Export Process List to Log
+```
+watch -n1 'mysql -hHOST -uUSER -pPASS DATABASE -e "show full processlist;" | tee -a /tmp/sql.log'
+```

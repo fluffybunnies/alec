@@ -61,10 +61,18 @@ cd "$(dirname "$0")"
 
 
 
-## Disk Usage
+## Disk Usage / Disk Space
 ```
 df -v
 du -skh *
+```
+
+
+
+## Memory Usage Per Process
+Side note: TIME is in MM:SS
+```
+ps axfu
 ```
 
 
