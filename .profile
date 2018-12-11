@@ -2,6 +2,9 @@ if [ -f ~/.secrets ]; then
 	. ~/.secrets
 fi
 
+# Default to vim
+export EDITOR=vim
+
 # Setting PATH for Python 3.4
 export PATH="/Library/Frameworks/Python.framework/Versions/3.4/bin:${PATH}"
 
@@ -31,6 +34,7 @@ export GIT_MERGE_AUTOEDIT=no
 export PATH=/usr/local/php5/bin:$PATH
 
 # mysql
+export PATH=$PATH:/Applications/MySQLWorkbench.app/Contents/MacOS
 export PATH=/usr/local/mysql/bin:$PATH
 
 # lein
@@ -60,7 +64,9 @@ DEFAULT_WEB_APP='/Applications/Google Chrome.app'
 
 
 # BEGIN docker init
-docker_init(){
+docker_init()(
+	echo "skipping docker_init cuz no longer needed with Docker For Mac"
+	exit 0
 	while getopts 'f' opt; do
 		case $opt in
 			f)
@@ -110,7 +116,7 @@ docker_init(){
 		echo "$(docker-machine env)"
 		echo
 	fi
-}
+)
 docker_init
 # END docker init
 
@@ -145,19 +151,19 @@ opem()(
 	open $@
 )
 
-#alias smile="curl http://smiley.meatcub.es:1337"
-smile(){
+#alias smiles="curl http://smiley.meatcub.es:1337"
+smiles()(
 	if [ ! -f /tmp/node_modules/cool-ascii-faces/cli.js ]; then
 		#rm -fr /tmp/node_modules/cool-ascii-faces
 		npm install --prefix /tmp cool-ascii-faces > /dev/null
 	fi
 	node /tmp/node_modules/cool-ascii-faces/cli.js
-}
+)
 
-echocute(){
+echocute()(
 	echo $1
 	eval "$1"
-}
+)
 
 gca()(
 	# Same as git commit -a -m "message"
@@ -181,7 +187,7 @@ poo()(
 	#	exit 1
 	#fi
 	msg="$@"
-	if [ "$msg" == "" ]; then msg=`smile`; fi
+	if [ "$msg" == "" ]; then msg=`smiles`; fi
 	git add --all .
 	git commit -a -m "$msg"
 	git pull origin $currentBranch #|| exit 1 # commented out so we can push new branches at the cost of missing potential merge conflict
@@ -258,7 +264,7 @@ gcb()(
 	name=$1
 	if [ ! "$name" ]; then
 		#name=happies # @todo: randomize
-		name=`smile`
+		name=`smiles`
 	fi
 	mastif master && git checkout -b patch-$1 # && git push origin +patch-$1 # << might want this last bit so things dont get jacked when you `poo`
 )
@@ -305,13 +311,13 @@ gdel()(
 	git branch
 )
 
-bitch() {
+bitch() (
 	if [[ $1 -eq "please" ]]; then
 		eval "sudo $(fc -ln -1)"
 	else
 		sudo "$@"
 	fi
-}
+)
 
 grepv()(
 	# grep excluding common directories
@@ -362,14 +368,14 @@ gropen()(
 	fi
 )
 
-gropenList(){
+gropenList()(
 	# For use by gropen() if passing a stream of path strings instead of grepping files
 	# The same except for no '-l' option
 	#
 	grep --line-buffered "$@" | xargs -n1 open -a"$DEFAULT_TEXT_APP"
-}
+)
 
-gropen2() {
+gropen2() (
 	# old way, waits till the end before opening
 	#
 	_IFS=$IFS
@@ -379,7 +385,7 @@ gropen2() {
 		open $file
 	done
 	IFS=$_IFS
-}
+)
 
 fsh()(
 	# Ssh with pem file
@@ -833,7 +839,8 @@ sshcron()(
 )
 
 sshcron2()(
-	ssh ubuntu@ec2-52-53-247-242.us-west-1.compute.amazonaws.com
+	ssh ubuntu@ec2-54-193-103-227.us-west-1.compute.amazonaws.com
+	#ssh ubuntu@ec2-52-53-247-242.us-west-1.compute.amazonaws.com
 	#ssh ubuntu@ec2-54-67-9-170.us-west-1.compute.amazonaws.com
 )
 
@@ -889,7 +896,16 @@ dockersh()(
 	#
 	# dockersh CONTAINER_NAME
 	#
-	docker exec -ti "$1" /bin/bash
+	dockerContainer=`last_plain_arg $@`
+	# try and guess dockerContainer
+	if [ ! "$dockerContainer" ]; then
+		cwd=$(basename $(pwd))
+		if [ "$cwd" == 'be' -a "`docker ps --format '{{.Names}}' 2>/dev/null | grep urbankitchens_api_1`" == 'urbankitchens_api_1' ]; then dockerContainer=urbankitchens_api_1;
+		elif [ "$cwd" == 'fe' -a "`docker ps --format '{{.Names}}' 2>/dev/null | grep urbankitchens_web_1`" == 'urbankitchens_web_1' ]; then dockerContainer=urbankitchens_web_1; fi
+		if [ "$dockerContainer" ]; then echo "dockerContainer not supplied as argument, guessing \"$dockerContainer\""; fi
+	fi
+	if [ ! "$dockerContainer" ]; then >&2 echo 'Please supply docker container as first argument'; exit; fi
+	docker exec -ti "$dockerContainer" /bin/bash
 )
 
 dockergits()(
@@ -907,8 +923,7 @@ dockergits()(
 	if [ ! "$dockerContainer" ]; then
 		cwd=$(basename $(pwd))
 		if [ "$cwd" == 'be' -a "`docker ps --format '{{.Names}}' 2>/dev/null | grep nodejs`" == 'nodejs' ]; then dockerContainer=nodejs;
-		elif [ "$cwd" == 'fe' -a "`docker ps --format '{{.Names}}' 2>/dev/null | grep react`" == 'react' ]; then dockerContainer=react;
-		elif [ "$cwd" == 'fe' -a "`docker ps --format '{{.Names}}' 2>/dev/null | grep mysql-magento-1`" == 'mysql-magento-1' ]; then dockerContainer=mysql-magento-1; fi
+		elif [ "$cwd" == 'fe' -a "`docker ps --format '{{.Names}}' 2>/dev/null | grep react`" == 'react' ]; then dockerContainer=react; fi
 		if [ "$dockerContainer" ]; then echo "dockerContainer not supplied as argument, guessing \"$dockerContainer\""; fi
 	fi
 	if [ ! "$dockerContainer" ]; then >&2 echo 'Please supply docker container as first argument'; exit; fi
@@ -934,17 +949,17 @@ dockergits()(
 	if [ ! "$remoteDir" ]; then >&2 echo "Unable to identify remote directory in $lookIn"; exit; fi
 	remoteDir=$lookIn/"$remoteDir"
 
-	echo "Copying ssh keys..."
-	docker_copy_ssh_keys $dockerContainer $PUB_KEY_PATH
-
-	echo "Adding git's public key to known_hosts..."
-	docker exec $dockerContainer /bin/bash -c 'ssh -oStrictHostKeyChecking=no git@github.com'
-
 	echo "Attempting to simulate git repo..."
 	gitConfig=`cat ./.git/config`
 	#if [ ! "`docker exec $dockerContainer /bin/bash -c 'ls -d '$remoteDir/.git' 2>/dev/null'`" ]; then
 		docker exec $dockerContainer /bin/bash -c "cd '$remoteDir'; git init; echo '$gitConfig' > .git/config; chmod 0644 .git/config"
 	#fi
+
+	echo "Copying ssh keys..."
+	docker_copy_ssh_keys $dockerContainer $PUB_KEY_PATH
+
+	echo "Adding git's public key to known_hosts..."
+	docker exec $dockerContainer /bin/bash -c 'ssh -oStrictHostKeyChecking=no git@github.com'
 
 	echo "Syncing branch $currentBranch..."
 	# _temp_ branch is so `git pull` doesnt create a merge commit and subsequently require auth
@@ -981,6 +996,13 @@ docker_copy_ssh_keys()(
 	docker exec $dockerContainer /bin/bash -c "echo '$machineSshKeyPrivate' > /root/.ssh/id_rsa"
 	docker exec $dockerContainer /bin/bash -c "echo '$machineSshKeyPublic' > /root/.ssh/id_rsa.pub"
 	docker exec $dockerContainer /bin/bash -c 'chmod 0400 /root/.ssh/id_rsa'
+
+	# phabricator
+	vpnCert=`cat ~/.ssh/intermed-ca.cert.pem`
+	docker exec $dockerContainer /bin/bash -c "echo '$vpnCert' > /usr/local/share/ca-certificates/intermed-ca.cert.pem.crt"
+	docker exec $dockerContainer /bin/bash -c 'update-ca-certificates'
+	originUrl=`cat ./.git/config | grep -A1 'remote "origin"' | grep 'url = ' | head -n1 | sed "s/\s*url = https:\/\//https:\/\/$PHABRICATOR_USER:$PHABRICATOR_PASS@/g" | tr -d '[:space:]'`
+	docker exec $dockerContainer /bin/bash -c "git remote set-url origin '$originUrl'"
 )
 
 
@@ -1054,9 +1076,11 @@ atest(){
 	fi
 }
 
-if [ -f /tmp/start.sh ]; then
-	./tmp/start.sh
-fi
+
+# arc for phabricator
+export PATH=$PATH:~/phabricator/arcanist/bin
+source ~/phabricator/arcanist/resources/shell/bash-completion
+
 
 # zat (app maker for zendesk) doesnt like echoes in .profile
 #echo "yay profile"

@@ -65,6 +65,8 @@ cd "$(dirname "$0")"
 ```
 df -v
 du -skh *
+# sort
+du -hs * | sort -h
 ```
 
 
@@ -191,6 +193,9 @@ You can change `vim` to whatever editor suits your preference
 tr -d '\n'
 # Example:
 cat /tmp/myfile | head -n1 | tr -d '\n'
+
+# To remove all whitespace:
+echo ' test test ' | tr -d '[:space:]'
 ```
 <!-- @todo: use the word "strip" -->
 <!-- @todo: useful-for example, e.g. piping to sed, e.g. see what problems will or rob had when building the auto-git-prepend-ticket-number script -->
