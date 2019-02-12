@@ -6,20 +6,20 @@ fi
 export EDITOR=vim
 
 # Setting PATH for Python 3.4
-export PATH="/Library/Frameworks/Python.framework/Versions/3.4/bin:${PATH}"
+#export PATH="/Library/Frameworks/Python.framework/Versions/3.4/bin:${PATH}"
 
 # elastic beanstalk
-export PATH=$PATH:/Users/ahulce/AWS-ElasticBeanstalk-CLI-2.6.3/eb/macosx/python2.7
+#export PATH=$PATH:/Users/ahulce/AWS-ElasticBeanstalk-CLI-2.6.3/eb/macosx/python2.7
 
 # MacPorts Installer addition on 2012-02-29_at_15:43:38: adding an appropriate PATH variable for use with MacPorts.
 #export PATH=/opt/local/bin:/opt/local/sbin:/usr/local/share/npm/bin:$PATH
 # 20150307 - Uninstalled homebrew's installation of npm and installed it next to node in /usr/local/bin/
 # This means 2 of the dirs above are now empty. @todo: See if I can remove MacPorts altogether
-export PATH=/opt/local/bin:$PATH
+#export PATH=/opt/local/bin:$PATH
 # Finished adapting your PATH environment variable for use with MacPorts.
 
 #pcre
-export PATH=/usr/local/pcre/bin:$PATH
+#export PATH=/usr/local/pcre/bin:$PATH
 
 #gitawareprompt
 export GITAWAREPROMPT=~/.bash/git-aware-prompt
@@ -31,11 +31,11 @@ export PS1="\u@\h \w \[$txtcyn\]\$git_branch\[$txtred\]\$git_dirty\[$txtrst\]\$ 
 export GIT_MERGE_AUTOEDIT=no
 
 # php
-export PATH=/usr/local/php5/bin:$PATH
+#export PATH=/usr/local/php5/bin:$PATH
 
 # mysql
 export PATH=$PATH:/Applications/MySQLWorkbench.app/Contents/MacOS
-export PATH=/usr/local/mysql/bin:$PATH
+#export PATH=/usr/local/mysql/bin:$PATH
 
 # lein
 #export PATH=~/bin:$PATH
@@ -43,10 +43,10 @@ export PATH=/usr/local/mysql/bin:$PATH
 ### Added by the Heroku Toolbelt
 #export PATH="/usr/local/heroku/bin:$PATH"
 
-if [ -d /usr/local/phpunit-git-deploy/bin ]; then export PATH=/usr/local/phpunit-git-deploy/bin:$PATH; fi
+#if [ -d /usr/local/phpunit-git-deploy/bin ]; then export PATH=/usr/local/phpunit-git-deploy/bin:$PATH; fi
 
 # increase max-files-open
-ulimit -Sn 2048
+#ulimit -Sn 2048
 #ulimit -S -u 1024 # <-- careful with this one
 
 
@@ -124,8 +124,8 @@ docker_init
 
 
 saveprofile()(
-	src='/Users/ahulce/.profile'
-	dest='/Users/ahulce/Dropbox/alec_repo/.profile'
+	src="${HOME}/.profile"
+	dest="${HOME}/Dropbox/alec_repo/.profile"
 	ls -lh "$dest"
 	cp "$src" "$dest"
 	ls -lh "$dest"
@@ -146,12 +146,6 @@ pmo()(
 	open -a"$DEFAULT_WEB_APP" "https://www.pivotaltracker.com/story/show/$tid"
 )
 
-opem()(
-	# cuz i suck at typing
-	open $@
-)
-
-#alias smiles="curl http://smiley.meatcub.es:1337"
 smiles()(
 	if [ ! -f /tmp/node_modules/cool-ascii-faces/cli.js ]; then
 		#rm -fr /tmp/node_modules/cool-ascii-faces
@@ -227,7 +221,7 @@ mastif()(
 	if [ "$branch" == "" ]; then
 		branch='master'
 	fi
-	echocute "git fetch && git checkout $branch && git pull origin $branch && git fetch --tags"
+	echocute "git fetch && git checkout -f $branch && git pull origin $branch && git fetch --tags"
 )
 
 gcp()(
@@ -387,21 +381,6 @@ gropen2() (
 	IFS=$_IFS
 )
 
-fsh()(
-	# Ssh with pem file
-	#
-	ip=$1
-	user=$2
-	if [ "$user" == "" ]; then
-		user='ec2-user'
-	fi
-	if [ "$ip" == "" ]; then
-		echo "please supply an ip"
-	else
-		ssh -i/Users/ahulce/.ssh/fabfitfun2.pem -oStrictHostKeyChecking=no $user@"$ip"
-	fi
-)
-
 myec2()(
 	# Ssh to primary instance. Instance set in hosts file: myec2 123.123.123.123
 	#
@@ -543,18 +522,18 @@ bopen() {
 }
 
 watch()(
-	/Users/ahulce/Dropbox/Beachmint/watchs/index.js $@
+	${HOME}/Dropbox/Beachmint/watchs/index.js $@
 )
 
 authme()(
 	# Give yourself root access
 	# authme ec2-54-159-48-203.compute-1.amazonaws.com
 	#
-	#ubuntuAuthKey=/Users/ahulce/.ssh/mac.pem
-	ubuntuAuthKey=/Users/ahulce/.ssh/wag-api-test.pem
+	#ubuntuAuthKey=${HOME}/.ssh/mac.pem
+	ubuntuAuthKey=${HOME}/.ssh/wag-api-test.pem
 	serverName=`name_to_ip $1`
 	if [ "$1" == "prod" -o "$1" == "scripts" -o "$1" == "scripts-old" ]; then
-		ubuntuAuthKey=/Users/ahulce/.ssh/wagprod2.pem
+		ubuntuAuthKey=${HOME}/.ssh/wagprod2.pem
 	fi
 	pubKey=`cat ~/.ssh/id_rsa.pub | sed -n 's/\(.*\) .*$/\1/p'`
 	if [ "`ssh -oStrictHostKeyChecking=no ubuntu@$serverName 'echo "ok"'`" != "ok" ]; then
@@ -760,50 +739,6 @@ pushsql(){
 	scp "$bak" ubuntu@`shudo -s "$where"`:/tmp/
 }
 
-pushbash()(
-	# Push DEV.bashrc to remote
-	# pushbash stage-prod
-	# pushbash dev1 dev2 dev3 uat qa stage-prod
-	#
-	localRc=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/DEV.bashrc
-	remoteRc=/root/.bashrc
-	localTools=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/DEV.wagtools
-	remoteTools=/root/.wagtools
-	if [ "$1" == "prod" -o "$1" == "scripts" ]; then
-		localRc=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/PROD.bashrc
-		localTools=/Users/ahulce/Dropbox/wag/chef-deploy/tools/files/PROD.wagtools
-	fi
-
-	if [ "$2" ]; then
-		for arg in "$@"; do
-			pushbash $arg
-		done
-		exit
-	fi
-
-	remote=`name_to_ip $1`
-
-	scp "$localTools" "root@$remote:'$remoteTools'"
-	
-	tmp1=`mktemp -t pushbash.XXXXXX`
-	tmp2=`mktemp -t pushbash.XXXXXX`
-	scp "root@$remote:'$remoteRc'" "$tmp1"
-	lineNum=`cat "$tmp1" | grep -n '# wag stuff' | head -n1 | sed 's/\([0-9]*\).*/\1/g'`
-	if [ "$lineNum" ]; then
-		head -n$((lineNum-2)) "$tmp1" > "$tmp2"
-	else
-		cat "$tmp1" > "$tmp2"
-		echo $'\n\n' >> "$tmp2"
-	fi
-	ssh root@$remote "cp -n '$remoteRc' '$remoteRc.pushbash.bak'"
-	ssh root@$remote "cp -n '$remoteRc' '/tmp/pushbash.$(date +%Y%m%d_%H%M%S).bak'"
-	cat "$localRc" >> "$tmp2"
-	scp "$tmp2" "root@$remote:'$remoteRc'"
-	rm "$tmp1"
-	rm "$tmp2"
-	echo "pushed to $1"
-)
-
 if [ "`which realpath`" == "" ]; then
 	realpath()(
 		if [ ! -f "$1" ] && [ ! -d "$1" ]; then
@@ -853,7 +788,7 @@ sshqa2()(
 )
 
 dockersql()(
-	~/Dropbox/urbankitchens/util/docker/dev_mysql.sh
+	~/Dropbox/urbankitchens/util/docker/dev_mysql.sh $@
 )
 
 
@@ -878,7 +813,7 @@ dockercc()(
 			imgId=`docker images | grep "$SPECIFIC_CONTAINER " | awk '{print $3}'`
 			echo "WARNING! Removing image $SPECIFIC_CONTAINER ($imgId) in 3 seconds. Press ctrl+c to cancel"
 			sleep 3
-			docker rmi $imgId
+			docker rmi -f $imgId
 		fi
 	else
 		echo "stopping + removing ALL containers"
@@ -886,7 +821,7 @@ dockercc()(
 		if [ "$REMOVE_IMAGES" == 1 ]; then
 			echo "WARNING! Removing all images in 3 seconds. Press ctrl+c to cancel"
 			sleep 3
-			docker rmi $(docker images -q)
+			docker rmi -f $(docker images -q)
 		fi
 	fi
 )
@@ -899,9 +834,7 @@ dockersh()(
 	dockerContainer=`last_plain_arg $@`
 	# try and guess dockerContainer
 	if [ ! "$dockerContainer" ]; then
-		cwd=$(basename $(pwd))
-		if [ "$cwd" == 'be' -a "`docker ps --format '{{.Names}}' 2>/dev/null | grep urbankitchens_api_1`" == 'urbankitchens_api_1' ]; then dockerContainer=urbankitchens_api_1;
-		elif [ "$cwd" == 'fe' -a "`docker ps --format '{{.Names}}' 2>/dev/null | grep urbankitchens_web_1`" == 'urbankitchens_web_1' ]; then dockerContainer=urbankitchens_web_1; fi
+		dockerContainer=`cat ./docker-compose.yml | grep container_name | head -n1 | awk '{print $2}'`
 		if [ "$dockerContainer" ]; then echo "dockerContainer not supplied as argument, guessing \"$dockerContainer\""; fi
 	fi
 	if [ ! "$dockerContainer" ]; then >&2 echo 'Please supply docker container as first argument'; exit; fi
@@ -1085,5 +1018,12 @@ source ~/phabricator/arcanist/resources/shell/bash-completion
 # zat (app maker for zendesk) doesnt like echoes in .profile
 #echo "yay profile"
 
+
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/alechulce/google-cloud-sdk/path.bash.inc' ]; then . '/Users/alechulce/google-cloud-sdk/path.bash.inc    '; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/alechulce/google-cloud-sdk/completion.bash.inc' ]; then . '/Users/alechulce/google-cloud-sdk/complet    ion.bash.inc'; fi
 
 
