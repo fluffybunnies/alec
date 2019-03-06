@@ -1021,9 +1021,12 @@ source ~/phabricator/arcanist/resources/shell/bash-completion
 
 
 # The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/alechulce/google-cloud-sdk/path.bash.inc' ]; then . '/Users/alechulce/google-cloud-sdk/path.bash.inc    '; fi
+if [ -f '/Users/alechulce/google-cloud-sdk/path.bash.inc' ]; then . '/Users/alechulce/google-cloud-sdk/path.bash.inc'; fi
 
 # The next line enables shell command completion for gcloud.
-if [ -f '/Users/alechulce/google-cloud-sdk/completion.bash.inc' ]; then . '/Users/alechulce/google-cloud-sdk/complet    ion.bash.inc'; fi
+if [ -f '/Users/alechulce/google-cloud-sdk/completion.bash.inc' ]; then . '/Users/alechulce/google-cloud-sdk/completion.bash.inc'; fi
+
+alias kubectl="https_proxy=http://legacy-kube-master-proxy.cloudkitchens.internal:3128 kubectl"
+
 
 

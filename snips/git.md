@@ -128,4 +128,16 @@ git log --pretty=%s | head -n4
 
 
 
+## Restore deleted file
+```
+# find last commit that affected the file
+git rev-list -n 1 HEAD -- <path to file>
+# check out previous commit
+git checkout <commit from step 1>^ -- <path to file>
+
+# all in one
+git checkout $(git rev-list -n 1 HEAD -- "<path to file>")^ -- "<path to file>"
+```
+
+
 
