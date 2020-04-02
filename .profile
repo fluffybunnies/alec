@@ -37,6 +37,12 @@ export GIT_MERGE_AUTOEDIT=no
 export PATH=$PATH:/Applications/MySQLWorkbench.app/Contents/MacOS
 #export PATH=/usr/local/mysql/bin:$PATH
 
+# grpc cli
+export PATH=$PATH:~/Dropbox/urbankitchens/grpc/bins/opt
+
+# java
+export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+
 # lein
 #export PATH=~/bin:$PATH
 
@@ -769,14 +775,12 @@ gp()(
 )
 
 
-sshcron()(
-	~/Dropbox/urbankitchens/util/misc/ssh.cron.sh
+sshprod()(
+	~/Dropbox/urbankitchens/util/misc/ssh.prod.sh
 )
 
-sshcron2()(
-	ssh ubuntu@ec2-54-193-103-227.us-west-1.compute.amazonaws.com
-	#ssh ubuntu@ec2-52-53-247-242.us-west-1.compute.amazonaws.com
-	#ssh ubuntu@ec2-54-67-9-170.us-west-1.compute.amazonaws.com
+sshstage()(
+	~/Dropbox/urbankitchens/util/misc/ssh.stage.sh
 )
 
 sshqa()(
@@ -978,26 +982,13 @@ last_plain_arg()(
 	echo $lastArg
 )
 
-npv()(
-	# Return version of package in ./node_modules
-	#
-	# npv babel
-	# > 5.8.35
-	#
-	packageName=$1
-	if [ ! "$packageName" ]; then
-		>&2 echo "Please pass packageVersion as first argument"
-		exit
-	fi
-	packageVersion=`cat "./node_modules/$packageName/package.json" 2>/dev/null | grep '"version"' | sed 's/version//' | sed 's/[[:space:]]//g' | sed 's/"//g' | sed 's/://g' | sed 's/,//g'`
-	if [ ! "$packageVersion" ]; then
-		>&2 echo "Can't find package version of $packageName"
-		>&2 echo "Try npm list | grep '$packageName'"
-		exit
-	fi
-	# @todo: option to strip newline from echo: (useful sometimes in scripts)
-	#echo $packageVersion | tr -d '\n'
-	echo $packageVersion
+ksh()(
+	# Examples:
+	# ksh debug
+	# ksh cron3
+	containerName=$(https_proxy=http://legacy-kube-master-proxy.cloudkitchens.internal:3128 kubectl get pods --namespace=be | grep $1 | head -n1 | awk '{print $1}')
+	echo "containerName="$containerName
+	kubectl exec -ti --namespace=be "$containerName" /bin/bash
 )
 
 atest(){
