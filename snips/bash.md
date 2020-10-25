@@ -9,8 +9,17 @@
 
 
 ## echo to stderr
+For error messages
 ```
 >&2 echo 'err!'
+```
+
+
+
+## grep only certain files
+grep's `--include` is very slow
+```
+find . | grep '\.proto' | xargs grep DomainState $1
 ```
 
 
