@@ -19,7 +19,7 @@ For error messages
 ## grep only certain files
 grep's `--include` is very slow
 ```
-find . | grep '\.proto' | xargs grep DomainState $1
+find . -type f | grep '\.proto' | xargs grep DomainState $1
 ```
 
 
