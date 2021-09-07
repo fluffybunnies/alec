@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<head>
+<script>
+
+
+
+function runGame(switchDoor) {
+	const doors = [{
+		name: 'Door One'
+	}, {
+		name: 'Door Two'
+	}, {
+		name: 'Door Three'
+	}]
+
+	const doorWithCar = pickRandomDoor(doors)
+	let chosenDoor = pickRandomDoor(doors)
+	const revealedDoor = pickRandomDoor(doors.filter(door =>
+		door != doorWithCar && door != chosenDoor
+	))
+
+	if (switchDoor) {
+		chosenDoor = doors.filter(door => door != chosenDoor && door != revealedDoor)[0]
+	}
+
+	return {
+		doorWithCar: doorWithCar
+		,chosenDoor: chosenDoor
+		,revealedDoor: revealedDoor
+		,wonGame: chosenDoor == doorWithCar
+	}
+}
+
+function pickRandomDoor(doors) {
+	return doors[ Math.floor(Math.random() * doors.length) ]
+}
+
+
+
+
+
+window.addEventListener('load', () => {
+	//const results = runGame()
+
+	const runThisManyTimes = 10000
+	const results = {
+		numTimesRun: runThisManyTimes
+		,switchStrategy: {
+			win: 0
+			,lose: 0
+		}
+		,stayStrategy: {
+			win: 0
+			,lose: 0
+		}
+	}
+
+	for (let i=0;i<runThisManyTimes;++i) {
+		let roundResults
+
+		roundResults = runGame(true)
+		roundResults.wonGame ? ++results.switchStrategy.win : ++results.switchStrategy.lose
+
+		roundResults = runGame(false)
+		roundResults.wonGame ? ++results.stayStrategy.win : ++results.stayStrategy.lose
+	}
+	results.switchStrategy.winRate = results.switchStrategy.win / (results.switchStrategy.win + results.switchStrategy.lose)
+	results.stayStrategy.winRate = results.stayStrategy.win / (results.stayStrategy.win + results.stayStrategy.lose)
+
+	document.querySelector('#out').innerHTML = JSON.stringify(results, null, 2)
+})
+
+
+</script>
+<style type="text/css">
+body {
+	padding: 20px;
+}
+h1 {
+	font-family: zillaslab,palatino,"Palatino Linotype",serif;
+	letter-spacing: .035rem;
+	line-height: 1.2;
+}
+code {
+	font-family: consolas,"Liberation Mono",courier,monospace;
+}
+</style>
+</head>
+<body>
+
+<h1>Monty Hall Simulation</h1>
+
+<pre><code id="out"></code></pre>
+
+</body>
+</html>
