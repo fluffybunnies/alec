@@ -45,7 +45,13 @@ function pickRandomDoor(doors) {
 window.addEventListener('load', () => {
 	//const results = runGame()
 
-	const runThisManyTimes = 10000
+	let runThisManyTimes = (window.location.search || '').match(/runThisManyTimes=([0-9]+)/)
+	if (runThisManyTimes && runThisManyTimes[1]) {
+		runThisManyTimes = +runThisManyTimes[1]
+	} else {
+		runThisManyTimes = 1000
+	}
+
 	const results = {
 		numTimesRun: runThisManyTimes
 		,switchStrategy: {
