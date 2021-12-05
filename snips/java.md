@@ -1,6 +1,21 @@
 # Java
 
 
++### Log to a file
+
++For example, if you can't see stdout
+
+```
+try {
+	String str = "Hello";
+	BufferedWriter writer = new BufferedWriter(new FileWriter("/tmp/registry.log"));
+	writer.write(str);
+	writer.close();
+} catch (Exception e) {}
+```
+
+
+
 ### Decode unicode escape characters from a string
 For example, when parsing JSON from a web page
 ```java

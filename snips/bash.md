@@ -20,6 +20,7 @@ For error messages
 grep's `--include` is very slow
 ```
 find . -type f | grep '\.proto' | xargs grep DomainState $1
+find . -type f | grep '\.yaml' | xargs grep updatableWhitelist $1
 ```
 
 
@@ -243,6 +244,14 @@ cat numbered_lines.txt | sed '/^#/ s/[0-9][0-9]*//'
 #                              ^ operate on lines that match this
 #                                      ^ search for this
 #                                               ^ and replace with this (empty string)
+```
+
+
+
+## Replace text in several files at once
+The following snippet is tested with BSD (Mac)
+```
+find . | grep registry.yaml | xargs sed -i '' 's/slug/bug/g' $1
 ```
 
 
