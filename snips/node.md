@@ -53,3 +53,13 @@ Buffer.byteLength(str, 'utf8')
 # @todo
 ```
 
+
+### wopen
+Open url in browser
+```
+module.exports = (url) => {
+  const prog = (process.platform == 'darwin' ? 'open': process.platform == 'win32' ? 'start' : 'xdg-open')
+  require('child_process').exec(`${prog} ${url}`);
+}
+```
+
