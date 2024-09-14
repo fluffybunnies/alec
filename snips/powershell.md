@@ -68,6 +68,14 @@ function topen {
 ```
 
 
+### wopen
+```
+function wopen {
+  start chrome $args[0]
+}
+```
+
+
 ### rm -rf
 Unfortunately, "-f" is ambiguous in PS
 ```
@@ -87,6 +95,33 @@ function mastif {
   }
   git fetch && git checkout -f $branch && git pull origin $branch && git fetch --tags
 }
+```
+
+
+### gdel
+```
+function gdel {
+  $e=$(git checkout master 2>&1 | tail -n1)
+  if ($e -ne "Already on 'master'" -and $e -ne "Switched to branch 'master'") {
+    echo $e
+    return
+  }
+
+  git branch
+  git branch | ForEach-Object {
+    if (!$_.Contains('*')) {
+      git branch -d $_.Trim()
+    }
+  }
+  git branch
+}
+```
+
+
+### SymLink
+Similar to: `ln -s`
+```
+New-Item -Path C:\DataStore\51degrees.dat -ItemType SymbolicLink -Value C:\DataStore\Tracking\51degrees.dat
 ```
 
 
