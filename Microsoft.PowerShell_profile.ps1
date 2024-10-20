@@ -1,16 +1,21 @@
 
 $env:Path += ';C:\Program Files\PostgreSQL\16\bin'
 $env:Path += ';C:\Program Files\ngrok'
-
+$env:Path += ';C:\Program Files\MySQL\MySQL Server 9.0\bin'
 
 Set-PSReadLineKeyHandler -Key Ctrl+u -Function BackwardDeleteLine
 #Set-PSReadLineKeyHandler -Key Ctrl+k -Function ClearScreen
 Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
 
 Set-PSReadLineKeyHandler -Key Ctrl+k -ScriptBlock {
-    [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-    [Microsoft.PowerShell.PSConsoleReadLine]::Insert('cls')
-    [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+  [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+  [Microsoft.PowerShell.PSConsoleReadLine]::Insert('cls')
+  [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+}
+
+if (!$_profileInited) {
+  $_profileInited=1
+  cd ~/Documents
 }
 
 function topen {
@@ -29,7 +34,11 @@ function topen {
 }
 
 function open {
-  explorer $args[0]
+  explorer $(Resolve-Path "$($args[0])")
+}
+
+function wopen {
+  start chrome $(Resolve-Path "$($args[0])")
 }
 
 function rimraf {
@@ -37,8 +46,10 @@ function rimraf {
   Remove-Item $args[0] -Recurse -Force
 }
 function rmfr {
-  # Same as shorthand: rm -r -Force
-  Remove-Item $args[0] -Recurse -Force
+  rimraf $args
+}
+function rmrf {
+  rimraf $args
 }
 
 function findot() {
@@ -47,6 +58,14 @@ function findot() {
 
 function rprofile() {
   . $profile
+}
+
+function saveprofile() {
+  $targetDir="$HOME\Dropbox\alec_repo\"
+  cp $profile $targetDir
+  $filename=(Split-Path $profile -leaf)
+  echo "Saved to: $targetDir$filename"
+  echo "Modified time: $((Get-Item $targetDir$filename).LastWriteTime)"
 }
 
 function mastif {
@@ -73,4 +92,15 @@ function gdel {
   git branch
 }
 
+function poo {
+  $currentBranch=$(git branch | Select-String -Pattern "\*" | sed -n 's/^\* //p')
+  $msg="$args"
+  if (!$msg) {
+    $msg="stash"
+  }
+  git add --all .
+  git commit -a -m "$msg"
+  git pull origin $currentBranch # exit on error to prevent pushing merge conflicts
+  git push origin $currentBranch
+}
 

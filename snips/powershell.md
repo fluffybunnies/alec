@@ -29,8 +29,32 @@ New-ItemProperty -Path $kbLayout -Name "Scancode Map" -PropertyType Binary -Valu
 ```
 
 
-### Remap Alt to Ctrl
+### Swap Fn and Ctrl
+If your keyboard has the Fn key outside the Ctrl key, you'll want to swap these at the BIOS level. Why? Fn doesn't register as its own keypress in Windows, it is special.
+
+
+### Remap Alt to Ctrl, and Fix Home/End Cursor Movement
 Use PowerToys
+#### Keys
+1. Alt (left) to Ctrl (left)
+2. Ctrl (left) to Alt (left)
+#### Shortcuts
+1. Ctrl (left) + Tab to Alt (left) + Tab
+2. Ctrl (left) + Left to Home
+3. Ctrl (left) + Up to Ctrl (left) + Home
+4. Ctrl (left) + Right to End
+5. Ctrl (left) + Down to Ctrl (left) + End
+6. Alt (left) + Left to Ctrl (left) + Left
+7. Alt (left) + Right to Ctrl (left) + Right
+8. Ctrl (left) + Shift + Up to Ctrl (left) + Shift + Home
+9. Ctrl (left) + Shift + Down to Ctrl (left) + Shift + End
+
+
+### Resolve Unix-Formatted Paths
+E.g.: Replace forward slash with back slash
+```
+Resolve-Path "~/Documents/README.md"
+```
 
 
 ### find . equivalent
@@ -44,7 +68,7 @@ function findot() {
 ### open
 ```
 function open {
-  explorer $args[0]
+  explorer $(Resolve-Path "$($args[0])")
 }
 ```
 
@@ -71,7 +95,7 @@ function topen {
 ### wopen
 ```
 function wopen {
-  start chrome $args[0]
+  start chrome $(Resolve-Path "$($args[0])")
 }
 ```
 
@@ -114,6 +138,22 @@ function gdel {
     }
   }
   git branch
+}
+```
+
+
+### poo
+```
+function poo {
+  $currentBranch=$(git branch | Select-String -Pattern "\*" | sed -n 's/^\* //p')
+  $msg="$args"
+  if (!$msg) {
+    $msg="stash"
+  }
+  git add --all .
+  git commit -a -m "$msg"
+  git pull origin $currentBranch # exit on error to prevent pushing merge conflicts
+  git push origin $currentBranch
 }
 ```
 
