@@ -29,8 +29,17 @@ New-ItemProperty -Path $kbLayout -Name "Scancode Map" -PropertyType Binary -Valu
 ```
 
 
+
+### Restore Classic Right-Click Context Menu
+```
+reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+```
+
+
+
 ### Swap Fn and Ctrl
 If your keyboard has the Fn key outside the Ctrl key, you'll want to swap these at the BIOS level. Why? Fn doesn't register as its own keypress in Windows, it is special.
+
 
 
 ### Remap Alt to Ctrl, and Fix Home/End Cursor Movement
@@ -50,11 +59,32 @@ Use PowerToys
 9. Ctrl (left) + Shift + Down to Ctrl (left) + Shift + End
 
 
+
+### Install sudo on Windows 11
+Settings > System > For developers
+
+
+
+### Fix tab expansion of tilde
+Temp hack fix: https://github.com/PowerShell/PowerShell/issues/20750#issuecomment-1822567842
+Until this PR gets released: https://github.com/PowerShell/PowerShell/pull/21529
+
+
+
 ### Resolve Unix-Formatted Paths
 E.g.: Replace forward slash with back slash
 ```
 Resolve-Path "~/Documents/README.md"
 ```
+
+
+
+### SymLink
+Similar to: `ln -s`
+```
+New-Item -Path C:\DataStore\51degrees.dat -ItemType SymbolicLink -Value C:\DataStore\Tracking\51degrees.dat
+```
+
 
 
 ### find . equivalent
@@ -158,26 +188,5 @@ function poo {
 ```
 
 
-### SymLink
-Similar to: `ln -s`
-```
-New-Item -Path C:\DataStore\51degrees.dat -ItemType SymbolicLink -Value C:\DataStore\Tracking\51degrees.dat
-```
 
-
-### Fix tab expansion of tilde
-Temp hack fix: https://github.com/PowerShell/PowerShell/issues/20750#issuecomment-1822567842
-Until this PR gets released: https://github.com/PowerShell/PowerShell/pull/21529
-
-
-### Create self-signed certificate
-```
-$cert = New-SelfSignedCertificate -certstorelocation cert:\localmachine\my -dnsname localhost
-$pwd = ConvertTo-SecureString -String 'centerfieldssl1!' -Force -AsPlainText
-$path = 'cert:\localMachine\my\' + $cert.thumbprint
-Export-PfxCertificate -cert $path -FilePath ~\new.pfx -Password $pwd
-
-$pwd = ConvertTo-SecureString -String 'centerfieldssl1!' -Force -AsPlainText
-Import-PfxCertificate -FilePath ~\new.pfx -CertStoreLocation Cert:\LocalMachine\Root -Password  $pwd
-```
 

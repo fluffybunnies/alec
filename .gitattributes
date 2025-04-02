@@ -1,0 +1,6 @@
+# Normalize all text files to LF in repo
+* text=auto
+
+# Ensure shell scripts always use LF
+*.sh text eol=lf
+
