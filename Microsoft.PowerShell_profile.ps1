@@ -7,6 +7,8 @@ $env:Path += ';C:\Program Files\MySQL\MySQL Workbench 8.0 CE'
 $env:Path += ";$HOME\.datalot\bin"
 $env:Path = "$HOME\AppData\Local\Programs\Python\Python313;" + $env:Path
 $env:Path += ";$HOME\AppData\Local\Programs\Python\Python313\Scripts"
+$env:Path += ';C:\Program Files\grpcurl_1.9.3_windows_x86_64'
+$env:Path += ';C:\Users\ahulce\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1.1-full_build\bin'
 
 
 Set-PSReadLineKeyHandler -Key Ctrl+u -Function BackwardDeleteLine
@@ -30,34 +32,78 @@ if (!$_profileInited) {
   cd ~/Documents
 }
 
+$Global:GrepV_ArgsFile = "$env:TEMP\grepv_last_args"
+function gropen {
+    if (-not (Test-Path $Global:GrepV_ArgsFile)) {
+        Write-Host "No previous grepv invocation found."
+        return
+    }
+
+    $args = Get-Content $Global:GrepV_ArgsFile
+    if ($args.Count -eq 0) {
+        Write-Host "Stored grepv arguments are empty."
+        return
+    }
+
+    # Call grepv with saved args and capture its output
+    $results = & grepv @args
+
+    # Extract unique file paths from the grepv output
+    $filePaths = $results |
+        Where-Object { $_ -match "^(.*?):" } |
+        ForEach-Object { $matches[1] } |
+        Sort-Object -Unique
+
+    foreach ($file in $filePaths) {
+        topen $file
+    }
+}
+
+function grepv() {
+  # Save args for future reuse in `gropen`
+  Set-Content -Path $Global:GrepV_ArgsFile -Value ($args -join "`n") -Encoding utf8
+  # Run grepv
+  grep -R @args | grep -v Binary | grep -v bin/ | grep -v obj/ | grep -v package.lock | grep -v venv/
+}
+
 function topen {
-  if (!$args[0]) {
-    throw "please specify a file path"
-  }
-  $filePath=$args[0]
-  $fileDir=$(dirname $filePath)
-  if (!(Test-Path $fileDir)) {
-    mkdir -p $fileDir
-  }
-  if (!(Test-Path $filePath)) {
-    touch $filePath
-  }
-  code $filePath
+    param (
+        [string]$filePath
+    )
+    if (-not $filePath) {
+        throw "Please specify a file path"
+    }
+    $fileDir = Split-Path $filePath
+    if (-not $fileDir) {
+        $fileDir = "."  # current directory
+    }
+    if (-not (Test-Path $fileDir)) {
+        New-Item -ItemType Directory -Path $fileDir -Force | Out-Null
+    }
+    if (-not (Test-Path $filePath)) {
+        New-Item -ItemType File -Path $filePath -Force | Out-Null
+    }
+    code $filePath
 }
 
 function copen {
-  if (!$args[0]) {
-    throw "please specify a file path"
-  }
-  $filePath=$args[0]
-  $fileDir=$(dirname $filePath)
-  if (!(Test-Path $fileDir)) {
-    mkdir -p $fileDir
-  }
-  if (!(Test-Path $filePath)) {
-    touch $filePath
-  }
-  cursor $filePath
+    param (
+        [string]$filePath
+    )
+    if (-not $filePath) {
+        throw "Please specify a file path"
+    }
+    $fileDir = Split-Path $filePath
+    if (-not $fileDir) {
+        $fileDir = "."  # current directory
+    }
+    if (-not (Test-Path $fileDir)) {
+        New-Item -ItemType Directory -Path $fileDir -Force | Out-Null
+    }
+    if (-not (Test-Path $filePath)) {
+        New-Item -ItemType File -Path $filePath -Force | Out-Null
+    }
+    cursor $filePath
 }
 
 function open {
@@ -91,19 +137,15 @@ function findot() {
 }
 
 function rprofile() {
-  . $profile
+  . $PROFILE
 }
 
 function saveprofile() {
-  $targetDir="$HOME\Dropbox\alec_repo\"
+  $targetDir="C:\Dropbox\alec_repo\"
   cp $profile $targetDir
   $filename=(Split-Path $profile -leaf)
   echo "Saved to: $targetDir$filename"
   echo "Modified time: $((Get-Item $targetDir$filename).LastWriteTime)"
-}
-
-function grepc() {
-  grep -R @args | grep -v Binary | grep -v bin/ | grep -v obj/ | grep -v package.lock
 }
 
 function mastif {
@@ -136,7 +178,18 @@ function poo {
   if (!$msg) {
     $msg="stash"
   }
+
+  # Find the git root directory
+  $gitRoot = git rev-parse --show-toplevel
+  if (!$gitRoot) {
+    Write-Error "Not inside a git repository."
+    return
+  }
+
+  Push-Location $gitRoot
   git add --all .
+  Pop-Location
+
   git commit -a -m "$msg"
   git pull origin $currentBranch # exit on error to prevent pushing merge conflicts
   git push origin $currentBranch
@@ -157,6 +210,11 @@ function bitch {
     } else {
         sudo @args
     }
+}
+
+
+function nut {
+  node --no-deprecation C:/Dropbox/centerfield/nut
 }
 
 

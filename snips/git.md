@@ -37,6 +37,15 @@ git reset HEAD~1 --soft
 ```
 
 
+## Git reset, including all untracked files
+```
+# Run this once:
+git config --global alias.nuke '!git reset --hard HEAD && git clean -fd' # You can make it -xfd to also delete git-ignored files
+# Now this will work:
+git nuke
+```
+
+
 ## Merge multiple commits together
 Warning: Should only do this prior to pull request merge<br />
 Can get hairy if this is done to a shared branch (e.g. master)
