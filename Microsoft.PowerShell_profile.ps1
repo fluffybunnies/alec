@@ -1,5 +1,5 @@
 
-$env:Path += ';C:\Program Files\PostgreSQL\16\bin'
+$env:Path += ';C:\Program Files\PostgreSQL\17\bin'
 $env:Path += ';C:\Program Files\ngrok'
 $env:Path += ';C:\Program Files\MySQL\MySQL Workbench 8.0 CE'
 #$env:Path += ';C:\Program Files\MySQL\MySQL Server 9.0\bin'
@@ -213,8 +213,9 @@ function bitch {
 }
 
 
-function nut {
-  node --no-deprecation C:/Dropbox/centerfield/nut
-}
 
+
+
+
+function nut { param([string]$args) $nutDir='C:/Dropbox/alec_repo/nut'; if (-not(Test-Path "$nutDir/node_modules")) { npm install --prefix $nutDir }; node --no-deprecation $nutDir $args }
 
