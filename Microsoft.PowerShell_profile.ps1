@@ -157,19 +157,99 @@ function mastif {
 }
 
 function gdel {
-  $e=$(git checkout master 2>&1 | tail -n1)
-  if ($e -ne "Already on 'master'" -and $e -ne "Switched to branch 'master'") {
-    echo $e
-    return
-  }
-
-  git branch
-  git branch | ForEach-Object {
-    if (!$_.Contains('*')) {
-      git branch -d $_.Trim()
+    param(
+        [string]$targetBranch = "master",
+        [switch]$DryRun
+    )
+    
+    # Checkout target branch
+    $e = $(git checkout $targetBranch 2>&1 | Select-Object -Last 1)
+    if ($e -notmatch "Already on '$targetBranch'" -and $e -notmatch "Switched to branch '$targetBranch'") {
+        Write-Host $e -ForegroundColor Red
+        return
     }
-  }
-  git branch
+    
+    # Update target branch
+    Write-Host "Updating $targetBranch..." -ForegroundColor Cyan
+    git pull origin $targetBranch
+    
+    Write-Host "`nAnalyzing branches..." -ForegroundColor Cyan
+    
+    # Get all local branches except the current one
+    $branches = git branch | Where-Object { !$_.Contains('*') } | ForEach-Object { $_.Trim() }
+    
+    $toDelete = @()
+    $protected = @()
+    
+    foreach ($branch in $branches) {
+        # Skip if empty
+        if ([string]::IsNullOrWhiteSpace($branch)) { continue }
+        
+        # Check if traditionally merged (fast path)
+        $mergedBranches = git branch --merged $targetBranch | ForEach-Object { $_.Trim().TrimStart('* ') }
+        if ($mergedBranches -contains $branch) {
+            $toDelete += $branch
+            continue
+        }
+        
+        # Check if branch has identical content to target (handles squash merges)
+        # Compare tree hashes for exact content match, regardless of commit history
+        $branchTree = git rev-parse "$branch^{tree}" 2>$null
+        $targetTree = git rev-parse "$targetBranch^{tree}" 2>$null
+        if ($branchTree -eq $targetTree) {
+            # Identical content means the branch's changes have been incorporated
+            $toDelete += $branch
+            continue
+        }
+        
+        # Check if branch is an ancestor of target (handles old branches where target moved ahead)
+        # This catches branches that were merged and then master moved forward
+        git merge-base --is-ancestor $branch $targetBranch 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            # Branch is fully contained in target's history
+            $toDelete += $branch
+            continue
+        }
+        
+        # Check if branch has no unique changes since diverging (handles empty/stash branches)
+        # Compare branch tree with merge-base tree
+        $mergeBase = git merge-base $targetBranch $branch 2>$null
+        if ($mergeBase) {
+            $baseTree = git rev-parse "$mergeBase^{tree}" 2>$null
+            if ($branchTree -eq $baseTree) {
+                # Branch has no net changes since diverging
+                $toDelete += $branch
+                continue
+            }
+        }
+        
+        # Branch has unmerged changes
+        $protected += $branch
+    }
+    
+    # Display results
+    Write-Host "`nBranches to delete ($($toDelete.Count)):" -ForegroundColor Yellow
+    $toDelete | ForEach-Object { Write-Host "  - $_" -ForegroundColor Yellow }
+    
+    if ($protected.Count -gt 0) {
+        Write-Host "`nBranches with unmerged changes ($($protected.Count)):" -ForegroundColor Green
+        $protected | ForEach-Object { Write-Host "  - $_" -ForegroundColor Green }
+    }
+    
+    # Delete branches
+    if ($DryRun) {
+        Write-Host "`n[DRY RUN] No branches were deleted." -ForegroundColor Magenta
+    } elseif ($toDelete.Count -gt 0) {
+        Write-Host "`nDeleting branches..." -ForegroundColor Cyan
+        foreach ($branch in $toDelete) {
+            # Use -D to force delete since -d might fail for squash-merged branches
+            git branch -D $branch
+        }
+        Write-Host "`nCurrent branches:" -ForegroundColor Cyan
+        git branch
+    } else {
+        Write-Host "`nNo branches to delete." -ForegroundColor Green
+    }
 }
 
 function poo {
