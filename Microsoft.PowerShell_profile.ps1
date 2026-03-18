@@ -9,6 +9,8 @@ $env:Path = "$HOME\AppData\Local\Programs\Python\Python313;" + $env:Path
 $env:Path += ";$HOME\AppData\Local\Programs\Python\Python313\Scripts"
 $env:Path += ';C:\Program Files\grpcurl_1.9.3_windows_x86_64'
 $env:Path += ';C:\Users\ahulce\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1.1-full_build\bin'
+$env:Path += ';C:\Users\ahulce\AppData\Local\pnpm'
+$env:Path += ';C:\Users\ahulce\.local\bin'
 
 
 Set-PSReadLineKeyHandler -Key Ctrl+u -Function BackwardDeleteLine
@@ -142,10 +144,34 @@ function rprofile() {
 
 function saveprofile() {
   $targetDir="C:\Dropbox\alec_repo\"
+  
+  # Save PowerShell profile
   cp $profile $targetDir
   $filename=(Split-Path $profile -leaf)
-  echo "Saved to: $targetDir$filename"
+  echo "Saved profile to: $targetDir$filename"
   echo "Modified time: $((Get-Item $targetDir$filename).LastWriteTime)"
+  
+  # Save Cursor skills
+  #$skillsSource = "$HOME\.cursor\skills-cursor"
+  #$skillsTarget = "C:\Dropbox\alec_repo\cursor-skills"
+  #if (Test-Path $skillsSource) {
+  #  if (-not (Test-Path $skillsTarget)) {
+  #    New-Item -ItemType Directory -Path $skillsTarget -Force | Out-Null
+  #  }
+  #  Copy-Item -Path "$skillsSource\*" -Destination $skillsTarget -Recurse -Force
+  #  echo "Saved Cursor skills to: $skillsTarget"
+  #}
+  
+  # Save Cursor rules (if any exist)
+  #$rulesSource = "$HOME\.cursor\rules"
+  #$rulesTarget = "C:\Dropbox\alec_repo\cursor-rules"
+  #if (Test-Path $rulesSource) {
+  #  if (-not (Test-Path $rulesTarget)) {
+  #    New-Item -ItemType Directory -Path $rulesTarget -Force | Out-Null
+  #  }
+  #  Copy-Item -Path "$rulesSource\*" -Destination $rulesTarget -Recurse -Force
+  #  echo "Saved Cursor rules to: $rulesTarget"
+  #}
 }
 
 function mastif {
@@ -162,6 +188,9 @@ function gdel {
         [switch]$DryRun
     )
     
+    Write-Host "Fetching remote branches..." -ForegroundColor Cyan
+    git fetch --prune
+    
     # Checkout target branch
     $e = $(git checkout $targetBranch 2>&1 | Select-Object -Last 1)
     if ($e -notmatch "Already on '$targetBranch'" -and $e -notmatch "Switched to branch '$targetBranch'") {
@@ -175,65 +204,50 @@ function gdel {
     
     Write-Host "`nAnalyzing branches..." -ForegroundColor Cyan
     
-    # Get all local branches except the current one
+    # Get all local branches except the target branch
     $branches = git branch | Where-Object { !$_.Contains('*') } | ForEach-Object { $_.Trim() }
     
+    # Get all remote branches (strip 'origin/' prefix)
+    $remoteBranches = git branch -r | ForEach-Object { 
+        $b = $_.Trim()
+        if ($b -match '^origin/(.+)$') {
+            $matches[1]
+        }
+    } | Where-Object { $_ -ne 'HEAD' }
+    
     $toDelete = @()
-    $protected = @()
+    $kept = @()
     
     foreach ($branch in $branches) {
-        # Skip if empty
-        if ([string]::IsNullOrWhiteSpace($branch)) { continue }
+        # Skip if empty or is the target branch
+        if ([string]::IsNullOrWhiteSpace($branch) -or $branch -eq $targetBranch) { continue }
         
-        # Check if traditionally merged (fast path)
-        $mergedBranches = git branch --merged $targetBranch | ForEach-Object { $_.Trim().TrimStart('* ') }
-        if ($mergedBranches -contains $branch) {
-            $toDelete += $branch
+        # Check if branch is tracking a remote branch (even with different name)
+        $trackingBranch = git config --get "branch.$branch.remote" 2>$null
+        if ($trackingBranch) {
+            # Branch has explicit tracking setup, keep it
+            $kept += "$branch (tracking)"
             continue
         }
         
-        # Check if branch has identical content to target (handles squash merges)
-        # Compare tree hashes for exact content match, regardless of commit history
-        $branchTree = git rev-parse "$branch^{tree}" 2>$null
-        $targetTree = git rev-parse "$targetBranch^{tree}" 2>$null
-        if ($branchTree -eq $targetTree) {
-            # Identical content means the branch's changes have been incorporated
-            $toDelete += $branch
+        # Check if this local branch name matches a remote branch name
+        if ($remoteBranches -contains $branch) {
+            # Remote branch with same name exists, keep it
+            $kept += "$branch (name match)"
             continue
         }
         
-        # Check if branch is an ancestor of target (handles old branches where target moved ahead)
-        # This catches branches that were merged and then master moved forward
-        git merge-base --is-ancestor $branch $targetBranch 2>$null
-        if ($LASTEXITCODE -eq 0) {
-            # Branch is fully contained in target's history
-            $toDelete += $branch
-            continue
-        }
-        
-        # Check if branch has no unique changes since diverging (handles empty/stash branches)
-        # Compare branch tree with merge-base tree
-        $mergeBase = git merge-base $targetBranch $branch 2>$null
-        if ($mergeBase) {
-            $baseTree = git rev-parse "$mergeBase^{tree}" 2>$null
-            if ($branchTree -eq $baseTree) {
-                # Branch has no net changes since diverging
-                $toDelete += $branch
-                continue
-            }
-        }
-        
-        # Branch has unmerged changes
-        $protected += $branch
+        # No tracking and no remote name match, mark for deletion
+        $toDelete += $branch
     }
     
     # Display results
-    Write-Host "`nBranches to delete ($($toDelete.Count)):" -ForegroundColor Yellow
+    Write-Host "`nBranches to delete (no remote branch) ($($toDelete.Count)):" -ForegroundColor Yellow
     $toDelete | ForEach-Object { Write-Host "  - $_" -ForegroundColor Yellow }
     
-    if ($protected.Count -gt 0) {
-        Write-Host "`nBranches with unmerged changes ($($protected.Count)):" -ForegroundColor Green
-        $protected | ForEach-Object { Write-Host "  - $_" -ForegroundColor Green }
+    if ($kept.Count -gt 0) {
+        Write-Host "`nBranches kept (remote exists) ($($kept.Count)):" -ForegroundColor Green
+        $kept | ForEach-Object { Write-Host "  - $_" -ForegroundColor Green }
     }
     
     # Delete branches
@@ -242,7 +256,6 @@ function gdel {
     } elseif ($toDelete.Count -gt 0) {
         Write-Host "`nDeleting branches..." -ForegroundColor Cyan
         foreach ($branch in $toDelete) {
-            # Use -D to force delete since -d might fail for squash-merged branches
             git branch -D $branch
         }
         Write-Host "`nCurrent branches:" -ForegroundColor Cyan
