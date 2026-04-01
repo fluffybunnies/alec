@@ -1,2 +1,0 @@
-- [feedback_self_restart.md](feedback_self_restart.md) - Claude can and should restart itself when asked, no pushback
-- [feedback_no_permissions.md](feedback_no_permissions.md) - User wants zero permission prompts, has --dangerously-skip-permissions alias

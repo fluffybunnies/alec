@@ -131,3 +131,4 @@ claude() {
     "$bin" --dangerously-skip-permissions "$@"
   fi
 }
+export BROWSER=/home/ubuntu/.local/bin/wsl-open

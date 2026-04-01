@@ -3,5 +3,9 @@
     "defaultMode": "bypassPermissions"
   },
   "model": "opus[1m]",
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "autoMemoryEnabled": false
 }
