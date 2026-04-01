@@ -11,6 +11,7 @@ $env:Path += ';C:\Program Files\grpcurl_1.9.3_windows_x86_64'
 $env:Path += ';C:\Users\ahulce\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1.1-full_build\bin'
 $env:Path += ';C:\Users\ahulce\AppData\Local\pnpm'
 $env:Path += ';C:\Users\ahulce\.local\bin'
+$env:Path += ';C:\Program Files\rclone-v1.73.2-windows-amd64'
 
 
 Set-PSReadLineKeyHandler -Key Ctrl+u -Function BackwardDeleteLine
@@ -222,11 +223,11 @@ function gdel {
         # Skip if empty or is the target branch
         if ([string]::IsNullOrWhiteSpace($branch) -or $branch -eq $targetBranch) { continue }
         
-        # Check if branch is tracking a remote branch (even with different name)
-        $trackingBranch = git config --get "branch.$branch.remote" 2>$null
-        if ($trackingBranch) {
-            # Branch has explicit tracking setup, keep it
-            $kept += "$branch (tracking)"
+        # Check if branch has a remote tracking branch that still exists
+        $upstreamBranch = git rev-parse --abbrev-ref "$branch@{upstream}" 2>$null
+        if ($LASTEXITCODE -eq 0 -and $upstreamBranch) {
+            # Upstream exists, keep it
+            $kept += "$branch (tracking: $upstreamBranch)"
             continue
         }
         
@@ -237,7 +238,7 @@ function gdel {
             continue
         }
         
-        # No tracking and no remote name match, mark for deletion
+        # No valid upstream and no remote name match, mark for deletion
         $toDelete += $branch
     }
     
