@@ -311,5 +311,18 @@ function bitch {
 
 
 
+function claude {
+    Write-Host ""
+    Write-Host "  YOU ARE ON WINDOWS! ARE YOU ABSOLUTELY SURE YOU WANT TO OPEN CLAUDE?" -ForegroundColor Red
+    Write-Host "  (You probably meant to 'wsl' first.)" -ForegroundColor Yellow
+    Write-Host ""
+    $response = Read-Host "  Type YES to continue, anything else to abort"
+    if ($response -eq "YES") {
+        & claude.exe @args
+    } else {
+        Write-Host "  Aborted." -ForegroundColor Cyan
+    }
+}
+
 function nut { param([string]$args) $nutDir='C:/Dropbox/alec_repo/nut'; if (-not(Test-Path "$nutDir/node_modules")) { npm install --prefix $nutDir }; node --no-deprecation $nutDir $args }
 
