@@ -1,6 +1,20 @@
 {
   "permissions": {
-    "defaultMode": "bypassPermissions"
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "Edit(~/.bashrc)",
+      "Edit(~/.profile)",
+      "Edit(~/.bash_profile)",
+      "Edit(~/.zshrc)",
+      "Bash(rm /mnt/c/Dropbox/**)",
+      "Bash(cp /home/ubuntu/.bashrc /mnt/c/Dropbox/**)",
+      "Bash(cp /home/ubuntu/.claude.json /mnt/c/Dropbox/**)",
+      "Bash(cp /home/ubuntu/.claude/settings.json /mnt/c/Dropbox/**)",
+      "Bash(cp /home/ubuntu/.claude/projects/** /mnt/c/Dropbox/**)",
+      "Bash(cp -r /home/ubuntu/.claude/commands/** /mnt/c/Dropbox/**)",
+      "Bash(mkdir -p /mnt/c/Dropbox/**)",
+      "Edit(~/.claude/settings.json)"
+    ]
   },
   "model": "opus[1m]",
   "skipDangerousModePermissionPrompt": true,

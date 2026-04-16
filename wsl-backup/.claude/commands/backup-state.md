@@ -21,6 +21,7 @@ Fresh backup of all Claude-related config files to the Dropbox backup folder.
    - `~/.bashrc` -> `wsl-backup/.bashrc`
    - `~/.claude.json` -> `wsl-backup/.claude.json`
    - `~/.claude/settings.json` -> `wsl-backup/.claude/settings.json`
+   - `~/.claude/CLAUDE.md` -> `wsl-backup/.claude/CLAUDE.md`
    - All `*.md` files from `~/.claude/projects/-mnt-c-Users-ahulce-Documents/memory/` -> `wsl-backup/.claude/memory/`
    - All commands from `~/.claude/commands/` -> `wsl-backup/.claude/commands/` (recursive copy)
 

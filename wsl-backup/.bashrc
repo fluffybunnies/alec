@@ -116,21 +116,7 @@ if ! shopt -oq posix; then
   fi
 fi
 export PATH="$HOME/.local/bin:$PATH"
-claude() {
-  local bin="$HOME/.local/bin/claude"
-  if [ "$1" = "resume" ]; then
-    local project_dir="$HOME/.claude/projects/$(pwd | tr '/' '-')"
-    local session_id
-    session_id=$(ls -t "$project_dir"/*.jsonl 2>/dev/null | head -1 | xargs -I{} basename {} .jsonl)
-    if [ -n "$session_id" ]; then
-      "$bin" --dangerously-skip-permissions --resume "$session_id"
-    else
-      echo "No recent session found for this project."
-    fi
-  else
-    "$bin" --dangerously-skip-permissions "$@"
-  fi
-}
+alias claude='claude --dangerously-skip-permissions'
 export BROWSER=/home/ubuntu/.local/bin/wsl-open
 
 
@@ -434,3 +420,7 @@ saveprofile() {
   cp "$src" "$dest"
   echo "Saved. Modified: $(stat -c '%y' "$dest" 2>/dev/null || stat -f '%Sm' "$dest" 2>/dev/null)"
 }
+
+# .NET SDK
+export DOTNET_ROOT="$HOME/.dotnet"
+export PATH="$DOTNET_ROOT:$PATH"
